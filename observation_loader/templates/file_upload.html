@@ -4,26 +4,26 @@
     <div id="main-form" name="main-form" class="center-block">
         <strong>Welcome to the observation loader, blah blah...</strong>
         <p>Steps for the correct upload of observation data:</p>
+        
         <ol>
             <li>Download the <a href="./spreadsheet_template">spreadsheet template</a></li>
             <li>Fill it out. You can find some information about each field <a href="/help">here</a>, if you need it</li>
             <li>Save the spreadsheet as a csv file</li>
             <li>Upload the spreadsheet with the button below</li>
         </ol>
+        
+        <!-- File Upload form -->
         <form id="fileUpload" name="fileUpload" action="/upload" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="origin" value="file_upload">
             <div>
                 <label for="file">Select your csv file</label>
                 <input type="file" id="file" name="file">
-                <p><input type="checkbox" name="hasHeaders">
-                <label for="hasHeaders">Check this box if the first row of the file contains the headers</label></p>
+                <p><input type="checkbox" name="useTemplate">
+                <label for="useTemplate">Check this box if you used our template (see above)</label></p>
                 <input class="btn btn-primary" type="submit" value="Upload">
             </div>
         </form>
+        
         <hr>
-        
-        {% block files %}
-        
-        {% endblock %}
         
 {% endblock %}

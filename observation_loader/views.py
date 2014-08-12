@@ -1,7 +1,6 @@
 from observation_loader import app
-from observation_loader.uploader import upload_archive, upload_meta
 
-from flask import render_template, redirect, url_for, request, send_from_directory, flash, g
+from flask import render_template, redirect, url_for, request, send_from_directory, flash
 from werkzeug.utils import secure_filename
 
 
@@ -16,41 +15,26 @@ def help():
     return render_template("help.html")
 
 
-# Header form
-@app.route('/headers')
-def headers():
-    print g.content
-    return render_template("headers.html")
-
-# Metadata form
-@app.route('/meta')
-def meta():
-    return render_template("meta.html")
-
-
 # Spreadsheet template
 @app.route('/spreadsheet_template')
 def download_spreadsheet():
     return redirect(url_for('static', filename='spreadsheet_template.xls'))
 
 
+# File upload
 @app.route('/upload', methods=['GET','POST'])
-def upload_file():
+def upload():
     
-    if request.form['origin'] == 'file_upload':
-        where_to, content = upload_archive(request)
+    up_file = request.files['file']
     
-    elif request.form['origin'] == 'metadata':
-        content = None
-        where_to = upload_meta(request)
+    if "useTemplate" in request.form:
+        pass # Template used
     
-    if content is not None:
-        return redirect("{0}?uuid={1}".format(url_for(where_to), content['uuid']))
-    else:
-        return redirect(url_for(where_to))
+    headers = up_file.readline().split(",")
+    return render_template("/headers.html", headers=headers)
 
 
-@app.route('/dataset/<uuid>')
-def uploaded_file(filename):
-    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], uuid, uuid))
-
+# Metadata about the fields
+@app.route('/metafields', methods=['GET','POST'])
+def metafields():
+    return render_template("metafields.html")

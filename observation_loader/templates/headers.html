@@ -1,6 +1,71 @@
 {% extends "base.html" %}
 {% block content %}
 
-Yo!
+<h3>Align headers</h3>
+<p>These are the required fields. Please, set each one with one of the column names found in your file.</p>
+
+<form action="" ng-controller="HeaderController as headerCtrl" method="POST" name="headerForm" id="headerForm" ng-submit="headerCtrl.checkFields()" novalidate>
+
+<!-- Scientific Name -->
+<div id="scientificNameSelect">
+    <label for="scientificName">Scientific Name</label>
+    <select ng-model="headerCtrl.headers.scientificname" id="scientificName" name="scientificName">
+    <option value=""> -- Select One --</option>
+    {% for header in headers %}
+        <option value="{{header}}">{{header}}</option>
+    {% endfor %}
+    </select>
+</div>
+
+<!-- Latitude -->
+<div id="latitudeSelect">
+    <label for="latitude">Latitude</label>
+    <select ng-model="headerCtrl.headers.latitude" id="latitude" name="latitude">
+    <option value=""> -- Select One --</option>
+    {% for header in headers %}
+        <option value="{{header}}">{{header}}</option>
+    {% endfor %}
+    </select>
+</div>
+
+<!-- Longitude -->
+<div id="longitudeSelect">
+    <label for="longitude">Longitude</label>
+    <select ng-model="headerCtrl.headers.longitude" id="longitude" name="longitude">
+        <option value=""> -- Select One --</option>
+    {% for header in headers %}
+        <option value="{{header}}">{{header}}</option>
+    {% endfor %}
+    </select>
+</div>
+
+<!-- Date -->
+<div id="observationDateSelect">
+    <label for="observationDate">Observation date</label>
+    <select ng-model="headerCtrl.headers.observationdate" id="observationDate" name="observationDate">
+        <option value=""> -- Select One --</option>
+    {% for header in headers %}
+        <option value="{{header}}">{{header}}</option>
+    {% endfor %}
+    </select>
+</div>
+
+<!-- Collector -->
+<div id="collectorSelect">
+    <label for="collector">Collector's name</label>
+    <select ng-model="headerCtrl.headers.collector" id="collector" name="collector">
+        <option value=""> -- Select One --</option>
+    {% for header in headers %}
+        <option value="{{header}}">{{header}}</option>
+    {% endfor %}
+    </select>
+</div>
+
+<div class="alert alert-danger" id="warningMessage" ng-show="headerCtrl.warning" >
+    {[{ headerCtrl.warning }]}
+</div>
+
+<input class="btn btn-primary" type="submit" value="Let's go!">
+</form>
 
 {% endblock %}
