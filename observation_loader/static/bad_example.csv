@@ -1,0 +1,9 @@
+Scientific name,Latitude,Longitude,Observation date,Collector,Geodetic datum,Sampling method,Verbatim locality,Coordinate uncertainty
+Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30
+Puma concolor,-1.3,8º 25' W,2014-05-17,?,12,none,12.3,0
+Puma concolor,42.12,,2014/17/05,,Foo,,\n,unknown
+Puma concolor,0,0,Foo,432.2,\n,44.3,,\n
+Abies alba,0,5.13,654.2,John Smith,5.2,2014-06-12,Puma concolor,?
+Abies alba,,12345678,-44,joe@smith.com,NAD27,unknown,John Smith,
+Abies alba,412.12,-1.23,,Núñez,WGS84,unknown,,John Smith
+Abies alba,Foo,5.13,May 17th 2014,,,,-44.3,Foo

@@ -1,0 +1,51 @@
+<!doctype html>
+<html ng-app="loaderApp">
+	<head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="author" content="Javier Otegui">
+
+        <title>Map of Life - Observation data loader</title>
+
+        <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+        <link href="//netdna.bootstrapcdn.com/bootswatch/3.1.1/flatly/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/static/style.css">
+        
+        <style type="text/css">
+        	.container, form, .tab-content .tab-pane { padding-top: 50px; padding-bottom: 50px; }
+            #dataform .tq-validate.ng-invalid { background-color: #FA787E; }
+        </style>
+
+    </head>
+    <body>
+    	<div class="container">
+            <h1>MOL Data Loader</h1>
+            
+            <!-- Messages -->
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% if messages[0].startswith("ERROR") or messages[0].startswith("WARNING") %}
+            <div id="messages" name="messages" class="alert alert-danger">
+                {% else %}
+            <div id="messages" name="messages" class="alert alert-success">
+                {% endif %}
+                {% for message in messages %}
+                  <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+              {% endif %}
+            {% endwith %}
+            
+            {% block content %}
+            
+            {% endblock %}
+    	</div>
+    </body>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.11/angular.min.js"></script>
+	<script src="/static/app.js"></script>
+    <!-- <script src="/static/js/controllers.js"></script> -->
+    <!-- <script src="/static/js/directives.js"></script> -->
+</html>

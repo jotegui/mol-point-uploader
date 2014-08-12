@@ -1,0 +1,22 @@
+Term,Scope,Mandatory/Optional
+
+Latitude,Occurrence,M
+Longitude,Occurrence,M
+Datum,M
+Scientific name,Occurrence,M
+Date,Occurrence,M
+Collector name,Occurrence,M
+Sampling method,Occurrence,O
+Verbatim Locality,Occurrence,O
+Uncertainty,Occurrence,O
+
+General Keywords,EML,O
+Regional Scope,EML,O
+Temporal Scope,EML,O
+Title,EML,M
+Resource creator,EML,M
+Additional Information,EML,O
+Abstract,EML,O
+License,EML,O
+Publicly available,MOL,M
+Metadata author,EML,M
