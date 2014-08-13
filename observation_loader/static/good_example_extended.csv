@@ -1,0 +1,6 @@
+scientificName,latitude,longitude,observationDate,collector,geodeticDatum,samplingMethod,verbatimLocality,coordinateUncertainty,collectioncode
+Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30,1
+Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30,2
+Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30,3
+Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30,4
+Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30,5

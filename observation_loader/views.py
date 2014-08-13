@@ -1,5 +1,6 @@
 from observation_loader import app
 import uuid
+import os
 
 from flask import render_template, redirect, url_for, request, send_from_directory, flash, session
 from werkzeug.utils import secure_filename
@@ -27,26 +28,91 @@ def download_spreadsheet():
 @app.route('/headers', methods=['GET','POST'])
 def headers():
 
+    # Get file
     up_file = request.files['file']
-    file_uuid = uuid.uuid4()
+    if not up_file:
+        flash("Please, provide a file to upload")
+        return redirect(url_for("main"))
     
+    # Check for allowed file extension
     allowed_file = '.' in up_file.filename and up_file.filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
     if allowed_file is False:
         flash("ERROR: Unsupported file type. File should be .txt, .csv or .tsv")
         return redirect(url_for('main'))
-    # TODO: Validate ',' or '\t' separated and store in session
     
-    #if "useTemplate" in request.form:
-    #    pass # TODO: Skip metafields if template used
+    # Check field separator
+    headerline = up_file.readline().rstrip()
+    if len(headerline.split(",")) > 1:
+        session['field_separator'] = ","
+    elif len(headerline.split("\t")) > 1:
+        session['field_separator'] = "\t"
+    elif len(headerline.split("|")) > 1:
+        session['field_separator'] = "|"
+    else:
+        flash("ERROR: Unsupported field separator. Fields should be separated by comma (,), pipe (|) or tab")
+        return redirect(url_for('main'))
     
+    # Generate new UUID for file
+    file_uuid = str(uuid.uuid4())
     session.pop('file_uuid', None)
     session['file_uuid'] = file_uuid
-    print file_uuid
     
+    # and save the file
+    up_file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_uuid+".csv"))
+    
+    # Store headers
     session.pop('file_headers', None)
-    session['file_headers'] = up_file.readline().rstrip().split(",")
+    session['file_headers'] = headerline.split(session['field_separator'])
     
-    return render_template("/headers.html")
+    # Remove some extra values from session
+    session.pop('alignment', None)
+    session.pop('extra_fields', None)
+    
+    # If they are using our template
+    if "useTemplate" in request.form:
+        
+        # We already know the names of the required fields
+        session['alignment'] = {
+            "scientificName": 'scientificName',
+            "latitude": 'latitude',
+            "longitude": 'longitude',
+            "observationDate": 'observationDate',
+            "collector": 'collector'
+        }
+        
+        full_schema = {
+            "scientificName": 'scientificName',
+            "latitude": 'latitude',
+            "longitude": 'longitude',
+            "observationDate": 'observationDate',
+            "collector": 'collector',
+            "geodeticDatum": 'geodeticDatum',
+            "samplingMethod": 'samplingMethod',
+            "verbatimLocality": 'verbatimLocality',
+            "coordinateUncertainty": 'coordinateUncertainty'
+        }
+        
+        # Check if template was actually used
+        missing = [x for x in session['alignment'] if x not in session['file_headers']]
+        if len(missing) > 0:
+            flash("ERROR: The following fields are missing from the template: {0}".format(", ".join(missing)))
+            return redirect(url_for("main"))
+        
+        # Maybe, check for some extra fields in case they extended the template
+        extra_fields = [x for x in session['file_headers'] if x not in full_schema.values()]
+        
+        # If so, point to the metafields page
+        if len(extra_fields) > 0:
+            return render_template("metafields.html", extra_fields = extra_fields)
+        # Else, to the metadata page
+        else:
+            return render_template("metadata.html")
+    
+    # If they are not using our template,
+    else:
+        
+        # And go to header processing
+        return render_template("/headers.html")
 
 
 # Metadata about the fields
@@ -54,7 +120,6 @@ def headers():
 def metafields():
     
     # Process alignment
-    session.pop('alignment', None)
     session['alignment'] = {
         "scientificName": request.form['scientificName'],
         "latitude": request.form['latitude'],
@@ -68,18 +133,21 @@ def metafields():
     # Prepare extra fields for metadata
     extra_fields = [x for x in session['file_headers'] if x not in session['alignment'].values()]
     
-    return render_template("metafields.html", extra_fields = extra_fields)
+    if len(extra_fields) > 0:
+        return render_template("metafields.html", extra_fields = extra_fields)
+    else:
+        return render_template("metadata.html")
 
 
 # General metadata
 @app.route('/metadata', methods=['GET', 'POST'])
 def metadata():
-    session.pop('extra_fields', None)
     session['extra_fields'] = []
     for i in request.form.keys():
         if i != 'submitBtn':
             session['extra_fields'].append({i: request.form[i]})
     print session['alignment']
+    print
     print session['extra_fields']
     return render_template("metadata.html")
 
