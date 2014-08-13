@@ -23,8 +23,8 @@ def download_spreadsheet():
 
 
 # File upload
-@app.route('/upload', methods=['GET','POST'])
-def upload():
+@app.route('/headers', methods=['GET','POST'])
+def headers():
 
     up_file = request.files['file']
     file_uuid = uuid.uuid4()
@@ -48,7 +48,10 @@ def upload():
 # Metadata about the fields
 @app.route('/metafields', methods=['GET','POST'])
 def metafields():
-    alignment = {
+    
+    # Process alignment
+    session.pop('alignment', None)
+    session['alignment'] = {
         "scientificName": request.form['scientificName'],
         "latitude": request.form['latitude'],
         "longitude": request.form['longitude'],
@@ -58,10 +61,30 @@ def metafields():
     
     # TODO: Validate content of required headers (above)
 
-    # Show extra fields for metadata
-    extra_fields = [x for x in session['file_headers'] if x not in alignment.values()]
-    
-    
-    # TODO: Then, redirect to metadata about the project
+    # Prepare extra fields for metadata
+    extra_fields = [x for x in session['file_headers'] if x not in session['alignment'].values()]
     
     return render_template("metafields.html", extra_fields = extra_fields)
+
+
+# General metadata
+@app.route('/metadata', methods=['GET', 'POST'])
+def metadata():
+    session.pop('extra_fields', None)
+    session['extra_fields'] = []
+    for i in request.form.keys():
+        if i != 'submitBtn':
+            session['extra_fields'].append({i: request.form[i]})
+    print session['alignment']
+    print session['extra_fields']
+    return render_template("metadata.html")
+
+
+# Last step
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    
+    # TODO: Parse content, create SQL and execute it
+    
+    flash('File uploaded successfuly!')
+    return redirect(url_for('main'))
