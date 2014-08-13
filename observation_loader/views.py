@@ -4,6 +4,7 @@ import uuid
 from flask import render_template, redirect, url_for, request, send_from_directory, flash, session
 from werkzeug.utils import secure_filename
 
+ALLOWED_EXTENSIONS = set(['txt','csv','tsv'])
 
 # Main page
 @app.route('/')
@@ -29,7 +30,10 @@ def headers():
     up_file = request.files['file']
     file_uuid = uuid.uuid4()
     
-    # TODO: Validate file name and extension
+    allowed_file = '.' in up_file.filename and up_file.filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+    if allowed_file is False:
+        flash("ERROR: Unsupported file type. File should be .txt, .csv or .tsv")
+        return redirect(url_for('main'))
     # TODO: Validate ',' or '\t' separated and store in session
     
     #if "useTemplate" in request.form:
