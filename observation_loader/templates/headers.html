@@ -7,10 +7,9 @@
 <form action="" ng-controller="HeaderController as headerCtrl" method="POST" name="headerForm" id="headerForm" ng-submit="headerCtrl.checkFields()" novalidate>
 
 <!-- Scientific Name -->
-<div id="scientificNameSelect">
-    <label for="scientificName">Scientific Name</label>
-    <select ng-model="headerCtrl.headers.scientificname" id="scientificName" name="scientificName">
-    <option value=""> -- Select One --</option>
+<div class="form-group" id="scientificNameSelect">
+    <label for="scientificName" class="control-label">Scientific Name</label>
+    <select class="form-control" ng-model="headerCtrl.headers.scientificname" id="scientificName" name="scientificName">
     {% for header in session['file_headers'] %}
         <option value="{{header}}">{{header}}</option>
     {% endfor %}
@@ -18,10 +17,9 @@
 </div>
 
 <!-- Latitude -->
-<div id="latitudeSelect">
-    <label for="latitude">Latitude</label>
-    <select ng-model="headerCtrl.headers.latitude" id="latitude" name="latitude">
-    <option value=""> -- Select One --</option>
+<div class="form-group" id="latitudeSelect">
+    <label for="latitude" class="control-label">Latitude</label>
+    <select class="form-control" ng-model="headerCtrl.headers.latitude" id="latitude" name="latitude">
     {% for header in session['file_headers'] %}
         <option value="{{header}}">{{header}}</option>
     {% endfor %}
@@ -29,10 +27,9 @@
 </div>
 
 <!-- Longitude -->
-<div id="longitudeSelect">
-    <label for="longitude">Longitude</label>
-    <select ng-model="headerCtrl.headers.longitude" id="longitude" name="longitude">
-        <option value=""> -- Select One --</option>
+<div class="form-group" id="longitudeSelect">
+    <label for="longitude" class="control-label">Longitude</label>
+    <select class="form-control" ng-model="headerCtrl.headers.longitude" id="longitude" name="longitude">
     {% for header in session['file_headers'] %}
         <option value="{{header}}">{{header}}</option>
     {% endfor %}
@@ -40,10 +37,9 @@
 </div>
 
 <!-- Date -->
-<div id="observationDateSelect">
-    <label for="observationDate">Observation date</label>
-    <select ng-model="headerCtrl.headers.observationdate" id="observationDate" name="observationDate">
-        <option value=""> -- Select One --</option>
+<div class="form-group" id="observationDateSelect">
+    <label for="observationDate" class="control-label">Observation date</label>
+    <select class="form-control" ng-model="headerCtrl.headers.observationdate" id="observationDate" name="observationDate">
     {% for header in session['file_headers'] %}
         <option value="{{header}}">{{header}}</option>
     {% endfor %}
@@ -51,10 +47,9 @@
 </div>
 
 <!-- Collector -->
-<div id="collectorSelect">
-    <label for="collector">Collector's name</label>
-    <select ng-model="headerCtrl.headers.collector" id="collector" name="collector">
-        <option value=""> -- Select One --</option>
+<div class="form-group" id="collectorSelect">
+    <label for="collector" class="control-label">Collector's name</label>
+    <select class="form-control" ng-model="headerCtrl.headers.collector" id="collector" name="collector">
     {% for header in session['file_headers'] %}
         <option value="{{header}}">{{header}}</option>
     {% endfor %}

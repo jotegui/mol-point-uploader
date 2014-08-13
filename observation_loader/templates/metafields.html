@@ -6,9 +6,9 @@
 
 <form id="metafieldsForm" action="" method="POST">
 {% for i in extra_fields %}
-    <div id={{i}}Field>
-        <label for="{{i}}">{{i}}</label>
-        <textarea id="{{i}}" name="{{i}}"></textarea>
+    <div class="form-group" id={{i}}Field>
+        <label for="{{i}}" class="control-label">{{i}}</label>
+        <textarea class="form-control" id="{{i}}" name="{{i}}" placeholder="Optional"></textarea>
     </div>
 {% endfor %}
 </form>
