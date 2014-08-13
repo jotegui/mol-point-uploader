@@ -27,17 +27,20 @@ def download_spreadsheet():
 def upload():
 
     up_file = request.files['file']
+    file_uuid = uuid.uuid4()
     
     # TODO: Validate file name and extension
     # TODO: Validate ',' or '\t' separated and store in session
     
-    if "useTemplate" in request.form:
-        pass # Template used
+    #if "useTemplate" in request.form:
+    #    pass # TODO: Skip metafields if template used
     
-    file_uuid = uuid.uuid4()
+    session.pop('file_uuid', None)
     session['file_uuid'] = file_uuid
-    session['file_headers'] = up_file.readline().split(",")
-    session['file_content'] = up_file.read()
+    print file_uuid
+    
+    session.pop('file_headers', None)
+    session['file_headers'] = up_file.readline().rstrip().split(",")
     
     return render_template("/headers.html")
 
@@ -54,7 +57,11 @@ def metafields():
     }
     
     # TODO: Validate content of required headers (above)
-    # TODO: Prepare new page for metadata about other fields
+
+    # Show extra fields for metadata
+    extra_fields = [x for x in session['file_headers'] if x not in alignment.values()]
+    
+    
     # TODO: Then, redirect to metadata about the project
     
-    return render_template("metafields.html")
+    return render_template("metafields.html", extra_fields = extra_fields)

@@ -1,6 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 
+<h3>Extra fields</h3>
+<p>We found some extra fields in your file. Please provide a brief description if necessary (such as units of measurement, or any used categorization).</p>
 
-
+<form id="metafieldsForm" action="" method="POST">
+{% for i in extra_fields %}
+    <div id={{i}}Field>
+        <label for="{{i}}">{{i}}</label>
+        <textarea id="{{i}}" name="{{i}}"></textarea>
+    </div>
+{% endfor %}
+</form>
 {% endblock %}

@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, session
 
 
 UPLOAD_FOLDER = '/home/jotegui/MapOfLife/PointUploader/observation_loader/uploads/' # TODO: update
