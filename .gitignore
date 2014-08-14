@@ -1,2 +1,8 @@
 # Virtualenv files
 env/
+
+# Uploaded files
+uploads/
+
+# Python compiled
+*.pyc
