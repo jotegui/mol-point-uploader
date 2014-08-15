@@ -1,4 +1,5 @@
 from observation_loader import app
+from dwca_templates import render_eml
 import uuid
 import os
 
@@ -57,8 +58,10 @@ def headers():
     session.pop('file_uuid', None)
     session['file_uuid'] = file_uuid
     
+    # create the folder
+    os.mkdir(os.path.join(app.config['UPLOAD_FOLDER'], file_uuid))
     # and save the file
-    up_file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_uuid+".csv"))
+    up_file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_uuid, "occurrence.csv"))
     
     # Store headers
     session.pop('file_headers', None)
@@ -80,17 +83,12 @@ def headers():
             "collector": 'collector'
         }
         
-        full_schema = {
-            "scientificName": 'scientificName',
-            "latitude": 'latitude',
-            "longitude": 'longitude',
-            "observationDate": 'observationDate',
-            "collector": 'collector',
-            "geodeticDatum": 'geodeticDatum',
-            "samplingMethod": 'samplingMethod',
-            "verbatimLocality": 'verbatimLocality',
-            "coordinateUncertainty": 'coordinateUncertainty'
-        }
+        full_schema = session['alignment']
+        full_schema["geodeticDatum"] = 'geodeticDatum'
+        full_schema["samplingMethod"] = 'samplingMethod'
+        full_schema["verbatimLocality"] = 'verbatimLocality'
+        full_schema["coordinateUncertainty"] = 'coordinateUncertainty'
+        print session['alignment']
         
         # Check if template was actually used
         missing = [x for x in session['alignment'] if x not in session['file_headers']]
@@ -156,7 +154,11 @@ def metadata():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     
-    # TODO: Parse content, create SQL and execute it
+    eml = render_eml(request)
+    
+    eml_path = os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "eml.xml")
+    with open(eml_path, 'w') as w:
+        w.write(eml)
     
     flash('File uploaded successfuly!')
     return redirect(url_for('main'))

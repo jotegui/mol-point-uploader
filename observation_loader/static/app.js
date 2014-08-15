@@ -36,5 +36,10 @@
     }
   });
   
+  // Metadata form controller
+  app.controller('FormController', function() {
+  
+  });
+  
 }) ();
 

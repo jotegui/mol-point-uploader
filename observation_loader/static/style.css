@@ -1,8 +1,8 @@
 .ng-invalid.ng-dirty {
-  border-color: "FA787E"
+  border-color: red
 }
 
 .ng-valid.ng-dirty {
-  border-color: "78FA89"
+  border-color: green
 }
 

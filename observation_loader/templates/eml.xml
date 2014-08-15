@@ -1,0 +1,110 @@
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" 
+    xmlns:md="eml://ecoinformatics.org/methods-2.1.1" 
+    xmlns:proj="eml://ecoinformatics.org/project-2.1.1" 
+    xmlns:d="eml://ecoinformatics.org/dataset-2.1.1" 
+    xmlns:res="eml://ecoinformatics.org/resource-2.1.1" 
+    xmlns:dc="http://purl.org/dc/terms/" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.0.1/eml.xsd"
+    packageId="{{file_uuid}}" system="http://gbif.org" scope="system" xml:lang="eng">
+
+    <dataset>
+    
+        <title xml:lang="eng">{{title}}</title>
+        
+        <creator>
+            <individualName>
+                <givenName>{{creator_givenName}}</givenName>
+                <surName>{{creator_surName}}</surName>
+            </individualName>
+            <electronicMailAddress>{{creator_electronicMailAddress}}</electronicMailAddress>
+        </creator>
+        
+        <metadataProvider>
+            <individualName>
+                <givenName>{{metadata_givenName}}</givenName>
+                <surName>{{metadata_surName}}</surName>
+            </individualName>
+            <electronicMailAddress>{{metadata_electronicMailAddress}}</electronicMailAddress>
+        </metadataProvider>
+        
+        <contact>
+            <individualName>
+                <givenName>{{creator_givenName}}</givenName>
+                <surName>{{creator_surName}}</surName>
+            </individualName>
+            <electronicMailAddress>{{creator_electronicMailAddress}}</electronicMailAddress>        
+        </contact>
+        
+        <pubDate>{{pubDate}}</pubDate>
+        
+        <language>eng</language>
+        
+        <abstract>
+            <para>
+                {{abstract}}
+            </para>
+        </abstract>
+        
+        {% if intellectualRights %}
+        <intellectualRights>
+            <para>
+                {{intellectualRights}}
+            </para>
+        </intellectualRights>
+        {% endif %}
+        
+        {% if additionalInfo %}
+        <additionalInfo>
+            <para>
+                {{additionalInfo}}
+            </para>
+        </additionalInfo>
+        {% endif %}
+        
+    </dataset>
+    
+    {% if keywords %}
+    {% for keyword in keywords %}
+    <keywordSet>
+        <keyword>
+            {{keyword}}
+        </keyword>
+        <keywordThesaurus>
+            N/A
+        </keywordThesaurus>
+    </keywordSet>
+    {% endfor %}    
+    {% endif %}
+    
+    {% if taxonomicCoverage or geographicCoverage or temporalCoverage %}
+    <coverage>
+        
+        {% if taxonomicCoverage %}
+        <taxonomicCoverage>
+            <generalTaxonomicCoverage>
+                 {{taxonomicCoverage}}
+            </generalTaxonomicCoverage>
+        </taxonomicCoverage>
+        {% endif %}
+        
+        {% if geographicCoverage %}
+        <geographicCoverage>
+            <geographicDescription>
+                {{geographicCoverage}}
+            </geographicDescription>
+        </geographicCoverage>
+        {% endif %}
+        
+        {% if temporalCoverage %}
+        <temporalCoverage>
+            <singleDateTime>
+                {{temporalCoverage}}
+            </singleDateTime>
+        </temporalCoverage>
+        {% endif %}
+        
+    </coverage>
+    {% endif %}
+    
+</eml:eml>
