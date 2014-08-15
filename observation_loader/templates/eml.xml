@@ -9,9 +9,7 @@
     packageId="{{file_uuid}}" system="http://gbif.org" scope="system" xml:lang="eng">
 
     <dataset>
-    
         <title xml:lang="eng">{{title}}</title>
-        
         <creator>
             <individualName>
                 <givenName>{{creator_givenName}}</givenName>
@@ -19,7 +17,6 @@
             </individualName>
             <electronicMailAddress>{{creator_electronicMailAddress}}</electronicMailAddress>
         </creator>
-        
         <metadataProvider>
             <individualName>
                 <givenName>{{metadata_givenName}}</givenName>
@@ -27,7 +24,6 @@
             </individualName>
             <electronicMailAddress>{{metadata_electronicMailAddress}}</electronicMailAddress>
         </metadataProvider>
-        
         <contact>
             <individualName>
                 <givenName>{{creator_givenName}}</givenName>
@@ -35,37 +31,24 @@
             </individualName>
             <electronicMailAddress>{{creator_electronicMailAddress}}</electronicMailAddress>        
         </contact>
-        
         <pubDate>{{pubDate}}</pubDate>
-        
         <language>eng</language>
-        
         <abstract>
             <para>
                 {{abstract}}
             </para>
-        </abstract>
-        
-        {% if intellectualRights %}
+        </abstract>{% if intellectualRights %}
         <intellectualRights>
             <para>
                 {{intellectualRights}}
             </para>
-        </intellectualRights>
-        {% endif %}
-        
-        {% if additionalInfo %}
+        </intellectualRights>{% endif %}{% if additionalInfo %}
         <additionalInfo>
             <para>
                 {{additionalInfo}}
             </para>
-        </additionalInfo>
-        {% endif %}
-        
-    </dataset>
-    
-    {% if keywords %}
-    {% for keyword in keywords %}
+        </additionalInfo>{% endif %}
+    </dataset>{% if keywords %}{% for keyword in keywords %}
     <keywordSet>
         <keyword>
             {{keyword}}
@@ -73,38 +56,22 @@
         <keywordThesaurus>
             N/A
         </keywordThesaurus>
-    </keywordSet>
-    {% endfor %}    
-    {% endif %}
-    
-    {% if taxonomicCoverage or geographicCoverage or temporalCoverage %}
-    <coverage>
-        
-        {% if taxonomicCoverage %}
+    </keywordSet>{% endfor %}{% endif %}{% if taxonomicCoverage or geographicCoverage or temporalCoverage %}
+    <coverage>{% if taxonomicCoverage %}
         <taxonomicCoverage>
             <generalTaxonomicCoverage>
                  {{taxonomicCoverage}}
             </generalTaxonomicCoverage>
-        </taxonomicCoverage>
-        {% endif %}
-        
-        {% if geographicCoverage %}
+        </taxonomicCoverage>{% endif %}{% if geographicCoverage %}
         <geographicCoverage>
             <geographicDescription>
                 {{geographicCoverage}}
             </geographicDescription>
-        </geographicCoverage>
-        {% endif %}
-        
-        {% if temporalCoverage %}
+        </geographicCoverage>{% endif %}{% if temporalCoverage %}
         <temporalCoverage>
             <singleDateTime>
                 {{temporalCoverage}}
             </singleDateTime>
-        </temporalCoverage>
-        {% endif %}
-        
-    </coverage>
-    {% endif %}
-    
+        </temporalCoverage>{% endif %}
+    </coverage>{% endif %}
 </eml:eml>

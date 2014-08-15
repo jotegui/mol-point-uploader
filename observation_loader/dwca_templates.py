@@ -1,10 +1,13 @@
 from datetime import datetime
 from flask import render_template
+from dwc_terms import dwc_terms
+#import xml.dom.minidom
 
-def render_eml(request):
+def render_eml(request, session):
     """Render eml.xml template based on data from the request form."""
     
     # Grab values from request
+    file_uuid = session['file_uuid']
     title = request.form['title']
     creator_givenName = request.form['resource_creator_first_name']
     creator_surName = request.form['resource_creator_last_name']
@@ -23,6 +26,7 @@ def render_eml(request):
     
     # Render template
     eml = render_template("eml.xml",
+        file_uuid = file_uuid,
         title = title,
         creator_givenName = creator_givenName,
         creator_surName = creator_surName,
@@ -41,3 +45,36 @@ def render_eml(request):
     )
     
     return eml
+    #return xml.dom.minidom.parseString(eml).toprettyxml()
+
+
+def render_meta(session):
+    """Render meta.xml template based on data from the session."""
+    
+    print session['file_headers']
+    print session['alignment']
+    print session['extra_fields']
+    
+    # Initialize field container with 'id' as first element
+    fields = ['id']
+    
+    # Make a flat version of the DWC terms
+    dwc_terms_flat = {}
+    for cl in dwc_terms:
+        for t in dwc_terms[cl]:
+            dwc_terms_flat[t] = dwc_terms[cl][t]
+    
+    # Grab values from the session variables
+    for field in session['file_headers']:
+        if field in session['alignment']:
+            print "Field {0} in alignment".format(field)
+            fields.append(dwc_terms_flat[session['alignment'][field]])
+        elif field in session['extra_fields']:
+            print "Field {0} in extra".format(field)
+            fields.append(dwc_terms_flat[field])
+    
+    # Render template
+    meta = render_template("meta.xml", fields=fields)
+    
+    return meta
+    #return xml.dom.minidom.parseString(meta).toprettyxml()

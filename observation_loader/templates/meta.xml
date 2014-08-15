@@ -1,0 +1,9 @@
+<archive xmlns="http://rs.tdwg.org/dwc/text/" metadata="eml.xml">
+  <core encoding="utf-8" fieldsTerminatedBy="\t" linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="0" rowType="http://rs.tdwg.org/dwc/terms/Occurrence">
+    <files>
+      <location>occurrence.txt</location>
+    </files>
+    <id index="0" />{% for pos in range(fields|length) %}{% if pos > 0 %}
+    <field index="{{pos}}" term="{{fields[pos]}}"/>{% endif %}{% endfor %}
+  </core>
+</archive>

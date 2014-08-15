@@ -1,5 +1,6 @@
 from observation_loader import app
-from dwca_templates import render_eml
+from dwca_templates import render_eml, render_meta
+from dwc_terms import dwc_terms
 import uuid
 import os
 
@@ -61,7 +62,7 @@ def headers():
     # create the folder
     os.mkdir(os.path.join(app.config['UPLOAD_FOLDER'], file_uuid))
     # and save the file
-    up_file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_uuid, "occurrence.csv"))
+    up_file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_uuid, "raw.csv"))
     
     # Store headers
     session.pop('file_headers', None)
@@ -77,18 +78,17 @@ def headers():
         # We already know the names of the required fields
         session['alignment'] = {
             "scientificName": 'scientificName',
-            "latitude": 'latitude',
-            "longitude": 'longitude',
-            "observationDate": 'observationDate',
-            "collector": 'collector'
+            "decimalLatitude": 'decimalLatitude',
+            "decimalLongitude": 'decimalLongitude',
+            "eventDate": 'eventDate',
+            "recordedBy": 'recordedBy'
         }
         
         full_schema = session['alignment']
         full_schema["geodeticDatum"] = 'geodeticDatum'
-        full_schema["samplingMethod"] = 'samplingMethod'
+        full_schema["samplingProtocol"] = 'samplingProtocol'
         full_schema["verbatimLocality"] = 'verbatimLocality'
-        full_schema["coordinateUncertainty"] = 'coordinateUncertainty'
-        print session['alignment']
+        full_schema["coordinateUncertaintyInMeters"] = 'coordinateUncertaintyInMeters'
         
         # Check if template was actually used
         missing = [x for x in session['alignment'] if x not in session['file_headers']]
@@ -101,7 +101,7 @@ def headers():
         
         # If so, point to the metafields page
         if len(extra_fields) > 0:
-            return render_template("metafields.html", extra_fields = extra_fields)
+            return render_template("metafields.html", extra_fields=extra_fields, dwc_terms=dwc_terms)
         # Else, to the metadata page
         else:
             return render_template("metadata.html")
@@ -119,11 +119,11 @@ def metafields():
     
     # Process alignment
     session['alignment'] = {
-        "scientificName": request.form['scientificName'],
-        "latitude": request.form['latitude'],
-        "longitude": request.form['longitude'],
-        "observationDate": request.form['observationDate'],
-        "collector": request.form['collector']
+        request.form['scientificName']: "scientificName",
+        request.form['decimalLatitude']: "decimalLatitude",
+        request.form['decimalLongitude']: "decimalLongitude",
+        request.form['eventDate']: "eventDate",
+        request.form['recordedBy']: "recordedBy"
     }
     
     # TODO: Validate content of required headers (above)
@@ -132,7 +132,7 @@ def metafields():
     extra_fields = [x for x in session['file_headers'] if x not in session['alignment'].values()]
     
     if len(extra_fields) > 0:
-        return render_template("metafields.html", extra_fields = extra_fields)
+        return render_template("metafields.html", extra_fields=extra_fields, dwc_terms=dwc_terms)
     else:
         return render_template("metadata.html")
 
@@ -140,13 +140,18 @@ def metafields():
 # General metadata
 @app.route('/metadata', methods=['GET', 'POST'])
 def metadata():
-    session['extra_fields'] = []
+    
+    session['extra_fields'] = {}
     for i in request.form.keys():
-        if i != 'submitBtn':
-            session['extra_fields'].append({i: request.form[i]})
-    print session['alignment']
-    print
-    print session['extra_fields']
+        if i != 'submitBtn' and not i.endswith("_dwc"):
+            term_dict = {"description": request.form[i], "term": request.form["{0}_dwc".format(i)]}
+            session['extra_fields'][i] = term_dict
+    
+    meta = render_meta(session)
+    meta_path = os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "meta.xml")
+    with open(meta_path, 'w') as w:
+        w.write(meta)
+    
     return render_template("metadata.html")
 
 
@@ -154,7 +159,7 @@ def metadata():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     
-    eml = render_eml(request)
+    eml = render_eml(request, session)
     
     eml_path = os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "eml.xml")
     with open(eml_path, 'w') as w:
