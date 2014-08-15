@@ -1,4 +1,5 @@
 from observation_loader import app
+from validation import Parser
 from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
 import uuid
@@ -96,6 +97,15 @@ def headers():
             flash("ERROR: The following fields are missing from the template: {0}".format(", ".join(missing)))
             return redirect(url_for("main"))
         
+        # Parse the content
+        parser = Parser()
+        parser.parse_content()
+        if len(parser.errors) > 0:
+            for i in parser.errors:
+                flash("ERROR: {0}".format(i))
+            flash("Please, fix these issues or remove the wrong records and try again.")
+            return redirect(url_for('main'))
+        
         # Maybe, check for some extra fields in case they extended the template
         extra_fields = [x for x in session['file_headers'] if x not in full_schema.values()]
         
@@ -126,7 +136,14 @@ def metafields():
         request.form['recordedBy']: "recordedBy"
     }
     
-    # TODO: Validate content of required headers (above)
+    # Parse the content
+    parser = Parser()
+    parser.parse_content()
+    if len(parser.errors) > 0:
+        for i in parser.errors:
+            flash("ERROR: {0}".format(i))
+        flash("Please, fix these issues or remove the wrong records and try again.")
+        return redirect(url_for('main'))
 
     # Prepare extra fields for metadata
     extra_fields = [x for x in session['file_headers'] if x not in session['alignment'].values()]
