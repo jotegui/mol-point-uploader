@@ -53,8 +53,11 @@ def render_meta(session):
     print session['alignment']
     print session['extra_fields']
     
+    session.pop('dwc_headers', None)
+    session['dwc_headers'] = []
+    
     # Initialize field container with 'id' and 'datasetId' as first two elements
-    fields = ['id', 'datasetId']
+    fields = ['id', 'datasetId', 'basisOfRecord']
     
     # Make a flat version of the DWC terms
     dwc_terms_flat = {}
@@ -63,13 +66,18 @@ def render_meta(session):
             dwc_terms_flat[t] = dwc_terms[cl][t]
     
     # Grab values from the session variables
+    cont = 0
     for field in session['file_headers']:
         if field in session['alignment']:
             print "Field {0} in alignment".format(field)
+            session['dwc_headers'].append(cont)
             fields.append(dwc_terms_flat[session['alignment'][field]])
         elif field in session['extra_fields']:
             print "Field {0} in extra".format(field)
-            fields.append(dwc_terms_flat[field])
+            if session['extra_fields'][field]['term'] != "":
+                session['dwc_headers'].append(cont)
+                fields.append(session['extra_fields'][field]['term'])
+        cont += 1
     
     # Render template
     meta = render_template("meta.xml", fields=fields)

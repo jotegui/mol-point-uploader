@@ -13,14 +13,24 @@ class Parser():
         self.errors = []
         self.warnings = []
         self.cont = 0
+        
     
-    
+    def build_occurrence(self):
+        """Iterate through all records to build occurrence.txt"""
+        with open(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "raw.csv"), 'rb') as csvfile:
+            csvreader = csv.reader(csvfile, delimiter=session['field_separator'], quotechar='"')
+            for record in csvreader:
+                self.add_record_to_dwca(record)
+        return
+        
+        
     def add_record_to_dwca(self, record):
         """Open the occurrence.txt file and add the parsed record."""
         field_separator = "\t"
         row_separator = "\n"
         record_uuid = str(uuid.uuid4())
-        row = field_separator.join([record_uuid, self.dataset_uuid]+record)
+        dwc_record = [record[x] for x in session['dwc_headers']]
+        row = field_separator.join([record_uuid, self.dataset_uuid, 'HumanObservation']+dwc_record)
         with open(os.path.join(app.config['UPLOAD_FOLDER'], self.dataset_uuid, "occurrence.txt"), 'a') as w:
             w.write(row)
             w.write(row_separator)
@@ -28,15 +38,13 @@ class Parser():
     
     def parse_content(self):
         """Evaluate the content of the uploaded file."""
-        # Open file
         with open(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "raw.csv"), 'rb') as csvfile:
-            # Create CSV reader object
             csvreader = csv.reader(csvfile, delimiter=session['field_separator'], quotechar='"')
             # Process every line
             for record in csvreader:
                 self.cont += 1
                 self.parse_line(record)
-        return
+            return
     
     
     def parse_line(self, record):
@@ -50,10 +58,6 @@ class Parser():
         self.parse_date(record)
         
         # More to be added
-        
-        # If no errors in line, write to occurrence.txt
-        if self.bad_record is False:
-            self.add_record_to_dwca(record)
         return
     
     

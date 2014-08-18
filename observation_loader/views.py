@@ -137,6 +137,8 @@ def metafields():
         request.form['recordedBy']: "recordedBy"
     }
     
+    print session['alignment'].values()
+    
     # Parse the content
     parser = Parser(session['file_uuid'])
     parser.parse_content()
@@ -147,7 +149,7 @@ def metafields():
         return redirect(url_for('main'))
 
     # Prepare extra fields for metadata
-    extra_fields = [x for x in session['file_headers'] if x not in session['alignment'].values()]
+    extra_fields = [x for x in session['file_headers'] if x not in session['alignment'].keys()]
     
     if len(extra_fields) > 0:
         return render_template("metafields.html", extra_fields=extra_fields, dwc_terms=dwc_terms)
@@ -184,6 +186,9 @@ def upload():
         w.write(eml)
     
     # Build the DWCA
+    parser = Parser(session['file_uuid'])
+    parser.build_occurrence()
+    
     with ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid']+'.zip'),'w') as dwca:
         dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "eml.xml"), "eml.xml")
         dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "meta.xml"), "meta.xml")

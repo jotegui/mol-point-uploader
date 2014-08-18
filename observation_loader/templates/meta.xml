@@ -4,7 +4,8 @@
       <location>occurrence.txt</location>
     </files>
     <id index="0" />
-    <field index="1" term="http://rs.tdwg.org/dwc/terms/datasetID"/>{% for pos in range(fields|length) %}{% if pos > 1 %}
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/datasetID"/>
+    <field index="2" term="http://rs.tdwg.org/dwc/terms/basisOfRecord"/>{% for pos in range(fields|length) %}{% if pos > 2 %}
     <field index="{{pos}}" term="{{fields[pos]}}"/>{% endif %}{% endfor %}
   </core>
 </archive>

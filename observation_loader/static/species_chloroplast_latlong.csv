@@ -94,7 +94,6 @@ Well,Site,Individual,Initial Species Determination,Species based on genetic data
 01-12E,ARP,ARP9,R. armeniacus,R. armeniacus,343,5022,Run_MAJSEQUENCER_2008-03-09_17-25_4720,cut,11,red,17,38.59007,-121.33257,20071217,
 01-12F,ARP,ARP10,R. armeniacus,R. armeniacus,343,7886,Run_MAJSEQUENCER_2008-03-09_17-25_4720,cut,11,red,17,38.59167,-121.33178,20071217,
 01-12G,ARP,ARP11,R. armeniacus,R. armeniacus,343,7623,Run_MAJSEQUENCER_2008-03-09_17-25_4720,cut,11,red,17,38.59207,-121.33208,20071217,
-01-12H,CTF,CTF12a,R. armeniacus,R. armeniacus,343,8072,Run_MAJSEQUENCER_2008-03-09_17-25_4720,cut,11,red,12,,,,excluded from analysis
 02-01A,CTF,CTF1,R. armeniacus,R. armeniacus,343,7824,Run_MAJSEQUENCER_2008-03-11_09-57_4731,cut,11,red,12,38.26607,-121.41055,20071221,
 02-01B,CTF,CTF2,R. armeniacus,R. armeniacus,343,6962,Run_MAJSEQUENCER_2008-03-11_09-57_4731,cut,11,red,12,38.26587,-121.41055,20071221,
 02-01C,CTF,CTF3,R. armeniacus,R. armeniacus,343,7882,Run_MAJSEQUENCER_2008-03-11_09-57_4731,,11,black,12,38.26563,-121.41055,20071221,
@@ -124,8 +123,6 @@ Well,Site,Individual,Initial Species Determination,Species based on genetic data
 02-04D,CTF,CTF28,R. ursinus,R. ursinus,331,3500,Run_MAJSEQUENCER_2008-03-11_09-57_4732,uncut,3,blue,12,38.2633,-121.40842,20071221,
 02-04E,CTF,CTF29,R. armeniacus,R. armeniacus,343,6893,Run_MAJSEQUENCER_2008-03-11_09-57_4732,cut,11,red,12,38.26327,-121.40842,20071221,
 02-04F,CTF,CTF30,R. armeniacus,R. armeniacus,343,1707,Run_MAJSEQUENCER_2008-03-11_09-57_4732,cut,11,red,12,38.26298,-121.40857,20071221,
-02-04G,CTF,CTF10a,R. armeniacus,R. armeniacus,343,5310,Run_MAJSEQUENCER_2008-03-11_09-57_4732,cut,11,red,12,,,,excluded from analysis
-02-04H,BWP,BWP3a,R. armeniacus,R. armeniacus,343,7696,Run_MAJSEQUENCER_2008-03-11_09-57_4732,cut,11,red,24,,,,excluded from analysis
 02-05A,ARP,ARP12,thornless cultivar,R. ulmifolius var. inermis,346,7666,Run_MAJSEQUENCER_2008-07-11_17-27_5081,cut,13,red,17,38.59865,-121.47293,20080504,voucher taken from same mound
 02-05B,ARP,ARP13,thornless cultivar,R. ulmifolius var. inermis,346,7844,Run_MAJSEQUENCER_2008-07-11_17-27_5081,cut,13,red,17,38.59878,-121.47272,20080504,
 02-05C,ARP,ARP14,thornless cultivar,R. ulmifolius var. inermis,346,4245,Run_MAJSEQUENCER_2008-07-11_17-27_5081,cut,13,red,17,38.59887,-121.4729,20080504,
