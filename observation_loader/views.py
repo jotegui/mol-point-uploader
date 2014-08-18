@@ -1,9 +1,10 @@
 from observation_loader import app
-from validation import Parser
+from Parser import Parser
 from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
 import uuid
 import os
+from zipfile import ZipFile
 
 from flask import render_template, redirect, url_for, request, send_from_directory, flash, session
 from werkzeug.utils import secure_filename
@@ -98,7 +99,7 @@ def headers():
             return redirect(url_for("main"))
         
         # Parse the content
-        parser = Parser()
+        parser = Parser(session['file_uuid'])
         parser.parse_content()
         if len(parser.errors) > 0:
             for i in parser.errors:
@@ -137,7 +138,7 @@ def metafields():
     }
     
     # Parse the content
-    parser = Parser()
+    parser = Parser(session['file_uuid'])
     parser.parse_content()
     if len(parser.errors) > 0:
         for i in parser.errors:
@@ -182,5 +183,12 @@ def upload():
     with open(eml_path, 'w') as w:
         w.write(eml)
     
+    # Build the DWCA
+    with ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid']+'.zip'),'w') as dwca:
+        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "eml.xml"), "eml.xml")
+        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "meta.xml"), "meta.xml")
+        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "occurrence.txt"), "occurrence.txt")
+    
+    send_from_directory(app.config['UPLOAD_FOLDER'],session['file_uuid']+'.zip')
     flash('File uploaded successfuly!')
     return redirect(url_for('main'))

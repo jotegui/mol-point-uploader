@@ -1,7 +1,6 @@
 from datetime import datetime
 from flask import render_template
 from dwc_terms import dwc_terms
-#import xml.dom.minidom
 
 def render_eml(request, session):
     """Render eml.xml template based on data from the request form."""
@@ -45,7 +44,6 @@ def render_eml(request, session):
     )
     
     return eml
-    #return xml.dom.minidom.parseString(eml).toprettyxml()
 
 
 def render_meta(session):
@@ -55,8 +53,8 @@ def render_meta(session):
     print session['alignment']
     print session['extra_fields']
     
-    # Initialize field container with 'id' as first element
-    fields = ['id']
+    # Initialize field container with 'id' and 'datasetId' as first two elements
+    fields = ['id', 'datasetId']
     
     # Make a flat version of the DWC terms
     dwc_terms_flat = {}
@@ -77,4 +75,3 @@ def render_meta(session):
     meta = render_template("meta.xml", fields=fields)
     
     return meta
-    #return xml.dom.minidom.parseString(meta).toprettyxml()

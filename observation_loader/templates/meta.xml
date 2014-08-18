@@ -3,7 +3,8 @@
     <files>
       <location>occurrence.txt</location>
     </files>
-    <id index="0" />{% for pos in range(fields|length) %}{% if pos > 0 %}
+    <id index="0" />
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/datasetID"/>{% for pos in range(fields|length) %}{% if pos > 1 %}
     <field index="{{pos}}" term="{{fields[pos]}}"/>{% endif %}{% endfor %}
   </core>
 </archive>
