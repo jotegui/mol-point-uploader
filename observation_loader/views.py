@@ -1,5 +1,6 @@
 from observation_loader import app
 from Parser import Parser
+from Uploader import Uploader
 from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
 import uuid
@@ -99,7 +100,7 @@ def headers():
             return redirect(url_for("main"))
         
         # Parse the content
-        parser = Parser(session['file_uuid'])
+        parser = Parser()
         parser.parse_content()
         if len(parser.errors) > 0:
             for i in parser.errors:
@@ -140,7 +141,7 @@ def metafields():
     print session['alignment'].values()
     
     # Parse the content
-    parser = Parser(session['file_uuid'])
+    parser = Parser()
     parser.parse_content()
     if len(parser.errors) > 0:
         for i in parser.errors:
@@ -167,7 +168,7 @@ def metadata():
             term_dict = {"description": request.form[i], "term": request.form["{0}_dwc".format(i)]}
             session['extra_fields'][i] = term_dict
     
-    meta = render_meta(session)
+    meta = render_meta()
     meta_path = os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "meta.xml")
     with open(meta_path, 'w') as w:
         w.write(meta)
@@ -175,25 +176,34 @@ def metadata():
     return render_template("metadata.html")
 
 
-# Last step
+# Build DarwinCore Archive
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     
-    eml = render_eml(request, session)
-    
+    # Create eml.xml
+    eml = render_eml(request)
     eml_path = os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "eml.xml")
     with open(eml_path, 'w') as w:
         w.write(eml)
     
-    # Build the DWCA
-    parser = Parser(session['file_uuid'])
-    parser.build_occurrence()
+    # Create occurrence.txt
+    uploader = Uploader()
+    uploader.build_occurrence()
     
+    # Wrap the DwC-A in a zip file
     with ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid']+'.zip'),'w') as dwca:
         dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "eml.xml"), "eml.xml")
         dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "meta.xml"), "meta.xml")
         dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "occurrence.txt"), "occurrence.txt")
     
-    send_from_directory(app.config['UPLOAD_FOLDER'],session['file_uuid']+'.zip')
-    flash('File uploaded successfuly!')
+    return render_template('upload_cartodb.html')
+
+
+@app.route('/upload_cartodb')
+def upload_cartodb():
+    
+    # Prepare the file for CartoDB
+    uploader = Uploader()
+    uploader.build_cartodb()
+    
     return redirect(url_for('main'))

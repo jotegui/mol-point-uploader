@@ -1,8 +1,8 @@
 from datetime import datetime
-from flask import render_template
+from flask import render_template, session
 from dwc_terms import dwc_terms
 
-def render_eml(request, session):
+def render_eml(request):
     """Render eml.xml template based on data from the request form."""
     
     # Grab values from request
@@ -46,7 +46,7 @@ def render_eml(request, session):
     return eml
 
 
-def render_meta(session):
+def render_meta():
     """Render meta.xml template based on data from the session."""
     
     print session['file_headers']

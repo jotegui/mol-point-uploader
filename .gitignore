@@ -6,3 +6,6 @@ env/
 
 # pyc files
 *.pyc
+
+# CartoDB api key
+cartodb_apikey.py

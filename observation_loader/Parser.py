@@ -2,38 +2,16 @@ from observation_loader import app
 from flask import session
 import os
 import csv
-import uuid
 
 class Parser():
     """Assess the completeness and basic quality of the records, and create a Darwin Core Archive."""
     
-    def __init__(self, dataset_uuid):
+    def __init__(self):
         """Initialize the class and create storage for errors and warnings."""
-        self.dataset_uuid = dataset_uuid
+        self.dataset_uuid = session['file_uuid']
         self.errors = []
         self.warnings = []
         self.cont = 0
-        
-    
-    def build_occurrence(self):
-        """Iterate through all records to build occurrence.txt"""
-        with open(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "raw.csv"), 'rb') as csvfile:
-            csvreader = csv.reader(csvfile, delimiter=session['field_separator'], quotechar='"')
-            for record in csvreader:
-                self.add_record_to_dwca(record)
-        return
-        
-        
-    def add_record_to_dwca(self, record):
-        """Open the occurrence.txt file and add the parsed record."""
-        field_separator = "\t"
-        row_separator = "\n"
-        record_uuid = str(uuid.uuid4())
-        dwc_record = [record[x] for x in session['dwc_headers']]
-        row = field_separator.join([record_uuid, self.dataset_uuid, 'HumanObservation']+dwc_record)
-        with open(os.path.join(app.config['UPLOAD_FOLDER'], self.dataset_uuid, "occurrence.txt"), 'a') as w:
-            w.write(row)
-            w.write(row_separator)
     
     
     def parse_content(self):
@@ -56,6 +34,9 @@ class Parser():
         
         # Parse date
         self.parse_date(record)
+        
+        # Parse scientificName
+        self.parse_sciname(record)
         
         # More to be added
         return
@@ -125,6 +106,35 @@ class Parser():
         date_field = [x for x in session['alignment'] if session['alignment'][x] == 'eventDate'][0]
         date_idx = session['file_headers'].index(date_field)
         date = record[date_idx]
+        
+        # Completeness
+        if date == "":
+            self.bad_record = True
+            self.errors.append("Date missing in record #{0}".format(self.cont))
+            return
+        
+        # More to be added
+        return
+    
+    
+    def parse_sciname(self, record):
+        """Assess the completeness and quality of scientific names."""
+        # Locate scientificName
+        sciname_field = [x for x in session['alignment'] if session['alignment'][x] == 'scientificName'][0]
+        sciname_idx = session['file_headers'].index(sciname_field)
+        sciname = record[sciname_idx]
+        
+        # Completeness
+        if sciname == "":
+            self.bad_record = True
+            self.errors.append("Scientific Name missing in record #{0}".format(self.cont))
+            return
+        
+        # Quotes in scientificName
+        if "'" in sciname or '"' in sciname:
+            self.bad_record = True
+            self.errors.append("Strange character (' or \") in record #{0}".format(self.cont))
+            return
         
         # More to be added
         return
