@@ -14,7 +14,6 @@ from flask import session, flash
 
 from google.appengine.ext import ndb
 from Models import UploadedFile
-#from google.appengine.ext import blobstore
 
 ALLOWED_EXTENSIONS = set(['txt','csv','tsv'])
 
@@ -115,21 +114,18 @@ class Uploader():
         """Build the DarwinCore Archive and upload it to NDB Datastore."""
         
         # Get each file as a StringIO instance
-        meta = StringIO(ndb.Key(urlsafe=session['meta_key']).get().content)
-        eml = StringIO(ndb.Key(urlsafe=session['eml_key']).get().content)
-        occurrence = StringIO(ndb.Key(urlsafe=session['occurrence_key']).get().content)
+        meta = ndb.Key(urlsafe=session['meta_key']).get().content
+        eml = ndb.Key(urlsafe=session['eml_key']).get().content
+        occurrence = ndb.Key(urlsafe=session['occurrence_key']).get().content
         
         # Create the DWCA as a ZipFile based on a StringIO instance
         dwca_s = StringIO()
         dwca = ZipFile(dwca_s, 'w')
         
         # Fill in all the files
-        dwca.write(meta, 'meta.xml')
-        dwca.write(eml, 'eml.xml')
-        dwca.write(occurrence, 'occurrence.txt')
-        
-#        upload_url = blobstore.create_upload_url('/upload_dwca')
-#        print upload_url
+        dwca.writestr('meta.xml', meta)
+        dwca.writestr('eml.xml', eml)
+        dwca.writestr('occurrence.txt', occurrence)
         
         # Store it in NDB Datastore
         self.upload_ndb(name='dwca', content=dwca)

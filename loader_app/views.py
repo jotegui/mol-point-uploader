@@ -172,14 +172,8 @@ def upload():
     # Create occurrence.txt
     uploader.build_occurrence()
     
-    # Upload the DWCA
-    #uploader.build_dwca()
-    
-#    # Wrap the DwC-A in a zip file
-#    with ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid']+'.zip'),'w') as dwca:
-#        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "eml.xml"), "eml.xml")
-#        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "meta.xml"), "meta.xml")
-#        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "occurrence.txt"), "occurrence.txt")
+    # Create and upload the DWCA
+    uploader.build_dwca()
     
     return render_template('upload_cartodb.html')
 
