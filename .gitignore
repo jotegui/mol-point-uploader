@@ -1,8 +1,11 @@
 # Uploaded files
-uploads/
+loader_app/uploads/
 
 # Virtualenv files
 env/
+
+# Installed libraries
+lib/
 
 # Python compiled
 *.pyc
