@@ -1,7 +1,11 @@
+__author__ = '@jotegui'
+
 from loader_app import app
 from flask import session
 import os
 import csv
+
+from google.appengine.ext import ndb
 
 class Parser():
     """Assess the completeness and basic quality of the records, and create a Darwin Core Archive."""
@@ -16,13 +20,14 @@ class Parser():
     
     def parse_content(self):
         """Evaluate the content of the uploaded file."""
-        with open(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "raw.csv"), 'rb') as csvfile:
-            csvreader = csv.reader(csvfile, delimiter=session['field_separator'], quotechar='"')
-            # Process every line
-            for record in csvreader:
-                self.cont += 1
-                self.parse_line(record)
-            return
+        blob = ndb.Key(urlsafe=session['raw_key']).get().content
+        csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
+        
+        # Process every line
+        for record in csvreader:
+            self.cont += 1
+            self.parse_line(record)
+        return
     
     
     def parse_line(self, record):

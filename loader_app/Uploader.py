@@ -1,42 +1,144 @@
-from loader_app import app
-from cartodb_apikey import api_key
-from flask import session, flash
+__author__ = '@jotegui'
+
 import requests
 import json
 import os
 import csv
 import uuid
+from StringIO import StringIO
+from zipfile import ZipFile
+
+from loader_app import app
+from cartodb_apikey import api_key
+from flask import session, flash
 
 from google.appengine.ext import ndb
+from Models import UploadedFile
+#from google.appengine.ext import blobstore
+
+ALLOWED_EXTENSIONS = set(['txt','csv','tsv'])
 
 class Uploader():
-
+    """Several uploading methods."""
 
     def __init__(self):
         """Initialize the class and create storage for errors and warnings."""
         self.dataset_uuid = session['file_uuid']
         self.cartodb_api = 'https://mol.cartodb.com/api/v2/sql'
+        self.any_error = False
+        
+        return
 
+    
+    def upload_ndb(self, name, content):
+        """Upload the content of a file to the NDB datastore. Returns urlsafe entity key."""
+        uploaded_file = UploadedFile(uuid=session['file_uuid'], name=name, content=str(content))
+        file_key = uploaded_file.put().urlsafe()
+        return file_key
+    
+    
+    def parse_file(self, up_file):
+        """Validate the file."""
 
+        # Check for allowed file extension
+        allowed_file = '.' in up_file.filename and up_file.filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+        if allowed_file is False:
+            flash("ERROR: Unsupported file type. File should be .txt, .csv or .tsv")
+            self.any_error = True
+            return
+        
+        # Check field separator
+        headerline = up_file.readline().rstrip()
+        if len(headerline.split(",")) > 1:
+            session['field_separator'] = ","
+        elif len(headerline.split("\t")) > 1:
+            session['field_separator'] = "\t"
+        elif len(headerline.split("|")) > 1:
+            session['field_separator'] = "|"
+        else:
+            flash("ERROR: Unsupported field separator. Fields should be separated by comma (,), pipe (|) or tab")
+            self.any_error = True
+            return
+        
+        # Store headers
+        session.pop('file_headers', None)
+        session['file_headers'] = headerline.split(session['field_separator'])
+        
+        # Remove trailing newline
+        content = up_file.read()
+        if content[-1] == "\n":
+            content = content[:-1]
+        
+        # Save the file to NDB
+        session['raw_key'] = self.upload_ndb(name='raw', content=content)
+        
+        return
+    
+    
+    def upload_meta(self, meta):
+        """Upload the metafile to NDB Datastore."""
+        session['meta_key'] = self.upload_ndb(name='meta', content=meta)
+        return
+    
+    
+    def upload_eml(self, eml):
+        """Upload the eml metadata file to NDB Datastore."""
+        session['eml_key'] = self.upload_ndb(name='eml', content=eml)
+        return
+    
+    
     def build_occurrence(self):
         """Iterate through all records to build occurrence.txt"""
-        with open(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "raw.csv"), 'rb') as csvfile:
-            csvreader = csv.reader(csvfile, delimiter=session['field_separator'], quotechar='"')
-            for record in csvreader:
-                self.add_record_to_dwca(record)
+        blob = ndb.Key(urlsafe=session['raw_key']).get().content
+        csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
+        occurrence = ""
+        for record in csvreader:
+            row = self.line_dwca(record)
+            occurrence += row
+        if occurrence[-1] == "\n":
+            occurrence = occurrence[:-1]
+        session['occurrence_key'] = self.upload_ndb(name='occurrence', content=occurrence)
         return
         
         
-    def add_record_to_dwca(self, record):
-        """Open the occurrence.txt file and add the parsed record."""
+    def line_dwca(self, record):
+        """Prepare a line for the DWCA with the parsed record."""
         field_separator = "\t"
         row_separator = "\n"
         record_uuid = str(uuid.uuid4())
         dwc_record = [record[x] for x in session['dwc_headers']]
-        row = field_separator.join([record_uuid, self.dataset_uuid, 'HumanObservation']+dwc_record)
-        with open(os.path.join(app.config['UPLOAD_FOLDER'], self.dataset_uuid, "occurrence.txt"), 'a') as w:
-            w.write(row)
-            w.write(row_separator)
+        row = field_separator.join([record_uuid, self.dataset_uuid, 'HumanObservation']+dwc_record)+row_separator
+        return row
+    
+    
+    def build_dwca(self):
+        """Build the DarwinCore Archive and upload it to NDB Datastore."""
+        
+        # Get each file as a StringIO instance
+        meta = StringIO(ndb.Key(urlsafe=session['meta_key']).get().content)
+        eml = StringIO(ndb.Key(urlsafe=session['eml_key']).get().content)
+        occurrence = StringIO(ndb.Key(urlsafe=session['occurrence_key']).get().content)
+        
+        # Create the DWCA as a ZipFile based on a StringIO instance
+        dwca_s = StringIO()
+        dwca = ZipFile(dwca_s, 'w')
+        
+        # Fill in all the files
+        dwca.write(meta, 'meta.xml')
+        dwca.write(eml, 'eml.xml')
+        dwca.write(occurrence, 'occurrence.txt')
+        
+#        upload_url = blobstore.create_upload_url('/upload_dwca')
+#        print upload_url
+        
+        # Store it in NDB Datastore
+        self.upload_ndb(name='dwca', content=dwca)
+        
+        # Close ZipFile and StringIO
+        dwca.close()
+        dwca_s.close()
+        
+        return
     
     
     def build_cartodb(self):
@@ -53,55 +155,29 @@ class Uploader():
             print 'Table {0} was created'.format(table_name)
             
             # Open raw data file
-            with open(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "raw.csv"), 'rb') as csvfile:
-                # and for each record
-                csvreader = csv.reader(csvfile, delimiter=session['field_separator'], quotechar='"')
+            blob = ndb.Key(urlsafe=session['raw_key']).get().content
+            # and for each record
+            csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
 
-                query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, extraFields) values ".format(table_name)
-                values = []
-                for record in csvreader:
-                    #cont += 1
-                    # add it to the new table
-                    #r_ins = self.add_record_to_cartodb(record, table_name)
-                    #if r_ins.status_code == 200:
-                    #    print 'Record {0} was inserted'.format(cont)
-                    #else:
-                    #    print 'Something went wrong inserting record {0}:\n{1}'.format(cont, r_ins.text)
-                    value = self.add_record_to_cartodb(record, table_name)
-                    if value:
-                        values.append(value)
-                
-                # All at once
-                query = query_base + ", ".join(values)
-                print "Inserting {0} records".format(len(values))
-                params = {'q': query, 'api_key': api_key}
-                r = requests.post(self.cartodb_api, data=params)
-                print r.status_code
-                print r.text
-                if r.status_code == 200:
-                    flash('File uploaded successfuly!')
-                else:
-                    flash('ERROR: something went wrong with the upload.')
-                    flash(r.text)
-                    flash('Please, fix the issue and try uploading again.')
-                
-#                # In 100 record chunks
-#                # Split in chunks of 100
-#                cont = 0
-#                max=100
-#                
-#                # Initialize
-#                chunk = values[cont:cont+max]
-#                # Rest of chunks
-#                while chunk:
-#                    query = query_base + ", ".join(chunk)
-#                    print "Inserting {0} records".format(len(chunk))
-#                    params = {'q': query, 'api_key': api_key}
-#                    r = requests.post(self.cartodb_api, data=params)
-#                    print r.status_code
-#                    print r.text
-#                    cont += max
-#                    chunk = values[cont:cont+max]
+            query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, extraFields) values ".format(table_name)
+            values = []
+            for record in csvreader:
+                value = self.add_record_to_cartodb(record, table_name)
+                if value:
+                    values.append(value)
+            
+            # All at once
+            query = query_base + ", ".join(values)
+            print "Inserting {0} records".format(len(values))
+            params = {'q': query, 'api_key': api_key}
+            r = requests.post(self.cartodb_api, data=params)
+            if r.status_code == 200:
+                flash('File uploaded successfuly! Table {0} was created'.format(table_name))
+            else:
+                flash('ERROR: something went wrong with the upload.')
+                flash(r.text)
+                flash('Please, fix the issue and try uploading again.')
+
         else:
             print "Something went wrong: {0}".format(r.text)
         
@@ -119,8 +195,7 @@ class Uploader():
     def add_record_to_cartodb(self, record, table_name):
         """Prepare and upload the record to the new cartodb table."""
         
-        # Locat mandatory fields
-
+        # Locate mandatory fields
         for i in session['alignment']:
             if session['alignment'][i] == 'scientificName':
                 scientificName_idx = session['file_headers'].index(i)
@@ -154,12 +229,3 @@ class Uploader():
         values = "('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}')".format(datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, json.dumps(extraFields))
         
         return values
-        
-        ## Old version, record by record, causes timeout
-        #query = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, extraFields) values ({1})".format(table_name, values)
-        #
-        ## and launch it
-        #params = {'q': query, 'api_key': api_key}
-        #r = requests.get(self.cartodb_api, params=params)
-        #
-        #return r

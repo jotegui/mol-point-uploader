@@ -4,9 +4,6 @@ runtime: python27
 threadsafe: true
 api_version: 1
 
-inbound_services:
-- warmup
-
 builtins:
 - remote_api: on
 

@@ -49,9 +49,9 @@ def render_eml(request):
 def render_meta():
     """Render meta.xml template based on data from the session."""
     
-    print session['file_headers']
-    print session['alignment']
-    print session['extra_fields']
+#    print session['file_headers']
+#    print session['alignment']
+#    print session['extra_fields']
     
     session.pop('dwc_headers', None)
     session['dwc_headers'] = []
@@ -69,11 +69,11 @@ def render_meta():
     cont = 0
     for field in session['file_headers']:
         if field in session['alignment']:
-            print "Field {0} in alignment".format(field)
+#            print "Field {0} in alignment".format(field)
             session['dwc_headers'].append(cont)
             fields.append(dwc_terms_flat[session['alignment'][field]])
         elif field in session['extra_fields']:
-            print "Field {0} in extra".format(field)
+#            print "Field {0} in extra".format(field)
             if session['extra_fields'][field]['term'] != "":
                 session['dwc_headers'].append(cont)
                 fields.append(session['extra_fields'][field]['term'])

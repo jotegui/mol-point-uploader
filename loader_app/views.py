@@ -1,18 +1,17 @@
+__author__ = '@jotegui'
+
+import uuid
+import os
+
+from flask import render_template, redirect, url_for, request, send_from_directory, flash, session
+from werkzeug.utils import secure_filename
+
 from loader_app import app
 from Parser import Parser
 from Uploader import Uploader
 from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
-import uuid
-import os
-from zipfile import ZipFile
 
-from google.appengine.ext import ndb
-
-from flask import render_template, redirect, url_for, request, send_from_directory, flash, session
-from werkzeug.utils import secure_filename
-
-ALLOWED_EXTENSIONS = set(['txt','csv','tsv'])
 
 # Main page
 @app.route('/')
@@ -35,43 +34,22 @@ def download_spreadsheet():
 @app.route('/headers', methods=['GET','POST'])
 def headers():
 
+    # Generate new UUID for file
+    file_uuid = str(uuid.uuid4())
+    session.pop('file_uuid', None)
+    session['file_uuid'] = file_uuid
+
     # Get file
     up_file = request.files['file']
     if not up_file:
         flash("Please, provide a file to upload")
         return redirect(url_for("main"))
     
-    # Check for allowed file extension
-    allowed_file = '.' in up_file.filename and up_file.filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-    if allowed_file is False:
-        flash("ERROR: Unsupported file type. File should be .txt, .csv or .tsv")
+    # Parse and upload file to NDB
+    uploader = Uploader()
+    uploader.parse_file(up_file)
+    if uploader.any_error is True:
         return redirect(url_for('main'))
-    
-    # Check field separator
-    headerline = up_file.readline().rstrip()
-    if len(headerline.split(",")) > 1:
-        session['field_separator'] = ","
-    elif len(headerline.split("\t")) > 1:
-        session['field_separator'] = "\t"
-    elif len(headerline.split("|")) > 1:
-        session['field_separator'] = "|"
-    else:
-        flash("ERROR: Unsupported field separator. Fields should be separated by comma (,), pipe (|) or tab")
-        return redirect(url_for('main'))
-    
-    # Generate new UUID for file
-    file_uuid = str(uuid.uuid4())
-    session.pop('file_uuid', None)
-    session['file_uuid'] = file_uuid
-    
-    # create the folder
-    os.mkdir(os.path.join(app.config['UPLOAD_FOLDER'], file_uuid))
-    # and save the file
-    up_file.save(os.path.join(app.config['UPLOAD_FOLDER'], file_uuid, "raw.csv"))
-    
-    # Store headers
-    session.pop('file_headers', None)
-    session['file_headers'] = headerline.split(session['field_separator'])
     
     # Remove some extra values from session
     session.pop('alignment', None)
@@ -110,7 +88,7 @@ def headers():
             flash("Please, fix these issues or remove the wrong records and try again.")
             return redirect(url_for('main'))
         
-        # Maybe, check for some extra fields in case they extended the template
+        # Check for some extra fields in case they extended the template
         extra_fields = [x for x in session['file_headers'] if x not in full_schema.values()]
         
         # If so, point to the metafields page
@@ -140,8 +118,6 @@ def metafields():
         request.form['recordedBy']: "recordedBy"
     }
     
-    print session['alignment'].values()
-    
     # Parse the content
     parser = Parser()
     parser.parse_content()
@@ -170,10 +146,13 @@ def metadata():
             term_dict = {"description": request.form[i], "term": request.form["{0}_dwc".format(i)]}
             session['extra_fields'][i] = term_dict
     
+    # Create meta.xml
     meta = render_meta()
-    meta_path = os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "meta.xml")
-    with open(meta_path, 'w') as w:
-        w.write(meta)
+    
+    # Upload to NDB datastore
+    uploader = Uploader()
+    uploader.upload_meta(meta)
+    print 'meta_key = {0}'.format(session['meta_key'])
     
     return render_template("metadata.html")
 
@@ -184,19 +163,23 @@ def upload():
     
     # Create eml.xml
     eml = render_eml(request)
-    eml_path = os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "eml.xml")
-    with open(eml_path, 'w') as w:
-        w.write(eml)
+    
+    # Upload to NDB datastore
+    uploader = Uploader()
+    uploader.upload_eml(eml)
+    print 'eml_key = {0}'.format(session['eml_key'])
     
     # Create occurrence.txt
-    uploader = Uploader()
     uploader.build_occurrence()
     
-    # Wrap the DwC-A in a zip file
-    with ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid']+'.zip'),'w') as dwca:
-        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "eml.xml"), "eml.xml")
-        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "meta.xml"), "meta.xml")
-        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "occurrence.txt"), "occurrence.txt")
+    # Upload the DWCA
+    #uploader.build_dwca()
+    
+#    # Wrap the DwC-A in a zip file
+#    with ZipFile(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid']+'.zip'),'w') as dwca:
+#        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "eml.xml"), "eml.xml")
+#        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "meta.xml"), "meta.xml")
+#        dwca.write(os.path.join(app.config['UPLOAD_FOLDER'], session['file_uuid'], "occurrence.txt"), "occurrence.txt")
     
     return render_template('upload_cartodb.html')
 
