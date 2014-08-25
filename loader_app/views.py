@@ -1,4 +1,4 @@
-from observation_loader import app
+from loader_app import app
 from Parser import Parser
 from Uploader import Uploader
 from dwca_templates import render_eml, render_meta

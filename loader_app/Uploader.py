@@ -1,4 +1,4 @@
-from observation_loader import app
+from loader_app import app
 from cartodb_apikey import api_key
 from flask import session, flash
 import requests
