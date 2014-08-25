@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Extra fields</h3>
+<p>We found some extra fields in your file. Please provide a brief description if necessary (such as units of measurement, or any used categorization) and select the adequate DarwinCore term for that field. You can find more information on the DarwinCore Standard fields here: <a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm">http://rs.tdwg.org/dwc/terms/index.htm</a></p>
+
+<form id="metafieldsForm" action="/metadata" method="POST">
+{% for i in extra_fields %}
+    <div class="form-group">
+        <label for="{{i}}" class="control-label">{{i}}</label>
+        <select class="form-control" id="{{i}}_dwc" name="{{i}}_dwc">
+            <option value=""> -- Select one -- </option>
+        {% for cl in dwc_terms %}
+            <optgroup label="{{cl}}">
+            {% for i in dwc_terms[cl] %}
+                <option value="{{dwc_terms[cl][i]}}">{{i}}</option>
+            {% endfor %}
+            </optgroup>
+        {% endfor %}
+        </select>
+        <textarea class="form-control" id="{{i}}" name="{{i}}" placeholder="Optional"></textarea>
+    </div>
+{% endfor %}
+<input type="submit" class="btn btn-primary" id="submitBtn" name="submitBtn" value="Submit">
+</form>
+{% endblock %}

@@ -1,8 +1,11 @@
-# Virtualenv files
-env/
-
 # Uploaded files
 uploads/
 
+# Virtualenv files
+env/
+
 # Python compiled
 *.pyc
+
+# CartoDB api key
+cartodb_apikey.py

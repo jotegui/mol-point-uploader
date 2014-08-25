@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block redirect %}
+<meta http-equiv="refresh" content="0; url=/upload_cartodb">
+{% endblock %}
+
+{% block content %}
+<h3>Thank you!</h3>
+Please wait while the records are being uploaded. This may take a while, depending on the amount of records...
+<div id="loadingGif">
+    <img src="{{url_for("static", filename="loading.gif")}}"/>
+</div>
+{% endblock %}

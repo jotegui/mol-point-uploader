@@ -1,4 +1,4 @@
-Scientific name,Latitude,Longitude,Observation date,Collector,Geodetic datum,Sampling method,Verbatim locality,Coordinate uncertainty
+scientificName,latitude,longitude,observationDate,collector,geodeticDatum,samplingMethod,verbatimLocality,coordinateUncertainty
 Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30
 Puma concolor,-1.3,8º 25' W,2014-05-17,?,12,none,12.3,0
 Puma concolor,42.12,,2014/17/05,,Foo,,\n,unknown

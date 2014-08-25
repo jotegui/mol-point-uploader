@@ -1,8 +1,7 @@
 import os
-from flask import Flask
+from flask import Flask, session
 
-
-UPLOAD_FOLDER = '/home/jotegui/MapOfLife/PointUploader/observation_loader/uploads/' # TODO: update
+UPLOAD_FOLDER = '/home/jotegui/MapOfLife/PointUploader/observation_loader/uploads/'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER

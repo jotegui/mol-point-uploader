@@ -321,10 +321,10 @@ Well,Site,Individual,Initial Species Determination,Species based on genetic data
 04-05E,KRC,KRC28,R. ursinus,R. ursinus,353,8751,Run_MAJSEQUENCER_2008-10-27_10-12_5343,uncut,18,blue,25,40.01993,-124.00433,20080624,
 04-05F,KRC,KRC29,R. ursinus,R. ursinus,353,8024,Run_MAJSEQUENCER_2008-10-27_10-12_5343,uncut,18,blue,25,40.01988,-124.00442,20080624,
 04-05G,KRC,KRC30,R. ursinus,R. ursinus,353,5759,Run_MAJSEQUENCER_2008-10-27_10-12_5343,uncut,18,blue,25,40.01962,-124.00437,20080624,
-04-05H,BBG,BBG1,'Navajo' thornless blackberry,'Navajo' thornless blackberry,343,7779,Run_MAJSEQUENCER_2008-10-27_10-12_5343,cut,11,red,0,0,0,20080701,
+04-05H,BBG,BBG1,'Navajo' thornless blackberry,Navajo thornless blackberry,343,7779,Run_MAJSEQUENCER_2008-10-27_10-12_5343,cut,11,red,0,0,0,20080701,
 04-06A,BBG,BBG2,R. allegheniensis,R. allegheniensis,333,7648,Run_MAJSEQUENCER_2008-10-27_10-12_5343,cut,5,magenta,0,0,0,20080701,
 04-06B,BBG,BBG3,R. oderatus,R. oderatus,334,7704,Run_MAJSEQUENCER_2008-10-27_10-12_5343,cut,6,magenta,0,0,0,20080701,
-04-06C,BBG,BBG4,R. ideaus 'Heritage',R. ideaus 'Heritage',333,7905,Run_MAJSEQUENCER_2008-10-27_10-12_5343,cut,5,magenta,0,0,0,20080701,
+04-06C,BBG,BBG4,R. ideaus 'Heritage',R. ideaus Heritage,333,7905,Run_MAJSEQUENCER_2008-10-27_10-12_5343,cut,5,magenta,0,0,0,20080701,
 04-06D,COP,COP1,,R. ursinus,331,8485,Run_MAJSEQUENCER_2008-10-27_10-12_5343,uncut,3,blue,1,0,0,20080620,site 14. westside oak lower understory
 04-06E,COP,COP2,,R. ursinus x pensilvanicus,331,8025,Run_MAJSEQUENCER_2008-10-27_10-12_5343,uncut,3,blue,1,0,0,20080620,oak understory
 04-06F,COP,COP3,,R. ursinus x pensilvanicus,331,8407,Run_MAJSEQUENCER_2008-10-27_10-12_5343,uncut,3,blue,1,0,0,20080620,west side cottonwood understory
@@ -500,7 +500,6 @@ Well,Site,Individual,Initial Species Determination,Species based on genetic data
 06-07C,RSB,RSB5,R. armeniacus,R. armeniacus,342,2629,Run_MAJSEQUENCER_2009-12-12_14-28_5913,cut,10,red,32,46.34058,-123.6291,20090906,
 06-07D,WSH,WSH1,R. ursinus,R. ursinus,394,491,Run_MAJSEQUENCER_2009-12-12_14-28_5913,uncut,22,blue,5,36.18843,-118.6705,20090911,voucher taken
 06-07E,WSH,WSH2,R. ursinus,R. ursinus,394,814,Run_MAJSEQUENCER_2010-02-24_11-41_5970,uncut,22,blue,5,36.18865,-118.67057,20090911,dried up male flowers
-06-07F,WSH,WSH5,R. ursinus,,,,Run_MAJSEQUENCER_2009-12-12_14-28_5914,cut,,magenta,5,36.18827,-118.67775,20090911,excluded from analysis
 06-07G,WSH,WSH6,R. ursinus,R. ursinus,374,267,Run_MAJSEQUENCER_2010-02-24_11-41_5970,,23,black,5,36.18823,-118.67803,20090911,
 06-07H,WSH,WSH7,R. ursinus,R. ursinus,330,7811,Run_MAJSEQUENCER_2010-01-07_17-52_5943,uncut,2,blue,5,36.1723,-118.69893,20090911,
 06-08A,WSH,WSH8,R. ursinus,R. ursinus,331,265,Run_MAJSEQUENCER_2009-12-07_18-29_5884,uncut,3,blue,5,36.17317,-118.69925,20090911,
