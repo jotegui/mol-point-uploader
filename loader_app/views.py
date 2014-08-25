@@ -7,6 +7,8 @@ import uuid
 import os
 from zipfile import ZipFile
 
+from google.appengine.ext import ndb
+
 from flask import render_template, redirect, url_for, request, send_from_directory, flash, session
 from werkzeug.utils import secure_filename
 

@@ -7,6 +7,8 @@ import os
 import csv
 import uuid
 
+from google.appengine.ext import ndb
+
 class Uploader():
 
 
