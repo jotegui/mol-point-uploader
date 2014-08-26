@@ -14,6 +14,7 @@ from flask import session, flash
 
 from google.appengine.ext import ndb
 from Models import UploadedFile
+from google.appengine.ext import blobstore
 
 ALLOWED_EXTENSIONS = set(['txt','csv','tsv'])
 
@@ -127,8 +128,15 @@ class Uploader():
         dwca.writestr('eml.xml', eml)
         dwca.writestr('occurrence.txt', occurrence)
         
-        # Store it in NDB Datastore
-        self.upload_ndb(name='dwca', content=dwca)
+#        # Store it in Blobstore
+#        upload_url = blobstore.create_upload_url('/upload_dwca')
+#        params={'file':dwca, 'enctype':'multipart/form-data'}
+#        r = requests.post(upload_url, params=params)
+#        print r.status_code
+#        print r.text
+#        
+#        # Store it in NDB Datastore
+#        self.upload_ndb(name='dwca', content=dwca)
         
         # Close ZipFile and StringIO
         dwca.close()
@@ -140,50 +148,32 @@ class Uploader():
     def build_cartodb(self):
         """Iterate through all records to build the records to upoad to CartoDB"""
         
-        # Create table
-        table_name = 'points_{0}'.format(session['file_uuid'].replace('-','_'))
-        query = "create table {0}(cartodb_id serial not null primary key, datasetId varchar(36), scientificName text, decimalLatitude float, decimalLongitude float, eventDate text, recordedBy text, extraFields json)".format(table_name)
+        table_name = 'point_uploads'
+
+        # Open raw data file
+        blob = ndb.Key(urlsafe=session['raw_key']).get().content
+        
+        # and for each record
+        csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
+
+        query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, extraFields, the_geom, the_geom_webmercator) values ".format(table_name)
+        values = []
+        for record in csvreader:
+            value = self.add_record_to_cartodb(record, table_name)
+            if value:
+                values.append(value)
+        
+        # All at once
+        query = query_base + ", ".join(values)
+        print "Inserting {0} records".format(len(values))
         params = {'q': query, 'api_key': api_key}
-        r = requests.get(self.cartodb_api, params=params)
-        
-        # If successful
+        r = requests.post(self.cartodb_api, data=params)
         if r.status_code == 200:
-            print 'Table {0} was created'.format(table_name)
-            
-            # Open raw data file
-            blob = ndb.Key(urlsafe=session['raw_key']).get().content
-            # and for each record
-            csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
-
-            query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, extraFields) values ".format(table_name)
-            values = []
-            for record in csvreader:
-                value = self.add_record_to_cartodb(record, table_name)
-                if value:
-                    values.append(value)
-            
-            # All at once
-            query = query_base + ", ".join(values)
-            print "Inserting {0} records".format(len(values))
-            params = {'q': query, 'api_key': api_key}
-            r = requests.post(self.cartodb_api, data=params)
-            if r.status_code == 200:
-                flash('File uploaded successfuly! Table {0} was created'.format(table_name))
-            else:
-                flash('ERROR: something went wrong with the upload.')
-                flash(r.text)
-                flash('Please, fix the issue and try uploading again.')
-
+            flash('File uploaded successfuly!'.format(table_name))
         else:
-            print "Something went wrong: {0}".format(r.text)
-        
-        
-        # ONLY FOR TESTING: Remove the table
-        #query = "drop table {0}".format(table_name)
-        #params = {'q': query, 'api_key': api_key}
-        #r = requests.get(self.cartodb_api, params=params)
-        #if r.status_code == 200:
-        #    print 'Table {0} was deleted'.format(table_name)
+            flash('ERROR: something went wrong with the upload.')
+            flash(r.text)
+            flash('Please, fix the issue and try uploading again.')
         
         return
     
@@ -222,6 +212,6 @@ class Uploader():
                 extraFields[key] = value
         
         # Build query
-        values = "('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}')".format(datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, json.dumps(extraFields))
+        values = "('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', ST_SetSRID(ST_Point({3}, {2}),4326), ST_SetSRID(ST_Point({3}, {2}),3857))".format(datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, json.dumps(extraFields))
         
         return values
