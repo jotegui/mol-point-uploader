@@ -149,10 +149,10 @@ def metadata():
     # Create meta.xml
     meta = render_meta()
     
-    # Upload to NDB datastore
-    uploader = Uploader()
-    uploader.upload_meta(meta)
-    print 'meta_key = {0}'.format(session['meta_key'])
+#    # Upload to NDB datastore
+#    uploader = Uploader()
+#    uploader.upload_meta(meta)
+#    print 'meta_key = {0}'.format(session['meta_key'])
     
     return render_template("metadata.html")
 
@@ -165,9 +165,9 @@ def upload():
     eml = render_eml(request)
     
     # Upload to NDB datastore
-    uploader = Uploader()
-    uploader.upload_eml(eml)
-    print 'eml_key = {0}'.format(session['eml_key'])
+#    uploader = Uploader()
+#    uploader.upload_eml(eml)
+#    print 'eml_key = {0}'.format(session['eml_key'])
     
     # Create CartoDB registry record
     uploader.cartodb_meta(request.form)

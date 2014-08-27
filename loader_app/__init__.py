@@ -1,3 +1,5 @@
+__author__ = '@jotegui'
+
 import os
 from flask import Flask, session
 

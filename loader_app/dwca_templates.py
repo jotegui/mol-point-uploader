@@ -1,3 +1,5 @@
+__author__ = '@jotegui'
+
 from datetime import datetime
 from flask import render_template, session
 from dwc_terms import dwc_terms

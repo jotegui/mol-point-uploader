@@ -1,3 +1,5 @@
+__author__ = '@jotegui'
+
 dwc_terms = {
     'Record': {
         'type': 'http://purl.org/dc/terms/type',    
