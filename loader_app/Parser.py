@@ -132,13 +132,13 @@ class Parser():
                 int(date)
             except ValueError:
                 self.bad_record = True
-                self.errors.append("Invalid date format in record #{0}").format(self.cont))
+                self.errors.append("Invalid date format in record #{0}".format(self.cont))
                 return
                 
             # Check if within reasonable years (1750 - this year)
             if int(date) < 1750 or int(date) > datetime.today().year:
                 self.bad_record = True
-                self.errors.append("Year out of range in record #{0}").format(self.cont))
+                self.errors.append("Year out of range in record #{0}".format(self.cont))
                 return
                 
         # Year-month, without separator
@@ -149,19 +149,19 @@ class Parser():
                 int(date[4:])
             except ValueError:
                 self.bad_record = True
-                self.errors.append("Invalid date format in record #{0}").format(self.cont))
+                self.errors.append("Invalid date format in record #{0}".format(self.cont))
                 return
                 
             # Check if year within reasonable years (1750 - this year)
             if int(date[:4]) < 1750 or int(date[:4]) > datetime.today().year:
                 self.bad_record = True
-                self.errors.append("Year out of range in record #{0}").format(self.cont))
+                self.errors.append("Year out of range in record #{0}".format(self.cont))
                 return
                 
             # Check if month within accepted range
             if int(date[4:]) < 1 or int(date[4:]) > 12:
                 self.bad_record = True
-                self.errors.append("Month out of range in record #{0}").format(self.cont))
+                self.errors.append("Month out of range in record #{0}".format(self.cont))
                 return
                 
         # Year-month with separator.
@@ -172,24 +172,24 @@ class Parser():
                 int(date[5:])
             except ValueError:
                 self.bad_record = True
-                self.errors.append("Invalid date format in record #{0}").format(self.cont))
+                self.errors.append("Invalid date format in record #{0}".format(self.cont))
                 return
                 
             if date[4] not in accepted_separators:
                 self.bad_record = True
-                self.errors.append("Invalid date field separator in record #{0}").format(self.cont))
+                self.errors.append("Invalid date field separator in record #{0}".format(self.cont))
                 return
                 
             # Check if year within reasonable years (1750 - this year)
             if int(date[:4]) < 1750 or int(date[:4]) > datetime.today().year:
                 self.bad_record = True
-                self.errors.append("Year out of range in record #{0}").format(self.cont))
+                self.errors.append("Year out of range in record #{0}".format(self.cont))
                 return
                 
             # Check if month within accepted range
             if int(date[5:]) < 1 or int(date[5:]) > 12:
                 self.bad_record = True
-                self.errors.append("Month out of range in record #{0}").format(self.cont))
+                self.errors.append("Month out of range in record #{0}".format(self.cont))
                 return
                 
         # Year-month-day, without separator
@@ -201,25 +201,25 @@ class Parser():
                 int(date[6:])
             except ValueError:
                 self.bad_record = True
-                self.errors.append("Invalid date format in record #{0}").format(self.cont))
+                self.errors.append("Invalid date format in record #{0}".format(self.cont))
             return
             
             # Check if year within reasonable years (1750 - this year)
             if int(date[:4]) < 1750 or int(date[:4]) > datetime.today().year:
                 self.bad_record = True
-                self.errors.append("Year out of range in record #{0}").format(self.cont))
+                self.errors.append("Year out of range in record #{0}".format(self.cont))
                 return
                 
             # Check if month within accepted range
             if int(date[4:6]) < 1 or int(date[4:6]) > 12:
                 self.bad_record = True
-                self.errors.append("Month out of range in record #{0}").format(self.cont))
+                self.errors.append("Month out of range in record #{0}".format(self.cont))
                 return
                 
             # Check if day within accepted range
             if int(date[6:]) < 1 or int(date[6:]) > 31:
                 self.bad_record = True
-                self.errors.append("Day out of range in record #{0}").format(self.cont))
+                self.errors.append("Day out of range in record #{0}".format(self.cont))
                 return
                 
         # Year-month-day with separator.
@@ -231,36 +231,36 @@ class Parser():
                 int(date[8:])
             except ValueError:
                 self.bad_record = True
-                self.errors.append("Invalid date format in record #{0}").format(self.cont))
+                self.errors.append("Invalid date format in record #{0}".format(self.cont))
                 return
                 
             if date[4] not in accepted_separators or date[7] not in accepted_separators or date[4] != date[7]:
                 self.bad_record = True
-                self.errors.append("Invalid date field separator in record #{0}").format(self.cont))
+                self.errors.append("Invalid date field separator in record #{0}".format(self.cont))
                 return
                 
             # Check if year within reasonable years (1750 - this year)
             if int(date[:4]) < 1750 or int(date[:4]) > datetime.today().year:
                 self.bad_record = True
-                self.errors.append("Year out of range in record #{0}").format(self.cont))
+                self.errors.append("Year out of range in record #{0}".format(self.cont))
                 return
                 
             # Check if month within accepted range
             if int(date[5:7]) < 1 or int(date[5:7]) > 12:
                 self.bad_record = True
-                self.errors.append("Month out of range in record #{0}").format(self.cont))
+                self.errors.append("Month out of range in record #{0}".format(self.cont))
                 return
                 
             # Check if day within accepted range
             if int(date[8:]) < 1 or int(date[8:]) > 31:
                 self.bad_record = True
-                self.errors.append("Day out of range in record #{0}").format(self.cont))
+                self.errors.append("Day out of range in record #{0}".format(self.cont))
                 return
             
         # More to be added
         else:
             self.bad_record = True
-            self.errors.append("Unrecognised date format in record #{0}").format(self.cont))
+            self.errors.append("Unrecognised date format in record #{0}".format(self.cont))
             return
         
         return
