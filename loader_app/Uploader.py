@@ -37,6 +37,16 @@ class Uploader():
         return file_key
     
     
+    def delete_ndb(self):
+        """Delete all stored entities from NDB Datastore."""
+        ndb.Key(urlsafe = session['raw_key']).delete()
+        ndb.Key(urlsafe = session['meta_key']).delete()
+        ndb.Key(urlsafe = session['eml_key']).delete()
+        ndb.Key(urlsafe = session['occurrence_key']).delete()
+        
+        return
+    
+    
     def parse_file(self, up_file):
         """Validate the file."""
 
