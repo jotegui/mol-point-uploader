@@ -145,7 +145,52 @@ class Uploader():
         return
     
     
-    def build_cartodb(self):
+    def cartodb_meta(self, request):
+        """Build and insert the record to the CartoDB point uploads registry."""
+        
+        table_name = 'point_uploads_registry'
+        
+        # Populate fields
+        datasetId = session['file_uuid']
+        public = True if 'public' in request.keys() and request['public'] == 'on' else False
+        title = request['title']
+        abstract = request['abstract']
+        creatorEmail = request['resource_creator_email']
+        creatorFirst = request['resource_creator_first_name']
+        creatorLast = request['resource_creator_last_name']
+        metadataEmail = request['metadata_creator_email']
+        metadataFirst = request['metadata_creator_first_name']
+        metadataLast = request['metadata_creator_last_name']
+        geographicScope = request['geographic_scope']
+        temporalScope = request['temporal_scope']
+        taxonomicScope = request['taxonomic_scope']
+        keywords = str([str(x).strip() for x in request['keywords'].split(";")]).replace("'", '"').replace('[', '{').replace(']', '}')
+        license = request['license']
+        additionalInformation = request['additional_information']
+        
+        # Build extrafields with the description and alignment of non-mandatory fields
+        extrafields = {}
+        for i in session['extra_fields']:
+            dic = {}
+            for j in session['extra_fields'][i]:
+                dic[str(j)] = str(session['extra_fields'][i][j])
+            extrafields[str(i)] = dic
+        extrafields = str(extrafields).replace("'", '"')
+        
+        query = "insert into {17} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields) values ('{0}', {1}, '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}')".format(datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, table_name)
+        print query
+        params = {'q': query, 'api_key': api_key}
+        r = requests.post(self.cartodb_api, data=params)
+        
+        if r.status_code == 200:
+            print 'Registry entry added'
+        else:
+            print 'Something went wrong:'
+            print r.text
+        
+        return
+    
+    def cartodb_points(self):
         """Iterate through all records to build the records to upoad to CartoDB"""
         
         table_name = 'point_uploads'
@@ -159,7 +204,7 @@ class Uploader():
         query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, extraFields, the_geom, the_geom_webmercator) values ".format(table_name)
         values = []
         for record in csvreader:
-            value = self.add_record_to_cartodb(record, table_name)
+            value = self.add_record_to_query(record, table_name)
             if value:
                 values.append(value)
         
@@ -178,7 +223,7 @@ class Uploader():
         return
     
     
-    def add_record_to_cartodb(self, record, table_name):
+    def add_record_to_query(self, record, table_name):
         """Prepare and upload the record to the new cartodb table."""
         
         # Locate mandatory fields

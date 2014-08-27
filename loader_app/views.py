@@ -169,6 +169,9 @@ def upload():
     uploader.upload_eml(eml)
     print 'eml_key = {0}'.format(session['eml_key'])
     
+    # Create CartoDB registry record
+    uploader.cartodb_meta(request.form)
+    
     # Create occurrence.txt
     uploader.build_occurrence()
     
@@ -183,6 +186,6 @@ def upload_cartodb():
     
     # Prepare the file for CartoDB
     uploader = Uploader()
-    uploader.build_cartodb()
+    uploader.cartodb_points()
     
     return redirect(url_for('main'))

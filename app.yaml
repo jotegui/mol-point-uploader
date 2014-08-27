@@ -1,5 +1,5 @@
 application: mol-api
-version: point-loader
+version: point-uploads
 runtime: python27
 threadsafe: true
 api_version: 1
