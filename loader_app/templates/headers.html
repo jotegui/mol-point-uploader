@@ -2,65 +2,34 @@
 {% block content %}
 
 <h3>Align session headers</h3>
-<p>These are the required fields. Please, set each one with one of the column names found in your file.</p>
+<p>These are the minimum required fields. Your file should have these values in all the records. You can also specify a "default" value, in case your file is missing any of these fields but there is a common value for all the records. Please, select wich of the fields in your file matches the specified term or fill in a default value.</p>
 
 <form action="" ng-controller="HeaderController as headerCtrl" method="POST" name="headerForm" id="headerForm" ng-submit="headerCtrl.checkFields()" novalidate>
 
-<!-- Scientific Name -->
-<div class="form-group" id="scientificNameSelect">
-    <label for="scientificName" class="control-label">Scientific Name</label>
-    <select class="form-control" ng-model="headerCtrl.headers.scientificName" id="scientificName" name="scientificName">
-    {% for header in session['file_headers'] %}
-        <option value="{{header}}">{{header}}</option>
-    {% endfor %}
-    </select>
+{% for field, type in {'scientificName': 'text', 'decimalLatitude': 'number', 'decimalLongitude': 'number', 'eventDate': 'date', 'recordedBy': 'text'}.iteritems() | sort%}
+<!-- {{field}} -->
+<div class="row">
+    <div class="form-group col-md-6 col-xs-12" id="{{field}}Select">    
+        <label for="{{field}}" class="control-label">{{field}}</label>
+        <select class="form-control" ng-model="headerCtrl.headers.{{field}}" id="{{field}}" name="{{field}}">
+        {% for header in session['file_headers'] %}
+            <option value="{{header}}">{{header}}</option>
+        {% endfor %}
+        </select>
+    </div>
+    <div class=" form-group col-md-6 col-xs-12" id="{{field}}DefaultInput">
+        <label for="{{field}}Default" class="control-label col-md-12 hidden-xs hidden-sm">&nbsp</label>
+        <input type="{{type}}" class="form-control" ng-model="headerCtrl.headers.{{field}}Default" id="{{field}}Default" name="{{field}}Default" placeholder="Default value for {{field}}, {{type}}{%if type=='date'%}, YYYY-MM-DD format{% elif field=='decimalLatitude'%} between -90 and 90{% elif field=='decimalLongitude'%} between -180 and 180{%endif%}"{%if field=='decimalLatitude'%}min="-90" max="90"{%endif%}{%if field=='decimalLongitude'%}min="-180" max="180"{%endif%}>
+    </div>
 </div>
+{% endfor %}
 
-<!-- Latitude -->
-<div class="form-group" id="latitudeSelect">
-    <label for="decimalLatitude" class="control-label">Latitude</label>
-    <select class="form-control" ng-model="headerCtrl.headers.decimalLatitude" id="decimalLatitude" name="decimalLatitude">
-    {% for header in session['file_headers'] %}
-        <option value="{{header}}">{{header}}</option>
-    {% endfor %}
-    </select>
-</div>
-
-<!-- Longitude -->
-<div class="form-group" id="longitudeSelect">
-    <label for="decimalLongitude" class="control-label">Longitude</label>
-    <select class="form-control" ng-model="headerCtrl.headers.decimalLongitude" id="decimalLongitude" name="decimalLongitude">
-    {% for header in session['file_headers'] %}
-        <option value="{{header}}">{{header}}</option>
-    {% endfor %}
-    </select>
-</div>
-
-<!-- Date -->
-<div class="form-group" id="observationDateSelect">
-    <label for="eventDate" class="control-label">Observation date</label>
-    <select class="form-control" ng-model="headerCtrl.headers.eventDate" id="eventDate" name="eventDate">
-    {% for header in session['file_headers'] %}
-        <option value="{{header}}">{{header}}</option>
-    {% endfor %}
-    </select>
-</div>
-
-<!-- Collector -->
-<div class="form-group" id="collectorSelect">
-    <label for="recordedBy" class="control-label">Collector's name</label>
-    <select class="form-control" ng-model="headerCtrl.headers.recordedBy" id="recordedBy" name="recordedBy">
-    {% for header in session['file_headers'] %}
-        <option value="{{header}}">{{header}}</option>
-    {% endfor %}
-    </select>
-</div>
 
 <div class="alert alert-danger" id="warningMessage" ng-show="headerCtrl.warning" >
     {[{ headerCtrl.warning }]}
 </div>
 
-<input class="btn btn-primary" type="submit" value="Let's go!">
+<input class="btn btn-primary" type="submit" value="Let's go!" ng-disabled="headerForm.$invalid">
 </form>
 
 {% endblock %}

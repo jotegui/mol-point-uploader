@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<div>
+<div><form action="/">
     <h3>About the terms</h3>
     <p>We use DarwinCore standards, blah blah.</p>
+    <button class="btn btn-info" type="submit">Back</button>
     
     <h3>Description of the fields in the template</h3>
     <dl class="dl-horizontal">
@@ -42,5 +43,7 @@
         <dt>Uncertainty</dt>
         <dd><strong>Optional</strong>. The horizontal distance (in meters) from the given latitude and longitude describing the smallest circle containing the whole of the Location. Leave the value empty if the uncertainty is unknown, cannot be estimated, or is not applicable (because there are no coordinates). Zero is not a valid value for this term. <p>Examples: "30" (reasonable lower limit of a GPS reading under good conditions if the actual precision was not recorded at the time), "71" (uncertainty for a UTM coordinate having 100 meter precision and a known spatial reference system).<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters">http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters</a></dd>
     </dl>
+    <button class="btn btn-info" type="submit">Back</button>
+    </form>
 </div>
 {% endblock %}

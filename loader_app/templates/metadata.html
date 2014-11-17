@@ -3,7 +3,6 @@
         <form action="/upload" method="POST" name="metadataForm" ng-controller="FormController as formCtrl" novalidate>
             <input type="hidden" name="origin" value="metadata">
             <h3>Well done! But we are not there yet...</h3>
-            
             <div>
                 <p>
                     Now, before we move on, we need to know a bit more about you and your project.
@@ -12,7 +11,7 @@
             
             <!-- Publicly available -->
             <div class="form-group col-md-12">
-                <label for="public" class="control-label">Do you want the data set to be publicly available?</label>
+                <label for="public" class="control-label">Would you like the data set to be publicly available?</label>
                 <div>
                     <input type="checkbox" id="public" name="public" ng-model="formCtrl.formData.public" ng-checked="1">
                     <span class="help-block">Required. Mark the checkbox if you want to make the data set available in the public domain.</span>

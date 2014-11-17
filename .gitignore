@@ -12,3 +12,10 @@ lib/
 
 # CartoDB api key
 cartodb_apikey.py
+
+# IDE
+.idea/
+
+# Management scripts
+launch.sh
+deploy.sh

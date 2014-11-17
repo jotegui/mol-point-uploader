@@ -29,26 +29,28 @@ class Uploader():
         
         return
 
-    
+    # NDB entity operations
     def upload_ndb(self, name, content):
         """Upload the content of a file to the NDB datastore. Returns urlsafe entity key."""
-        uploaded_file = UploadedFile(uuid=session['file_uuid'], name=name, content=str(content))
+        uploaded_file = UploadedFile(uuid=session['file_uuid'], name=name, content=str(content.encode('utf-8')))
         file_key = uploaded_file.put().urlsafe()
         return file_key
+    
+    def delete_entity(self, key_name):
+        """Delete a single entity from the NDB datastore."""
+        ndb.Key(urlsafe = session[key_name]).delete()
+        return
     
     
     def delete_ndb(self):
         """Delete all stored entities from NDB Datastore."""
-        ndb.Key(urlsafe = session['raw_key']).delete()
-        ndb.Key(urlsafe = session['meta_key']).delete()
-        ndb.Key(urlsafe = session['eml_key']).delete()
-        ndb.Key(urlsafe = session['occurrence_key']).delete()
-        
+        for key in ['raw_key', 'meta_key', 'eml_key', 'occurrence_key']:
+            self.delete_entity(key)
         return
     
     
     def parse_file(self, up_file):
-        """Validate the file."""
+        """Validate the uploaded file."""
 
         # Check for allowed file extension
         allowed_file = '.' in up_file.filename and up_file.filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
@@ -58,7 +60,7 @@ class Uploader():
             return
         
         # Check field separator
-        headerline = up_file.readline().rstrip()
+        headerline = up_file.readline().rstrip().decode('utf-8')
         if len(headerline.split(",")) > 1:
             session['field_separator'] = ","
         elif len(headerline.split("\t")) > 1:
@@ -80,7 +82,8 @@ class Uploader():
             content = content[:-1]
         
         # Save the file to NDB
-        session['raw_key'] = self.upload_ndb(name='raw', content=content)
+        session['raw_key'] = str(self.upload_ndb(name='raw', content=content))
+        print 'raw_key = {0}'.format(session['raw_key'])
         
         return
     
@@ -88,12 +91,14 @@ class Uploader():
     def upload_meta(self, meta):
         """Upload the metafile to NDB Datastore."""
         session['meta_key'] = self.upload_ndb(name='meta', content=meta)
+        print 'meta_key = {0}'.format(session['meta_key'])
         return
     
     
     def upload_eml(self, eml):
         """Upload the eml metadata file to NDB Datastore."""
         session['eml_key'] = self.upload_ndb(name='eml', content=eml)
+        print 'eml_key = {0}'.format(session['eml_key'])
         return
     
     
@@ -108,6 +113,7 @@ class Uploader():
         if occurrence[-1] == "\n":
             occurrence = occurrence[:-1]
         session['occurrence_key'] = self.upload_ndb(name='occurrence', content=occurrence)
+        print 'occurrence_key = {0}'.format(session['occurrence_key'])
         return
         
         
@@ -178,17 +184,19 @@ class Uploader():
         license = request['license']
         additionalInformation = request['additional_information']
         
-        # Build extrafields with the description and alignment of non-mandatory fields
+        # Build extrafields with the description and headers of non-mandatory fields
         extrafields = {}
         for i in session['extra_fields']:
+            print i.encode('utf-8')
             dic = {}
             for j in session['extra_fields'][i]:
                 dic[str(j)] = str(session['extra_fields'][i][j])
-            extrafields[str(i)] = dic
-        extrafields = str(extrafields).replace("'", '"')
+            print dic
+            extrafields[i.encode('utf-8')] = dic
+        extrafields = str(extrafields).encode('utf-8').replace("'", '"')
         
-        query = "insert into {17} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields) values ('{0}', {1}, '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}')".format(datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, table_name)
-        print query
+        query = "insert into %s (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields) values ('%s', %s, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields)
+        print query.encode('utf-8')
         params = {'q': query, 'api_key': api_key}
         r = requests.post(self.cartodb_api, data=params)
         
@@ -196,6 +204,7 @@ class Uploader():
             print 'Registry entry added'
         else:
             print 'Something went wrong:'
+            print r.status_code
             print r.text
         
         return
@@ -204,7 +213,7 @@ class Uploader():
         """Iterate through all records to build the records to upoad to CartoDB"""
         
         table_name = 'point_uploads'
-
+        
         # Open raw data file
         blob = ndb.Key(urlsafe=session['raw_key']).get().content
         
@@ -214,7 +223,7 @@ class Uploader():
         query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, extraFields, the_geom, the_geom_webmercator) values ".format(table_name)
         values = []
         for record in csvreader:
-            value = self.add_record_to_query(record, table_name)
+            value = self.add_record_to_query(record)
             if value:
                 values.append(value)
         
@@ -224,7 +233,7 @@ class Uploader():
         params = {'q': query, 'api_key': api_key}
         r = requests.post(self.cartodb_api, data=params)
         if r.status_code == 200:
-            flash('File uploaded successfuly!'.format(table_name))
+            flash('File uploaded successfuly!')
         else:
             flash('ERROR: something went wrong with the upload.')
             flash(r.text)
@@ -233,40 +242,32 @@ class Uploader():
         return
     
     
-    def add_record_to_query(self, record, table_name):
+    def add_record_to_query(self, record):
         """Prepare and upload the record to the new cartodb table."""
-        
-        # Locate mandatory fields
-        for i in session['alignment']:
-            if session['alignment'][i] == 'scientificName':
-                scientificName_idx = session['file_headers'].index(i)
-            elif session['alignment'][i] == 'decimalLatitude':
-                decimalLatitude_idx = session['file_headers'].index(i)
-            elif session['alignment'][i] == 'decimalLongitude':
-                decimalLongitude_idx = session['file_headers'].index(i)
-            elif session['alignment'][i] == 'eventDate':
-                eventDate_idx = session['file_headers'].index(i)
-            elif session['alignment'][i] == 'recordedBy':
-                recordedBy_idx = session['file_headers'].index(i)
-        
-        # Populate mandatory variables
+
+        # Find and populate mandatory variables        
         datasetId = session['file_uuid']
-        scientificName = record[scientificName_idx].replace('"','').replace("'", "")
-        decimalLatitude = record[decimalLatitude_idx]
-        decimalLongitude = record[decimalLongitude_idx]
-        eventDate = record[eventDate_idx].replace('"','').replace("'", "")
-        recordedBy = record[recordedBy_idx].replace('"','').replace("'", "")
-        
+        vals = {}
+        for i in session['headers']:
+            dwc_header = i
+            file_header = session['headers'][i] if session['headers'][i] != '' else None
+            if file_header is None:
+                vals[i] = session['defaults'][i]
+            else:
+                idx = session['file_headers'].index(file_header) if file_header is not None else None
+                val = record[idx].replace('"','').replace("'", "")
+                vals[i] = val
+
         # Populate extraFields
         extraFields = {}
         for i in session['file_headers']:
-            if i not in session['alignment']:
+            if i not in session['headers'].values():
                 idx = session['file_headers'].index(i)
                 key = i
                 value = record[idx].replace('"','').replace("'", "")
                 extraFields[key] = value
         
-        # Build query
-        values = "('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', ST_SetSRID(ST_Point({3}, {2}),4326), ST_SetSRID(ST_Point({3}, {2}),3857))".format(datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, json.dumps(extraFields))
+        # Build record for query
+        values = "('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', ST_SetSRID(ST_Point({3}, {2}),4326), ST_SetSRID(ST_Point({3}, {2}),3857))".format(datasetId, vals['scientificName'], vals['decimalLatitude'], vals['decimalLongitude'], vals['eventDate'], vals['recordedBy'], json.dumps(extraFields))
         
         return values

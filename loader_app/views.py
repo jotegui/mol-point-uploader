@@ -2,39 +2,52 @@ __author__ = '@jotegui'
 
 import uuid
 import os
+import json
 
-from flask import render_template, redirect, url_for, request, send_from_directory, flash, session
-from werkzeug.utils import secure_filename
+from flask import render_template, redirect, url_for, request, flash, session
 
 from loader_app import app
 from Parser import Parser
 from Uploader import Uploader
 from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
+import functions as f
 
 
 # Main page
 @app.route('/')
 def main():
-    return render_template("file_upload.html")
+    """Return main page."""
+    
+    # Tracking variable
+    session.pop('from', None)
+    session['from'] = 'main'
+    
+    return render_template("main.html")
+
 
 # Help page
 @app.route('/help')
 def help():
+    """Return help page."""
+    
     return render_template("help.html")
 
 
 # Spreadsheet template
 @app.route('/spreadsheet_template')
 def download_spreadsheet():
+    """Serve xls template to user."""
+    
     return redirect(url_for('static', filename='spreadsheet_template.xls'))
 
 
-# File upload
-@app.route('/headers', methods=['GET','POST'])
-def headers():
-
-    # Generate new UUID for file
+# Common operations and template selector
+@app.route('/headers_selector', methods = ['GET', 'POST'])
+def headers_selector():
+    """Basic file-level assessment and proper redirection."""
+    
+    # Generate and store new UUID for file
     file_uuid = str(uuid.uuid4())
     session.pop('file_uuid', None)
     session['file_uuid'] = file_uuid
@@ -45,121 +58,142 @@ def headers():
         flash("Please, provide a file to upload")
         return redirect(url_for("main"))
     
-    # Parse and upload file to NDB
+    # Parse and upload file to NDB, key in session['raw_key']
     uploader = Uploader()
     uploader.parse_file(up_file)
     if uploader.any_error is True:
         return redirect(url_for('main'))
     
-    # Remove some extra values from session
-    session.pop('alignment', None)
-    session.pop('extra_fields', None)
-    
-    # If they are using our template
+    # Redirect to proper handler
+    session['from'] = 'headers_selector'
     if "useTemplate" in request.form:
-        
-        # We already know the names of the required fields
-        session['alignment'] = {
-            "scientificName": 'scientificName',
-            "decimalLatitude": 'decimalLatitude',
-            "decimalLongitude": 'decimalLongitude',
-            "eventDate": 'eventDate',
-            "recordedBy": 'recordedBy'
-        }
-        
-        full_schema = session['alignment']
-        full_schema["geodeticDatum"] = 'geodeticDatum'
-        full_schema["samplingProtocol"] = 'samplingProtocol'
-        full_schema["verbatimLocality"] = 'verbatimLocality'
-        full_schema["coordinateUncertaintyInMeters"] = 'coordinateUncertaintyInMeters'
-        
-        # Check if template was actually used
-        missing = [x for x in session['alignment'] if x not in session['file_headers']]
-        if len(missing) > 0:
-            flash("ERROR: The following fields are missing from the template: {0}".format(", ".join(missing)))
-            return redirect(url_for("main"))
-        
-        # Parse the content
-        parser = Parser()
-        parser.parse_content()
-        if len(parser.errors) > 0:
-            for i in parser.errors:
-                flash("ERROR: {0}".format(i))
-            flash("Please, fix these issues or remove the wrong records and try again.")
-            return redirect(url_for('main'))
-        
-        # Check for some extra fields in case they extended the template
-        extra_fields = [x for x in session['file_headers'] if x not in full_schema.values()]
-        
-        # If so, point to the metafields page
-        if len(extra_fields) > 0:
-            return render_template("metafields.html", extra_fields=extra_fields, dwc_terms=dwc_terms)
-        # Else, to the metadata page
-        else:
-            return render_template("metadata.html")
-    
-    # If they are not using our template,
+        return redirect(url_for('with_template'))
     else:
-        
-        # And go to header processing
-        return render_template("/headers.html")
+        return redirect(url_for('without_template'))
 
 
-# Metadata about the fields
-@app.route('/metafields', methods=['GET','POST'])
-def metafields():
+# Without template
+@app.route('/without_template')
+def without_template():
+    """Return header alignment page."""
     
-    # Process alignment
-    session['alignment'] = {
-        request.form['scientificName']: "scientificName",
-        request.form['decimalLatitude']: "decimalLatitude",
-        request.form['decimalLongitude']: "decimalLongitude",
-        request.form['eventDate']: "eventDate",
-        request.form['recordedBy']: "recordedBy"
+    session.pop('skip_headers', None)
+    session['skip_headers'] = False
+    
+    session['from'] = 'without_template'
+    return render_template('headers.html')
+
+
+# With template
+@app.route('/with_template')
+def with_template():
+    """Automatically assign headers and defaults."""
+    
+    # Store template headers
+    session.pop('headers', None)
+    session['headers'] = {
+        'scientificName': 'scientificName',
+        'decimalLatitude': 'decimalLatitude',
+        'decimalLongitude': 'decimalLongitude',
+        'eventDate': 'eventDate',
+        'recordedBy': 'recordedBy',
+        'geodeticDatum': 'geodeticDatum',
+        'samplingProtocol': 'samplingProtocol',
+        'verbatimLocality': 'verbatimLocality',
+        'coordinateUncertaintyInMeters': 'coordinateUncertaintyInMeters',
     }
     
-    # Parse the content
-    parser = Parser()
-    parser.parse_content()
-    if len(parser.errors) > 0:
-        for i in parser.errors:
-            flash("ERROR: {0}".format(i))
-        flash("Please, fix these issues or remove the wrong records and try again.")
-        return redirect(url_for('main'))
+    # Check if template is actually used
+    for i in session['file_headers']:
+        if i not in session['headers']:
+            flash("We could not recognize the template. Redirected to header alignment")
+            return redirect(url_for('without_template'))
+    
+    # Store empty default values
+    session.pop('defaults', None)
+    session['defaults'] = {
+        'scientificName': "",
+        'decimalLatitude': "",
+        'decimalLongitude': "",
+        'eventDate': "",
+        'recordedBy': ""
+    }
+        
+    session.pop('skip_headers', None)
+    session['skip_headers'] = True
+    
+    session['from'] = 'with_template'
+    return redirect(url_for('metafields'))
 
+
+@app.route('/metafields', methods = ['GET', 'POST'])
+def metafields():
+    """Assess presence of extra fields and redirect properly."""
+    
+    # If coming from without_template, store headers and defaults
+    if session['skip_headers'] is False:
+        # Store header alignment
+        session.pop('headers', None)
+        session['headers'] = {
+            'scientificName': request.form['scientificName'] if request.form['scientificName'] != "? undefined:undefined ?" else "",
+            'decimalLatitude': request.form['decimalLatitude'] if request.form['decimalLatitude'] != "? undefined:undefined ?" else "",
+            'decimalLongitude': request.form['decimalLongitude'] if request.form['decimalLongitude'] != "? undefined:undefined ?" else "",
+            'eventDate': request.form['eventDate'] if request.form['eventDate'] != "? undefined:undefined ?" else "",
+            'recordedBy': request.form['recordedBy'] if request.form['recordedBy'] != "? undefined:undefined ?" else ""
+            
+        }
+        
+        # Store default values
+        session.pop('defaults', None)
+        session['defaults'] = {
+            'scientificName': request.form['scientificNameDefault'],
+            'decimalLatitude': request.form['decimalLatitudeDefault'],
+            'decimalLongitude': request.form['decimalLongitudeDefault'],
+            'eventDate': request.form['eventDateDefault'],
+            'recordedBy': request.form['recordedByDefault']
+        }
+    
     # Prepare extra fields for metadata
-    extra_fields = [x for x in session['file_headers'] if x not in session['alignment'].keys()]
+    extra_fields = [x for x in session['file_headers'] if x not in session['headers'].values() and x not in session['headers'].keys()]
+    session.pop('extra_fields', None)
+    session['extra_fields'] = extra_fields
     
+    # Decide where to go
     if len(extra_fields) > 0:
-        return render_template("metafields.html", extra_fields=extra_fields, dwc_terms=dwc_terms)
+        session['from'] = 'metafields'
+        return render_template('metafields.html', dwc_terms = dwc_terms)
     else:
-        return render_template("metadata.html")
+        return redirect(url_for('metadata'))
 
 
-# General metadata
-@app.route('/metadata', methods=['GET', 'POST'])
+@app.route('/metadata', methods = ['GET', 'POST'])
 def metadata():
+    """Store extra fields, if any, and prepare and upload meta.xml."""
     
-    session['extra_fields'] = {}
-    for i in request.form.keys():
-        if i != 'submitBtn' and not i.endswith("_dwc"):
-            term_dict = {"description": request.form[i], "term": request.form["{0}_dwc".format(i)]}
-            session['extra_fields'][i] = term_dict
-    
+    # Parse metafields if coming from there
+    if session['from'] == 'metafields':
+        session['extra_fields'] = {}
+
+        for i in request.form.keys():
+            if i != 'submitBtn' and not i.endswith("_dwc"):
+                term_dict = {"description": request.form[i], "term": request.form["%s_dwc" % i]}
+                session['extra_fields'][i] = term_dict
+        
     # Create meta.xml
     meta = render_meta()
     
     # Upload to NDB datastore
     uploader = Uploader()
     uploader.upload_meta(meta)
-    print 'meta_key = {0}'.format(session['meta_key'])
     
-    return render_template("metadata.html")
+    # Render metadata template
+    session['from'] = 'metadata'
+    return render_template('metadata.html')
 
 
-# Build DarwinCore Archive
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload', methods = ['POST'])
 def upload():
+    """Render and upload eml.xml, and create entry in registry table."""
     
     # Create eml.xml
     eml = render_eml(request)
@@ -167,28 +201,32 @@ def upload():
     # Upload to NDB datastore
     uploader = Uploader()
     uploader.upload_eml(eml)
-    print 'eml_key = {0}'.format(session['eml_key'])
     
     # Create CartoDB registry record
     uploader.cartodb_meta(request.form)
     
     # Create occurrence.txt
-    uploader.build_occurrence()
-    
-    # Create and upload the DWCA
-    uploader.build_dwca()
-    
+#    uploader.build_occurrence()
+    # TODO: Implement build_dwca and move to Cloud Storage with googleapis    
+
+    session['from'] = 'upload'
     return render_template('upload_cartodb.html')
 
 
 @app.route('/upload_cartodb')
 def upload_cartodb():
+    """Parse records and upload to point table."""
+    
+    uploader = Uploader()
     
     # Prepare the file for CartoDB
-    uploader = Uploader()
     uploader.cartodb_points()
     
-    # Delete objects from datastore
-    uploader.delete_ndb()
+    # Delete everything NDB datastore
+    uploader.delete_entity('raw_key')
+    uploader.delete_entity('meta_key')
+    uploader.delete_entity('eml_key')
+    uploader.delete_entity('occurrence_key')
     
+    # Go back to main page
     return redirect(url_for('main'))
