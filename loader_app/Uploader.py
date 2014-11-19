@@ -247,15 +247,35 @@ class Uploader():
 
         # Find and populate mandatory variables        
         datasetId = session['file_uuid']
+        
+        # Container for record values
         vals = {}
+        
+        # For each mandatory header
         for i in session['headers']:
+            
+            # DarwinCore name for the header
             dwc_header = i
+            
+            # Name of the header as it appears in the file, or None if default is to be applied
             file_header = session['headers'][i] if session['headers'][i] != '' else None
+            
+            # If header is not in file, apply default value
             if file_header is None:
                 vals[i] = session['defaults'][i]
+            
+            # If header is in file
             else:
+                
+                # Grab value record in correspondent position
                 idx = session['file_headers'].index(file_header) if file_header is not None else None
                 val = record[idx].replace('"','').replace("'", "")
+                
+                # If value is missing, apply default value
+                if val == '':
+                    val = session['defaults'][i]
+                
+                # Store value in container
                 vals[i] = val
 
         # Populate extraFields

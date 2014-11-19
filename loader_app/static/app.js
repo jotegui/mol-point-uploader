@@ -53,7 +53,7 @@
         
         // Only continue if there are no warnings
         if (this.warning == "") {
-            document.forms["headerForm"].action = "metafields";
+            document.forms["headerForm"].action = "store_headers";
             document.forms["headerForm"].submit();
         }
     }

@@ -6,26 +6,46 @@
         <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="author" content="Javier Otegui">
+        <link rel="icon" href="/static/images/favicon128.png" type="image/png">
         {% block redirect %}
         
         {% endblock %}
 
         <title>Map of Life - Observation data loader</title>
-
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js" type="text/javascript"></script>
         <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
         <link href="//netdna.bootstrapcdn.com/bootswatch/3.1.1/flatly/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="/static/style.css">
         
         <style type="text/css">
-        	.container, form, .tab-content .tab-pane { padding-top: 50px; padding-bottom: 50px; }
+        	.container, form, .tab-content .tab-pane { padding-top: 0px; padding-bottom: 50px; }
             #dataform .tq-validate.ng-invalid { background-color: #FA787E; }
+            .navbar { border-color: #FFFFFF; background-color: #FFFFFF; background-image: url("/static/images/header_background.png");}
+            input[type='number'] {-moz-appearance:textfield;}
         </style>
         
 
     </head>
     <body>
+    
+        <nav class="navbar navbar-default" role="navigation">
+          <div class="container-fluid">
+            <div class="navbar-header navbar-right">
+              <a class="navbar-brand" href="#">
+                <a href="http://mol.org/"><img alt="Map Of Life logo" src="/static/images/logo.png"></a>
+              </a>
+            </div>
+            <div class="navbar-header navbar-left">
+              <a class="navbar-brand" href="#">
+              <a href="#" class=" navbar-header h1">Point Data Uploader</a>
+              </a>
+            </div>
+          </div>
+        </nav>
+    
     	<div class="container">
-            <h1>MOL Data Loader</h1>
             
             <!-- Messages -->
             {% with messages = get_flashed_messages() %}
@@ -35,6 +55,8 @@
                 {% else %}
             <div id="messages" name="messages" class="alert alert-success">
                 {% endif %}
+                <button type="button" class="close" data-dismiss="alert">
+                <span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                 {% for message in messages %}
                   <p>{{ message|safe }}</p>
                 {% endfor %}

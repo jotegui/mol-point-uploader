@@ -17,7 +17,7 @@
         <p>You can also upload the data in your own format, as long as it has the following fields (or default values for them):</p>
         <ul>
             <li>Scientific Name</li>
-            <li>Latitude and Longitude, preferrably in <a href="http://en.wikipedia.org/wiki/Decimal_degrees" target="_blank">decimal degrees</a></li>
+            <li>Latitude and Longitude, in <a href="http://en.wikipedia.org/wiki/Decimal_degrees" target="_blank">decimal degrees</a></li>
             <li>Observation Date</li>
             <li>Collector's name</li>
         </ul>
@@ -38,4 +38,28 @@
         </div>
         </form>
     </div>
+
+
+<!-- PARSING RESULTS MODAL -->
+<div class="modal fade" id="parsingModal" tabindex="-1" role="dialog" aria-labelledby="parsingModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="parsingModalLabel">The following issues were found processing your file</h4>
+      </div>
+      <div class="modal-body">
+        Please correct the following errors and start over.
+        <ul>
+        {% for i in errors: %}
+          <li>{{i}}</li>
+        {% endfor %}
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

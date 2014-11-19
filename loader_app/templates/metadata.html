@@ -1,21 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
 
+<small>Overall progress</small>
 <div class="progress">
   <div class="progress-bar" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%;">
     <span class="sr-only">75% Complete</span>
   </div>
 </div>
 
+<h3>Metadata</h3>
+<button type="button" class="btn btn-default" data-toggle="modal" data-target="#instructionsModal">
+  Show instructions
+</button>
+
         <form action="/upload" method="POST" name="metadataForm" ng-controller="FormController as formCtrl" novalidate>
             <input type="hidden" name="origin" value="metadata">
-            <h3>Well done! But we are not there yet...</h3>
-            <div>
-                <p>
-                    Now, before we move on, we need to know a bit more about you and your project.
-                </p>
-            </div>
-            
+                <div class="col-xs-12">&nbsp</div>
             <!-- Publicly available -->
             <div class="form-group col-md-12">
                 <label for="public" class="control-label">Would you like the data set to be publicly available?</label>
@@ -27,19 +27,19 @@
             
             <!-- Title -->
             <div class="form-group col-md-12">
-                <label for="title" class="control-label">Title of the project</label>
+                <label for="title" class="control-label">Title of the dataset/project</label>
                 <div>
                     <input type="text" class="form-control" id="title" name="title" ng-model="formCtrl.formData.title" placeholder="Mammals of Africa" required>
-                    <span class="help-block">Required. Short title for the project.</span>
+                    <span class="help-block">Required.</span>
                 </div>
             </div>
             
             <!-- Abstract -->
             <div class="form-group col-md-12">
-                <label for="abstract" class="control-label">Abstract of the project</label>
+                <label for="abstract" class="control-label">Abstract of the dataset/project</label>
                 <div>
                     <textarea class="form-control" id="abstract" name="abstract" ng-model="formCtrl.formData.abstract" placeholder="A list of all mammal observations in..." required></textarea>
-                    <span class="help-block">Required. A brief description of the project.</span>
+                    <span class="help-block">Required.</span>
                 </div>
             </div>
             
@@ -48,7 +48,7 @@
                 <div class="col-md-6">
                    <label for="resource_creator_email">Creator of the dataset: email</label>
                    <input type="email" class="form-control" id="resource_creator_email" name="resource_creator_email" ng-model="formCtrl.formData.resource_creator_email" placeholder="john@smith.com" required>
-                   <span class="help-block">All required. Who compiled the list of observations?</span>
+                   <span class="help-block">All required.</span>
                 </div>
                 <div class="col-md-3">
                    <label for="resource_creator_first_name">First name</label>
@@ -68,7 +68,7 @@
                 <div class="col-md-6">
                    <label for="metadata_creator_email">Creator of the metadata: email</label>
                    <input type="email" class="form-control ng-pristine ng-invalid" id="metadata_creator_email" name="metadata_creator_email" ng-model="formCtrl.formData.metadata_creator_email" placeholder="john@smith.com" required>
-                   <span class="help-block">All required. Who specified the metadata of the dataset (<i>i.e.</i>, who filled this form).</span>
+                   <span class="help-block">All required.</span>
                 </div>
                 <div class="col-md-3">
                    <label for="metadata_creator_first_name">First name</label>
@@ -144,4 +144,37 @@
                 </div>
             </div>
         </form>
+
+
+<!-- INSTRUCTIONS MODAL -->
+<div class="modal fade" id="instructionsModal" tabindex="-1" role="dialog" aria-labelledby="instructionsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="instructionsModalLabel">Metadata Form</h4>
+      </div>
+      <div class="modal-body">
+      
+      <p>Well done! But we are not there yet... There is one last step before the submission is complete. We need to know a bit more about you and your project, so we can make it more discoverable.</p>
+      
+      <p>There are a few required fields in this last form, and all of them are marked as "Required". These are:</p>
+      
+      <ul>
+        <li>Public or not? - If you mark this field, people will be able to download a copy of the CSV with your records</li>
+        <li>Title - A name for this dataset</li>
+        <li>Abstract - A brief overview of the dataset and/or the project it belongs to</li>
+        <li>Creator of the dataset - Some information about the person/people who gathered and built the dataset, basically as a means for contact.</li>
+        <li>Creator of the metadata - Some information about you, the person who is using this application.</li>
+      </ul>
+      
+      <p>There are other optional fields, basically dealing with dataset discoverability. Feel free to fill as much as you like.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">OK!</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

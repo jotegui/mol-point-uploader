@@ -1,6 +1,5 @@
 __author__ = '@jotegui'
 
-import os
 import csv
 from datetime import datetime
 
@@ -10,11 +9,16 @@ from flask import session
 from google.appengine.ext import ndb
 
 class Parser():
-    """Assess the completeness and basic quality of the records, and create a Darwin Core Archive."""
+    """Assess the completeness and basic quality of the records."""
     
     def __init__(self):
-        """Initialize the class and create storage for errors and warnings."""
-        self.dataset_uuid = session['file_uuid']
+        """Initialize the class and create storage for headers, errors and warnings."""
+        
+        # Load content
+        blob = ndb.Key(urlsafe=session['raw_key']).get().content
+        self.content = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
+        
+        # Error and warning storage
         self.errors = []
         self.warnings = []
         self.cont = 0
@@ -22,11 +26,9 @@ class Parser():
     
     def parse_content(self):
         """Evaluate the content of the uploaded file."""
-        blob = ndb.Key(urlsafe=session['raw_key']).get().content
-        csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
         
         # Process every line
-        for record in csvreader:
+        for record in self.content:
             self.cont += 1
             self.parse_line(record)
         return
@@ -36,28 +38,26 @@ class Parser():
         """Assess each line for all existing quality tests."""
         self.bad_record = False
         
+        # Extract values
+        vals = {}
+        for i in ['decimalLatitude','decimalLongitude','eventDate','scientificName']:
+            vals[i] = session['defaults'][i] if session['defaults'][i] != '' else record[session['file_headers'].index(session['headers'][i])]
+
         # Parse coordinates
-        self.parse_coordinates(record)
+        self.parse_coordinates(vals['decimalLatitude'], vals['decimalLongitude'])
         
         # Parse date
-        self.parse_date(record)
+        self.parse_date(vals['eventDate'])
         
         # Parse scientificName
-        self.parse_sciname(record)
+        self.parse_scientificName(vals['scientificName'])
         
         # More to be added
         return
     
     
-    def parse_coordinates(self, record):
+    def parse_coordinates(self, lat, lng):
         """Assess the completeness and quality of coordinates."""
-        # Locate latitude and longitude
-        lat_field = [x for x in session['alignment'] if session['alignment'][x] == 'decimalLatitude'][0]
-        lng_field = [x for x in session['alignment'] if session['alignment'][x] == 'decimalLongitude'][0]
-        lat_idx = session['file_headers'].index(lat_field)
-        lng_idx = session['file_headers'].index(lng_field)
-        lat = record[lat_idx]
-        lng = record[lng_idx]
         
         # Completeness
         if lat == "":
@@ -106,16 +106,11 @@ class Parser():
         return
     
     
-    def parse_date(self, record):
+    def parse_date(self, date):
         """Assess the completeness and quality of dates."""
         
         # Accepted date field separators: "/", "-", "."
         accepted_separators = ['/', '-', '.']
-        
-        # Locate date
-        date_field = [x for x in session['alignment'] if session['alignment'][x] == 'eventDate'][0]
-        date_idx = session['file_headers'].index(date_field)
-        date = record[date_idx]
         
         # Completeness
         if date == "":
@@ -192,7 +187,8 @@ class Parser():
                 self.errors.append("Month out of range in record #{0}".format(self.cont))
                 return
                 
-        # Year-month-day, without separator
+        # TODO: Update adding final case (year-month-day with separator and both month and day with single-digit values)
+        # Year-month-day, without separator, or year-month-day with separator and both month and day with single-digit values
         elif len(date) == 8:
             # Check if correct format
             try:
@@ -221,7 +217,14 @@ class Parser():
                 self.bad_record = True
                 self.errors.append("Day out of range in record #{0}".format(self.cont))
                 return
-                
+        
+        
+        # TODO: complete this
+        # Year-month-day, with either month or day with single-digit value
+        elif len(date) == 9:
+            pass
+        
+        
         # Year-month-day with separator.
         elif len(date) == 10:
             # Check if correct format
@@ -266,12 +269,8 @@ class Parser():
         return
     
     
-    def parse_sciname(self, record):
+    def parse_scientificName(self, sciname):
         """Assess the completeness and quality of scientific names."""
-        # Locate scientificName
-        sciname_field = [x for x in session['alignment'] if session['alignment'][x] == 'scientificName'][0]
-        sciname_idx = session['file_headers'].index(sciname_field)
-        sciname = record[sciname_idx]
         
         # Completeness
         if sciname == "":

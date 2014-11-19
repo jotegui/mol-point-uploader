@@ -19,11 +19,18 @@ import functions as f
 def main():
     """Return main page."""
     
+    # If coming from parsing content, show errors
+    if 'errors' in session.keys():
+        errors = session['errors']
+    # Otherwise, clear session and start fresh
+    else:
+        session.clear()
+        errors = None
+    
     # Tracking variable
-    session.pop('from', None)
     session['from'] = 'main'
     
-    return render_template("main.html")
+    return render_template("main.html", errors=errors)
 
 
 # Help page
@@ -72,68 +79,75 @@ def headers_selector():
         return redirect(url_for('without_template'))
 
 
-# Without template
-@app.route('/without_template')
-def without_template():
-    """Return header alignment page."""
-    
-    session.pop('skip_headers', None)
-    session['skip_headers'] = False
-    
-    session['from'] = 'without_template'
-    return render_template('headers.html')
-
-
 # With template
 @app.route('/with_template')
 def with_template():
     """Automatically assign headers and defaults."""
     
-    # Store template headers
-    session.pop('headers', None)
-    session['headers'] = {
-        'scientificName': 'scientificName',
-        'decimalLatitude': 'decimalLatitude',
-        'decimalLongitude': 'decimalLongitude',
-        'eventDate': 'eventDate',
-        'recordedBy': 'recordedBy',
-        'geodeticDatum': 'geodeticDatum',
-        'samplingProtocol': 'samplingProtocol',
-        'verbatimLocality': 'verbatimLocality',
-        'coordinateUncertaintyInMeters': 'coordinateUncertaintyInMeters',
-    }
-    
-    # Check if template is actually used
-    for i in session['file_headers']:
-        if i not in session['headers']:
-            flash("We could not recognize the template. Redirected to header alignment")
-            return redirect(url_for('without_template'))
-    
-    # Store empty default values
-    session.pop('defaults', None)
-    session['defaults'] = {
-        'scientificName': "",
-        'decimalLatitude': "",
-        'decimalLongitude': "",
-        'eventDate': "",
-        'recordedBy': ""
-    }
-        
-    session.pop('skip_headers', None)
-    session['skip_headers'] = True
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
     
     session['from'] = 'with_template'
-    return redirect(url_for('metafields'))
-
-
-@app.route('/metafields', methods = ['GET', 'POST'])
-def metafields():
-    """Assess presence of extra fields and redirect properly."""
+    return redirect(url_for('store_headers'))
     
-    # If coming from without_template, store headers and defaults
-    if session['skip_headers'] is False:
+
+# Without template
+@app.route('/without_template')
+def without_template():
+    """Return header alignment page."""
+    
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
+    
+    session['from'] = 'without_template'
+    return render_template('headers.html')
+    
+
+@app.route('/store_headers', methods=['GET', 'POST'])
+def store_headers():
+    """Store headers in session variables."""
+    
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
+    
+    session.pop('headers', None)
+    
+    # If GET request, template is used
+    if request.method == 'GET':
+        
+        # Store template headers
+        session['headers'] = {
+            'scientificName': 'scientificName',
+            'decimalLatitude': 'decimalLatitude',
+            'decimalLongitude': 'decimalLongitude',
+            'eventDate': 'eventDate',
+            'recordedBy': 'recordedBy',
+            'geodeticDatum': 'geodeticDatum',
+            'samplingProtocol': 'samplingProtocol',
+            'verbatimLocality': 'verbatimLocality',
+            'coordinateUncertaintyInMeters': 'coordinateUncertaintyInMeters',
+        }
+        
+        # Check if template is actually used
+        for i in session['file_headers']:
+            if i not in session['headers']:
+                flash("We could not recognize the template. Redirected to header alignment")
+                return redirect(url_for('without_template'))
+        
+        # Store empty default values
+        session.pop('defaults', None)
+        session['defaults'] = {
+            'scientificName': "",
+            'decimalLatitude': "",
+            'decimalLongitude': "",
+            'eventDate': "",
+            'recordedBy': ""
+        }
+    
+    # If POST request, template is not used
+    elif request.method == 'POST':
+        
         # Store header alignment
-        session.pop('headers', None)
         session['headers'] = {
             'scientificName': request.form['scientificName'] if request.form['scientificName'] != "? undefined:undefined ?" else "",
             'decimalLatitude': request.form['decimalLatitude'] if request.form['decimalLatitude'] != "? undefined:undefined ?" else "",
@@ -153,6 +167,37 @@ def metafields():
             'recordedBy': request.form['recordedByDefault']
         }
     
+    session['from'] = 'with_template'
+    return redirect(url_for('parse'))
+
+
+@app.route('/parse')
+def parse():
+    """Check the consistency of the uploaded file."""
+    
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
+    
+    parser = Parser()
+    parser.parse_content()
+    
+    if len(parser.errors) == 0:
+        target = 'metafields'
+    else:
+        session.pop('errors', None)
+        session['errors'] = parser.errors
+        flash('ERROR: We found some problems when parsing your file. <a href="#" data-toggle="modal" data-target="#parsingModal">Click here</a> to get a detailed review.')
+        target = 'main'
+    return redirect(url_for(target))
+
+
+@app.route('/metafields', methods = ['GET', 'POST'])
+def metafields():
+    """Assess presence of extra fields and redirect properly."""
+    
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
+    
     # Prepare extra fields for metadata
     extra_fields = [x for x in session['file_headers'] if x not in session['headers'].values() and x not in session['headers'].keys()]
     session.pop('extra_fields', None)
@@ -169,6 +214,9 @@ def metafields():
 @app.route('/metadata', methods = ['GET', 'POST'])
 def metadata():
     """Store extra fields, if any, and prepare and upload meta.xml."""
+    
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
     
     # Parse metafields if coming from there
     if session['from'] == 'metafields':
@@ -195,6 +243,9 @@ def metadata():
 def upload():
     """Render and upload eml.xml, and create entry in registry table."""
     
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
+    
     # Create eml.xml
     eml = render_eml(request)
     
@@ -217,6 +268,9 @@ def upload():
 def upload_cartodb():
     """Parse records and upload to point table."""
     
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
+    
     uploader = Uploader()
     
     # Prepare the file for CartoDB
@@ -226,7 +280,7 @@ def upload_cartodb():
     uploader.delete_entity('raw_key')
     uploader.delete_entity('meta_key')
     uploader.delete_entity('eml_key')
-    uploader.delete_entity('occurrence_key')
+    #uploader.delete_entity('occurrence_key')
     
     # Go back to main page
     return redirect(url_for('main'))
