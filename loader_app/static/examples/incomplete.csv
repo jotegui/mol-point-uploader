@@ -1,9 +1,9 @@
 scientificName,decimalLatitude,decimalLongitude,eventDate,recordedBy
-Puma concolor,42.12,5.1,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
+,42.12,5.1,2014-05-13,John Smith
+Puma concolor,,5.13,2014-05-13,John Smith
+Puma concolor,42.12,,2014-05-13,John Smith
+Puma concolor,42.12,5.13,,John Smith
+Puma concolor,42.12,5.13,2014-05-13,
 Puma concolor,42.12,5.13,2014-05-13,John Smith
 Puma concolor,42.12,5.13,2014-05-13,John Smith
 Puma concolor,42.12,5.13,2014-05-13,John Smith

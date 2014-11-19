@@ -40,17 +40,20 @@ class Parser():
         
         # Extract values
         vals = {}
-        for i in ['decimalLatitude','decimalLongitude','eventDate','scientificName']:
+        for i in ['decimalLatitude','decimalLongitude','eventDate','scientificName', 'recordedBy']:
             vals[i] = session['defaults'][i] if session['defaults'][i] != '' else record[session['file_headers'].index(session['headers'][i])]
 
         # Parse coordinates
         self.parse_coordinates(vals['decimalLatitude'], vals['decimalLongitude'])
         
         # Parse date
-        self.parse_date(vals['eventDate'])
+        self.parse_eventDate(vals['eventDate'])
         
         # Parse scientificName
         self.parse_scientificName(vals['scientificName'])
+        
+        # Parse recordedBy
+        self.parse_recordedBy(vals['recordedBy'])
         
         # More to be added
         return
@@ -106,7 +109,7 @@ class Parser():
         return
     
     
-    def parse_date(self, date):
+    def parse_eventDate(self, date):
         """Assess the completeness and quality of dates."""
         
         # Accepted date field separators: "/", "-", "."
@@ -282,6 +285,19 @@ class Parser():
         if "'" in sciname or '"' in sciname:
             self.bad_record = True
             self.errors.append("Strange character (' or \") in record #{0}".format(self.cont))
+            return
+        
+        # More to be added
+        return
+    
+    
+    def parse_recordedBy(self, recordedBy):
+        """Assess the completeness and quality of scientific names."""
+        
+        # Completeness
+        if recordedBy == "":
+            self.bad_record = True
+            self.errors.append("recordedBy missing in record #{0}".format(self.cont))
             return
         
         # More to be added
