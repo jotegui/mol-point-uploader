@@ -1,34 +1,34 @@
-scientificName,decimalLatitude,decimalLongitude,eventDate,recordedBy
-,42.12,5.1,2014-05-13,John Smith
-Puma concolor,,5.13,2014-05-13,John Smith
-Puma concolor,42.12,,2014-05-13,John Smith
-Puma concolor,42.12,5.13,,John Smith
-Puma concolor,42.12,5.13,2014-05-13,
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
-Puma concolor,42.12,5.13,2014-05-13,John Smith
+scientificName,decimalLatitude,decimalLongitude,eventDate,recordedBy,coordinateUncertaintyInMeters,geodeticDatum
+,42.12,5.1,2014-05-13,John Smith,0,WSGA84
+Puma concolor,,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84

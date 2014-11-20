@@ -29,12 +29,16 @@ class Uploader():
         
         return
 
+    
     # NDB entity operations
+    
+    
     def upload_ndb(self, name, content):
         """Upload the content of a file to the NDB datastore. Returns urlsafe entity key."""
         uploaded_file = UploadedFile(uuid=session['file_uuid'], name=name, content=str(content.encode('utf-8')))
         file_key = uploaded_file.put().urlsafe()
         return file_key
+    
     
     def delete_entity(self, key_name):
         """Delete a single entity from the NDB datastore."""
@@ -169,25 +173,24 @@ class Uploader():
         # Populate fields
         datasetId = session['file_uuid']
         public = True if 'public' in request.keys() and request['public'] == 'on' else False
-        title = request['title']
-        abstract = request['abstract']
-        creatorEmail = request['resource_creator_email']
-        creatorFirst = request['resource_creator_first_name']
-        creatorLast = request['resource_creator_last_name']
-        metadataEmail = request['metadata_creator_email']
-        metadataFirst = request['metadata_creator_first_name']
-        metadataLast = request['metadata_creator_last_name']
-        geographicScope = request['geographic_scope']
-        temporalScope = request['temporal_scope']
-        taxonomicScope = request['taxonomic_scope']
-        keywords = str([str(x).strip() for x in request['keywords'].split(";")]).replace("'", '"').replace('[', '{').replace(']', '}')
-        license = request['license']
-        additionalInformation = request['additional_information']
+        title = request['title'].encode('utf-8')
+        abstract = request['abstract'].encode('utf-8')
+        creatorEmail = request['resource_creator_email'].encode('utf-8')
+        creatorFirst = request['resource_creator_first_name'].encode('utf-8')
+        creatorLast = request['resource_creator_last_name'].encode('utf-8')
+        metadataEmail = request['metadata_creator_email'].encode('utf-8')
+        metadataFirst = request['metadata_creator_first_name'].encode('utf-8')
+        metadataLast = request['metadata_creator_last_name'].encode('utf-8')
+        geographicScope = request['geographic_scope'].encode('utf-8')
+        temporalScope = request['temporal_scope'].encode('utf-8')
+        taxonomicScope = request['taxonomic_scope'].encode('utf-8')
+        keywords = json.dumps([x.strip() for x in request['keywords'].split(';')], ensure_ascii=False).replace('[','{').replace(']','}').encode('utf-8')
+        license = request['license'].encode('utf-8')
+        additionalInformation = request['additional_information'].encode('utf-8')
         
         # Build extrafields with the description and headers of non-mandatory fields
         extrafields = {}
         for i in session['extra_fields']:
-            print i.encode('utf-8')
             dic = {}
             for j in session['extra_fields'][i]:
                 dic[str(j)] = str(session['extra_fields'][i][j])
@@ -195,8 +198,8 @@ class Uploader():
             extrafields[i.encode('utf-8')] = dic
         extrafields = str(extrafields).encode('utf-8').replace("'", '"')
         
-        query = "insert into %s (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields) values ('%s', %s, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields)
-        print query.encode('utf-8')
+        query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields), 'utf-8')
+
         params = {'q': query, 'api_key': api_key}
         r = requests.post(self.cartodb_api, data=params)
         
@@ -206,6 +209,9 @@ class Uploader():
             print 'Something went wrong:'
             print r.status_code
             print r.text
+        
+        while True:
+            pass
         
         return
     

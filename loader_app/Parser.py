@@ -40,7 +40,7 @@ class Parser():
         
         # Extract values
         vals = {}
-        for i in ['decimalLatitude','decimalLongitude','eventDate','scientificName', 'recordedBy']:
+        for i in session['mandatory_fields']:
             vals[i] = session['defaults'][i] if session['defaults'][i] != '' else record[session['file_headers'].index(session['headers'][i])]
 
         # Parse coordinates
@@ -55,12 +55,18 @@ class Parser():
         # Parse recordedBy
         self.parse_recordedBy(vals['recordedBy'])
         
+        # Parse geodeticDatum
+        self.parse_geodeticDatum(vals['geodeticDatum'])
+        
+        # Parse coordinateUncertaintyInMeters
+        self.parse_coordinateUncertaintyInMeters(vals['coordinateUncertaintyInMeters'])
+        
         # More to be added
         return
     
     
     def parse_coordinates(self, lat, lng):
-        """Assess the completeness and quality of coordinates."""
+        """Assess the completeness and quality of the coordinate fields."""
         
         # Completeness
         if lat == "":
@@ -110,7 +116,7 @@ class Parser():
     
     
     def parse_eventDate(self, date):
-        """Assess the completeness and quality of dates."""
+        """Assess the completeness and quality of the eventDate field."""
         
         # Accepted date field separators: "/", "-", "."
         accepted_separators = ['/', '-', '.']
@@ -273,7 +279,7 @@ class Parser():
     
     
     def parse_scientificName(self, sciname):
-        """Assess the completeness and quality of scientific names."""
+        """Assess the completeness and quality of the scientificName field."""
         
         # Completeness
         if sciname == "":
@@ -292,7 +298,7 @@ class Parser():
     
     
     def parse_recordedBy(self, recordedBy):
-        """Assess the completeness and quality of scientific names."""
+        """Assess the completeness and quality of the recordedBy field."""
         
         # Completeness
         if recordedBy == "":
@@ -300,5 +306,39 @@ class Parser():
             self.errors.append("recordedBy missing in record #{0}".format(self.cont))
             return
         
+        # More to be added
+        return
+    
+    
+    def parse_geodeticDatum(self, geodeticDatum):
+        """Assess the completeness and quality of the geodeticDatum field."""
+        
+        # Completeness
+        if geodeticDatum == "":
+            self.bad_record = True
+            self.errors.append("geodeticDatum missing in record #{0}".format(self.cont))
+            return
+        
+        # More to be added
+        return
+    
+    
+    def parse_coordinateUncertaintyInMeters(self, coordinateUncertaintyInMeters):
+        """Assess the completeness and quality of the coordinateUncertaintyInMeters field."""
+        
+        # Completeness
+        if coordinateUncertaintyInMeters == "":
+            self.bad_record = True
+            self.errors.append("coordinateUncertaintyInMeters missing in record #{0}".format(self.cont))
+            return
+
+        # Values are numbers
+        try:
+            coordinateUncertaintyInMeters = float(coordinateUncertaintyInMeters)
+        except ValueError:
+            self.bad_record = True
+            self.errors.append("coordinateUncertaintyInMeters is not a number in record #{0}".format(self.cont))
+            return
+            
         # More to be added
         return

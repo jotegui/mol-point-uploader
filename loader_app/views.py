@@ -20,12 +20,28 @@ def main():
     """Return main page."""
     
     # If coming from parsing content, show errors
+    print session
     if 'errors' in session.keys():
         errors = session['errors']
     # Otherwise, clear session and start fresh
     else:
         session.clear()
-        errors = None
+        errors = []
+    
+    # Mandatory headers and header types
+    session.pop('mandatory_fields_types', None)
+    session.pop('mandatory_fields', None)
+    
+    session['mandatory_fields_types'] = {
+        'scientificName': 'text',
+        'decimalLatitude': 'number',
+        'decimalLongitude': 'number',
+        'eventDate': 'date',
+        'recordedBy': 'text',
+        'geodeticDatum': 'text',
+        'coordinateUncertaintyInMeters': 'number'
+    }
+    session['mandatory_fields'] = session['mandatory_fields_types'].keys()
     
     # Tracking variable
     session['from'] = 'main'
@@ -116,17 +132,10 @@ def store_headers():
     if request.method == 'GET':
         
         # Store template headers
-        session['headers'] = {
-            'scientificName': 'scientificName',
-            'decimalLatitude': 'decimalLatitude',
-            'decimalLongitude': 'decimalLongitude',
-            'eventDate': 'eventDate',
-            'recordedBy': 'recordedBy',
-            'geodeticDatum': 'geodeticDatum',
-            'samplingProtocol': 'samplingProtocol',
-            'verbatimLocality': 'verbatimLocality',
-            'coordinateUncertaintyInMeters': 'coordinateUncertaintyInMeters',
-        }
+        session.pop('headers', None)
+        session['headers'] = {}
+        for i in session['mandatory_fields']:
+            session['headers'][i] = i
         
         # Check if template is actually used
         for i in session['file_headers']:
@@ -136,36 +145,24 @@ def store_headers():
         
         # Store empty default values
         session.pop('defaults', None)
-        session['defaults'] = {
-            'scientificName': "",
-            'decimalLatitude': "",
-            'decimalLongitude': "",
-            'eventDate': "",
-            'recordedBy': ""
-        }
+        session['defaults'] = {}
+        for i in session['mandatory_fields']:
+            session['defaults'][i] = ""
     
     # If POST request, template is not used
     elif request.method == 'POST':
         
         # Store header alignment
-        session['headers'] = {
-            'scientificName': request.form['scientificName'] if request.form['scientificName'] != "? undefined:undefined ?" else "",
-            'decimalLatitude': request.form['decimalLatitude'] if request.form['decimalLatitude'] != "? undefined:undefined ?" else "",
-            'decimalLongitude': request.form['decimalLongitude'] if request.form['decimalLongitude'] != "? undefined:undefined ?" else "",
-            'eventDate': request.form['eventDate'] if request.form['eventDate'] != "? undefined:undefined ?" else "",
-            'recordedBy': request.form['recordedBy'] if request.form['recordedBy'] != "? undefined:undefined ?" else ""
-            
-        }
+        session.pop('headers', None)
+        session['headers'] = {}
+        for i in session['mandatory_fields']:
+            session['headers'][i] = request.form[i] if request.form[i] != "? undefined:undefined ?" else ""
         
         # Store default values
         session.pop('defaults', None)
-        session['defaults'] = {
-            'scientificName': request.form['scientificNameDefault'],
-            'decimalLatitude': request.form['decimalLatitudeDefault'],
-            'decimalLongitude': request.form['decimalLongitudeDefault'],
-            'eventDate': request.form['eventDateDefault'],
-            'recordedBy': request.form['recordedByDefault']
-        }
+        session['defaults'] = {}
+        for i in session['mandatory_fields']:
+            session['defaults'][i] = request.form[i+'Default']
     
     session['from'] = 'with_template'
     return redirect(url_for('parse'))
