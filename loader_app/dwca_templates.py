@@ -48,7 +48,7 @@ def render_eml(request):
         taxonomicCoverage = taxonomicCoverage,
         geographicCoverage = geographicCoverage,
         temporalCoverage = temporalCoverage
-    )
+    ).encode('utf-8')
     
     return eml
 
@@ -61,6 +61,7 @@ def render_meta():
     
     # Initialize field container with 'id' and 'datasetId' as first two elements
     fields = ['id', 'datasetId', 'basisOfRecord']
+    defaults = {}
     
     # Make a flat version of the DWC terms
     dwc_terms_flat = {}
@@ -70,17 +71,26 @@ def render_meta():
     
     # Grab values from the session variables
     cont = 0
+
     for field in session['file_headers']:
-        if field in session['headers']:
+
+        if field in session['headers'].values():
+            dwc_term = [x for x in session['headers'] if session['headers'][x] == field][0]
             session['dwc_headers'].append(cont)
-            fields.append(dwc_terms_flat[session['headers'][field]])
+            fields.append(dwc_terms_flat[dwc_term])
+
         elif field in session['extra_fields']:
             if session['extra_fields'][field]['term'] != "":
                 session['dwc_headers'].append(cont)
                 fields.append(session['extra_fields'][field]['term'])
         cont += 1
     
-    # Render template
-    meta = render_template("meta.xml", fields=fields)
+    # Grab default values
+    for field in session['defaults']:
+        if session['defaults'][field] != "":
+            defaults[dwc_terms_flat[field]] = session['defaults'][field]
     
+    # Render template
+    meta = render_template("meta.xml", fields=fields, defaults=defaults).encode('utf-8')
+
     return meta

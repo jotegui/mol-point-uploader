@@ -35,7 +35,7 @@ class Uploader():
     
     def upload_ndb(self, name, content):
         """Upload the content of a file to the NDB datastore. Returns urlsafe entity key."""
-        uploaded_file = UploadedFile(uuid=session['file_uuid'], name=name, content=str(content.encode('utf-8')))
+        uploaded_file = UploadedFile(uuid=session['file_uuid'], name=name, content=str(content))
         file_key = uploaded_file.put().urlsafe()
         return file_key
     
@@ -193,13 +193,13 @@ class Uploader():
         for i in session['extra_fields']:
             dic = {}
             for j in session['extra_fields'][i]:
-                dic[str(j)] = str(session['extra_fields'][i][j])
+                dic[j] = session['extra_fields'][i][j]
             print dic
             extrafields[i.encode('utf-8')] = dic
-        extrafields = str(extrafields).encode('utf-8').replace("'", '"')
+        extrafields = unicode(json.dumps(extrafields), 'utf-8')
         
         query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields), 'utf-8')
-
+        
         params = {'q': query, 'api_key': api_key}
         r = requests.post(self.cartodb_api, data=params)
         
@@ -209,9 +209,6 @@ class Uploader():
             print 'Something went wrong:'
             print r.status_code
             print r.text
-        
-        while True:
-            pass
         
         return
     

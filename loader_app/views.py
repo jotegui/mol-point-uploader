@@ -20,13 +20,12 @@ def main():
     """Return main page."""
     
     # If coming from parsing content, show errors
-    print session
     if 'errors' in session.keys():
         errors = session['errors']
-    # Otherwise, clear session and start fresh
-    else:
-        session.clear()
-        errors = []
+
+    # Then, clear session and start fresh
+    session.clear()
+    errors = []
     
     # Mandatory headers and header types
     session.pop('mandatory_fields_types', None)
@@ -135,7 +134,7 @@ def store_headers():
         session.pop('headers', None)
         session['headers'] = {}
         for i in session['mandatory_fields']:
-            session['headers'][i] = i
+            session['headers'][i] = unicode(i)
         
         # Check if template is actually used
         for i in session['file_headers']:
@@ -156,13 +155,13 @@ def store_headers():
         session.pop('headers', None)
         session['headers'] = {}
         for i in session['mandatory_fields']:
-            session['headers'][i] = request.form[i] if request.form[i] != "? undefined:undefined ?" else ""
+            session['headers'][i] = unicode(request.form[i]) if request.form[i] != "? undefined:undefined ?" else ""
         
         # Store default values
         session.pop('defaults', None)
         session['defaults'] = {}
         for i in session['mandatory_fields']:
-            session['defaults'][i] = request.form[i+'Default']
+            session['defaults'][i] = unicode(request.form[i+'Default'])
     
     session['from'] = 'with_template'
     return redirect(url_for('parse'))

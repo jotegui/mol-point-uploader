@@ -1,6 +1,34 @@
-scientificName,decimalLatitude,decimalLongitude,eventDate,recordedBy,geodeticDatum,samplingProtocol,verbatimLocality,coordinateUncertaintyInMeters
-Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30
-Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30
-Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30
-Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30
-Puma concolor,42.12,5.13,2014-05-17,John Smith,WGS84,unknown,"2Km north of Boulder, CO",30
+scientificName,decimalLatitude,decimalLongitude,eventDate,recordedBy,coordinateUncertaintyInMeters,geodeticDatum
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,0,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
+Puma concolor,42.12,5.13,2014-05-13,John Smith,1,WSGA84
