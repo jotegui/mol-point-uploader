@@ -194,7 +194,6 @@ class Uploader():
             dic = {}
             for j in session['extra_fields'][i]:
                 dic[j] = session['extra_fields'][i][j]
-            print dic
             extrafields[i.encode('utf-8')] = dic
         extrafields = unicode(json.dumps(extrafields), 'utf-8')
         
@@ -279,7 +278,7 @@ class Uploader():
                     val = session['defaults'][i]
                 
                 # Store value in container
-                vals[i] = val
+                vals[i] = val.encode('utf-8')
 
         # Populate extraFields
         extraFields = {}
