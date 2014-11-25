@@ -5,6 +5,20 @@ Code for the registration and upload of user-provided datasets into Map Of Life'
 
 Author: Javier Otegui (javier.otegui@gmail.com)
 
+Changelog
+---
+
+* Dev branch: Changes
+	* Default values for missing fields
+	* Default values for empty records
+	* Support for non-ASCII characters (at least Spanish chars)
+* *Master branch: Initial release
+	* Header alignment
+	* Extra fields
+	* Metadata
+
+(*) Indicates live version
+
 What it does
 ---
 
