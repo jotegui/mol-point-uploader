@@ -23,6 +23,7 @@ def render_eml(request):
     metadata_electronicMailAddress = request.form['metadata_creator_email']
     
     # Optional fields
+    lang = request.form['lang'] if 'lang' in request.form.keys() and request.form['lang'] != "" else 'eng'
     intellectualRights = request.form['license'] if 'license' in request.form.keys() else None
     additionalInfo = request.form['additional_information'] if 'additional_information' in request.form.keys() else None
     keywords = [x for x in request.form['keywords'].split(";".rstrip().lstrip())] if len(request.form['keywords']) > 0 else None
@@ -41,6 +42,7 @@ def render_eml(request):
         metadata_surName = metadata_surName,
         metadata_electronicMailAddress = metadata_electronicMailAddress,
         pubDate = pubDate,
+        lang = lang,
         abstract = abstract,
         intellectualRights = intellectualRights,
         additionalInfo = additionalInfo,

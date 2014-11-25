@@ -22,11 +22,12 @@ def main():
     # If coming from parsing content, show errors
     if 'errors' in session.keys():
         errors = session['errors']
-
-    # Then, clear session and start fresh
-    session.clear()
-    errors = []
     
+    # Else, clear session and start fresh
+    else:
+        session.clear()
+        errors = []
+
     # Mandatory headers and header types
     session.pop('mandatory_fields_types', None)
     session.pop('mandatory_fields', None)
@@ -41,7 +42,7 @@ def main():
         'coordinateUncertaintyInMeters': 'number'
     }
     session['mandatory_fields'] = session['mandatory_fields_types'].keys()
-    
+
     # Tracking variable
     session['from'] = 'main'
     

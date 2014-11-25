@@ -181,6 +181,7 @@ class Uploader():
         metadataEmail = request['metadata_creator_email'].encode('utf-8')
         metadataFirst = request['metadata_creator_first_name'].encode('utf-8')
         metadataLast = request['metadata_creator_last_name'].encode('utf-8')
+        lang = request['lang'].encode('utf-8') if 'lang' in request and request['lang'] != "" else 'en'
         geographicScope = request['geographic_scope'].encode('utf-8')
         temporalScope = request['temporal_scope'].encode('utf-8')
         taxonomicScope = request['taxonomic_scope'].encode('utf-8')
@@ -197,7 +198,7 @@ class Uploader():
             extrafields[i.encode('utf-8')] = dic
         extrafields = unicode(json.dumps(extrafields), 'utf-8')
         
-        query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields), 'utf-8')
+        query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}', '{18}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields), 'utf-8')
         
         params = {'q': query, 'api_key': api_key}
         r = requests.post(self.cartodb_api, data=params)
@@ -225,7 +226,7 @@ class Uploader():
         query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, extraFields, the_geom, the_geom_webmercator) values ".format(table_name)
         values = []
         for record in csvreader:
-            value = self.add_record_to_query(record)
+            value = self.add_record_to_query([unicode(x, 'utf-8') for x in record])
             if value:
                 values.append(value)
         
@@ -272,7 +273,7 @@ class Uploader():
                 # Grab value record in correspondent position
                 idx = session['file_headers'].index(file_header) if file_header is not None else None
                 val = record[idx].replace('"','').replace("'", "")
-                
+
                 # If value is missing, apply default value
                 if val == '':
                     val = session['defaults'][i]
@@ -289,7 +290,8 @@ class Uploader():
                 value = record[idx].replace('"','').replace("'", "")
                 extraFields[key] = value
         
+        
         # Build record for query
-        values = "('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', ST_SetSRID(ST_Point({3}, {2}),4326), ST_SetSRID(ST_Point({3}, {2}),3857))".format(datasetId, vals['scientificName'], vals['decimalLatitude'], vals['decimalLongitude'], vals['eventDate'], vals['recordedBy'], json.dumps(extraFields))
+        values = unicode("('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', ST_SetSRID(ST_Point({3}, {2}),4326), ST_SetSRID(ST_Point({3}, {2}),3857))".format(datasetId, vals['scientificName'], vals['decimalLatitude'], vals['decimalLongitude'], vals['eventDate'], vals['recordedBy'], json.dumps(extraFields)), 'utf-8')
         
         return values
