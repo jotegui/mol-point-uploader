@@ -67,12 +67,14 @@ class Uploader():
         headerline = up_file.readline().rstrip().decode('utf-8')
         if len(headerline.split(",")) > 1:
             session['field_separator'] = ","
+        elif len(headerline.split(";")) > 1:
+            session['field_separator'] = ";"
         elif len(headerline.split("\t")) > 1:
             session['field_separator'] = "\t"
         elif len(headerline.split("|")) > 1:
             session['field_separator'] = "|"
         else:
-            flash("ERROR: Unsupported field separator. Fields should be separated by comma (,), pipe (|) or tab")
+            flash("ERROR: Unsupported field separator. Fields should be separated by comma (,), semicolon (;), pipe (|) or tab")
             self.any_error = True
             return
         

@@ -1,6 +1,3 @@
-# Uploaded files
-loader_app/uploads/
-
 # Virtualenv files
 env/
 
@@ -11,10 +8,7 @@ lib/
 *.pyc
 
 # CartoDB api key
-cartodb_apikey.py
-
-# IDE
-.idea/
+loader_app/cartodb_apikey.py
 
 # Management scripts
 launch.sh
