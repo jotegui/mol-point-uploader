@@ -11,10 +11,11 @@ from Parser import Parser
 from Uploader import Uploader
 from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
-
+from helper import mol_user_auth
 
 # Main page
 @app.route('/')
+@mol_user_auth('MOL_USER')
 def main():
     return render_template("file_upload.html")
 
@@ -32,6 +33,7 @@ def download_spreadsheet():
 
 # File upload
 @app.route('/headers', methods=['GET','POST'])
+@mol_user_auth('MOL_USER')
 def headers():
 
     # Generate new UUID for file
@@ -107,6 +109,7 @@ def headers():
 
 # Metadata about the fields
 @app.route('/metafields', methods=['GET','POST'])
+@mol_user_auth('MOL_USER')
 def metafields():
     
     # Process alignment
@@ -138,6 +141,7 @@ def metafields():
 
 # General metadata
 @app.route('/metadata', methods=['GET', 'POST'])
+@mol_user_auth('MOL_USER')
 def metadata():
     
     session['extra_fields'] = {}
@@ -159,6 +163,7 @@ def metadata():
 
 # Build DarwinCore Archive
 @app.route('/upload', methods=['GET', 'POST'])
+@mol_user_auth('MOL_USER')
 def upload():
     
     # Create eml.xml
@@ -182,6 +187,7 @@ def upload():
 
 
 @app.route('/upload_cartodb')
+@mol_user_auth('MOL_USER')
 def upload_cartodb():
     
     # Prepare the file for CartoDB
