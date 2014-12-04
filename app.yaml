@@ -1,4 +1,4 @@
-application: mol-api
+application: map-of-life
 version: point-uploads
 runtime: python27
 threadsafe: true

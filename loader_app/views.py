@@ -12,10 +12,11 @@ from Uploader import Uploader
 from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
 import functions as f
-
+from helper import mol_user_auth
 
 # Main page
 @app.route('/')
+@mol_user_auth('MOL_USER')
 def main():
     """Return main page."""
     
@@ -67,6 +68,7 @@ def download_spreadsheet():
 
 # Common operations and template selector
 @app.route('/headers_selector', methods = ['GET', 'POST'])
+@mol_user_auth('MOL_USER')
 def headers_selector():
     """Basic file-level assessment and proper redirection."""
     
@@ -97,6 +99,7 @@ def headers_selector():
 
 # With template
 @app.route('/with_template')
+@mol_user_auth('MOL_USER')
 def with_template():
     """Automatically assign headers and defaults."""
     
@@ -109,6 +112,7 @@ def with_template():
 
 # Without template
 @app.route('/without_template')
+@mol_user_auth('MOL_USER')
 def without_template():
     """Return header alignment page."""
     
@@ -120,6 +124,7 @@ def without_template():
     
 
 @app.route('/store_headers', methods=['GET', 'POST'])
+@mol_user_auth('MOL_USER')
 def store_headers():
     """Store headers in session variables."""
     
@@ -169,6 +174,7 @@ def store_headers():
 
 
 @app.route('/parse')
+@mol_user_auth('MOL_USER')
 def parse():
     """Check the consistency of the uploaded file."""
     
@@ -189,6 +195,7 @@ def parse():
 
 
 @app.route('/metafields', methods = ['GET', 'POST'])
+@mol_user_auth('MOL_USER')
 def metafields():
     """Assess presence of extra fields and redirect properly."""
     
@@ -209,6 +216,7 @@ def metafields():
 
 
 @app.route('/metadata', methods = ['GET', 'POST'])
+@mol_user_auth('MOL_USER')
 def metadata():
     """Store extra fields, if any, and prepare and upload meta.xml."""
     
@@ -237,6 +245,7 @@ def metadata():
 
 
 @app.route('/upload', methods = ['POST'])
+@mol_user_auth('MOL_USER')
 def upload():
     """Render and upload eml.xml, and create entry in registry table."""
     
@@ -262,6 +271,7 @@ def upload():
 
 
 @app.route('/upload_cartodb')
+@mol_user_auth('MOL_USER')
 def upload_cartodb():
     """Parse records and upload to point table."""
     
