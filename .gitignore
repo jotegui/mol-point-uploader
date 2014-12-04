@@ -4,6 +4,9 @@ env/
 # Installed libraries
 lib/
 
+# idea
+.idea/
+
 # Python compiled
 *.pyc
 
