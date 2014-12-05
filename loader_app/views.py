@@ -37,7 +37,7 @@ def main():
         'scientificName': 'text',
         'decimalLatitude': 'number',
         'decimalLongitude': 'number',
-        'eventDate': 'date',
+        'eventDate': 'text',
         'recordedBy': 'text',
         'geodeticDatum': 'text',
         'coordinateUncertaintyInMeters': 'number'

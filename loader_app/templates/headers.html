@@ -37,7 +37,7 @@ $(function () {
         </div>
         <div class=" form-group col-md-6 col-xs-12" id="{{field}}DefaultInput">
             <label for="{{field}}Default" class="control-label col-md-12 hidden-xs hidden-sm">&nbsp</label>
-            <input type="{{type}}" class="form-control" ng-model="headerCtrl.headers.{{field}}Default" id="{{field}}Default" name="{{field}}Default" placeholder="Default value for {{field}}, {{type}}{%if type=='date'%}, YYYY-MM-DD format{% elif field=='decimalLatitude'%} between -90 and 90{% elif field=='decimalLongitude'%} between -180 and 180{%endif%}"{%if field=='decimalLatitude'%}min="-90" max="90"{%endif%}{%if field=='decimalLongitude'%}min="-180" max="180"{%endif%}>
+            <input type="{{type}}" class="form-control" ng-model="headerCtrl.headers.{{field}}Default" id="{{field}}Default" name="{{field}}Default" placeholder="Default value for {{field}}, {{type}}{%if field=='eventDate'%}, ISO8601 compliant format{% elif field=='decimalLatitude'%} between -90 and 90{% elif field=='decimalLongitude'%} between -180 and 180{%endif%}"{%if field=='decimalLatitude'%}min="-90" max="90"{%endif%}{%if field=='decimalLongitude'%}min="-180" max="180"{%endif%}>
         </div>
     </div>
     {% endfor %}

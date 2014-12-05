@@ -49,6 +49,19 @@
             } else {
                 this.fields.push(this.headers[key]);
             }
+            
+            // Specific check: eventDate corresponds with ISO8601 date
+            if (key=="eventDate") {
+                var regexIso8601 = /^(\d{4}|\+\d{6})(?:-(\d{2})(?:-(\d{2})(?:T(\d{2}):(\d{2}):(\d{2})\.(\d{1,})(Z|([\-+])(\d{2}):(\d{2}))?)?)?)?$/;
+                var match;
+                if (typeof this.headers[key+"Default"] === "string" && (match = this.headers[key+"Default"].match(regexIso8601))) {
+                    console.log("date matches ISO");
+                } else {
+                    if (this.warning=="") {
+                        this.warning = "Warning: default value for eventDate is not a valid date";
+                    }
+                }
+            }
         }
         
         // Only continue if there are no warnings
