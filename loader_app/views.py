@@ -4,7 +4,7 @@ import uuid
 import os
 import json
 
-from flask import render_template, redirect, url_for, request, flash, session
+from flask import render_template, redirect, url_for, request, flash, session, g, jsonify
 
 from loader_app import app
 from Parser import Parser
@@ -291,3 +291,17 @@ def upload_cartodb():
     
     # Go back to main page
     return redirect(url_for('main'))
+
+
+@app.route('/hello')
+@mol_user_auth('MOL_USER')
+def hello_user():
+    user = g.get('user', None)
+    if user:
+        return jsonify(username=user['username'],
+                       email=user['email'],
+                       firstname=user['firstname'],
+                       lastname=user['lastname'],
+                       id=user['id'])
+
+    return 'Hello Guest'
