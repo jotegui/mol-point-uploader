@@ -10,7 +10,7 @@ from zipfile import ZipFile
 
 from loader_app import app
 from cartodb_apikey import api_key
-from flask import session, flash
+from flask import session, flash, g
 
 from google.appengine.ext import ndb
 from Models import UploadedFile
@@ -172,6 +172,10 @@ class Uploader():
         
         table_name = 'point_uploads_registry'
         
+        # Get user from auth
+        user = g.get('user', None)
+        userEmail = user['email']
+        
         # Populate fields
         datasetId = session['file_uuid']
         public = True if 'public' in request.keys() and request['public'] == 'on' else False
@@ -200,7 +204,7 @@ class Uploader():
             extrafields[i.encode('utf-8')] = dic
         extrafields = unicode(json.dumps(extrafields), 'utf-8')
         
-        query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}', '{18}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields), 'utf-8')
+        query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, email) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}', '{18}', '{19}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, userEmail), 'utf-8')
         
         params = {'q': query, 'api_key': api_key}
         r = requests.post(self.cartodb_api, data=params)

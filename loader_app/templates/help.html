@@ -31,16 +31,8 @@
         <dd><strong>Required</strong>. The ellipsoid, geodetic datum, or spatial reference system (SRS) upon which the geographic coordinates given in latitude and longitude are based. Recommended best practice is use the EPSG code as a controlled vocabulary to provide an SRS, if known. Otherwise use a controlled vocabulary for the name or code of the geodetic datum, if known. Otherwise use a controlled vocabulary for the name or code of the ellipsoid, if known. If none of these is known, use the value "unknown". <p>Examples: "EPSG:4326", "WGS84", "NAD27", "Campo Inchauspe", "European 1950", "Clarke 1866".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#geodeticDatum">http://rs.tdwg.org/dwc/terms/index.htm#geodeticDatum</a></dd>
         
         <!-- Coordinate uncertainty -->
-        <dt>Uncertainty</dt>
+        <dt>Coord. uncertainty</dt>
         <dd><strong>Required</strong>. The horizontal distance (in meters) from the given latitude and longitude describing the smallest circle containing the whole of the Location. Leave the value empty if the uncertainty is unknown, cannot be estimated, or is not applicable (because there are no coordinates). Zero is not a valid value for this term. <p>Examples: "30" (reasonable lower limit of a GPS reading under good conditions if the actual precision was not recorded at the time), "71" (uncertainty for a UTM coordinate having 100 meter precision and a known spatial reference system).<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters">http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters</a></dd>
-        
-        <!-- Sampling method -->
-        <dt>Sampling method</dt>
-        <dd><strong>Optional</strong>. The name of, reference to, or description of the method or protocol used during an Event. <p>Example: "UV light trap", "mist net", "bottom trawl", "ad hoc observation", "point count", "Penguins from space: faecal stains reveal the location of emperor penguin colonies, http://dx.doi.org/10.1111/j.1466-8238.2009.00467.x", "Takats et al. 2001. Guidelines for Nocturnal Owl Monitoring in North America. Beaverhill Bird Observatory and Bird Studies Canada, Edmonton, Alberta. 32 pp.", "http://www.bsc-eoc.org/download/Owl.pdf".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#samplingProtocol">http://rs.tdwg.org/dwc/terms/index.htm#samplingProtocol</a></dd>
-        
-        <!-- Verbatim locality -->
-        <dt>Verbatim locality</dt>
-        <dd><strong>Optional</strong>. The original textual description of the place. <p>Example: "25 km NNE Bariloche por R. Nac. 237".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#verbatimLocality">http://rs.tdwg.org/dwc/terms/index.htm#verbatimLocality</a></dd>
         
     </dl>
     <button class="btn btn-info" type="submit">Back</button>
