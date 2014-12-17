@@ -365,7 +365,7 @@ def map(datasetid):
         email = current_user['email']
         q = "select title, layergroupid from point_uploads_registry where datasetid='{0}'".format(datasetid)
         params = {'q': q, 'api_key': api_key}
-        r = requests.get(cartodb_url, params=params)
+        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
         if r.status_code == 200:
             title = r.json()['rows'][0]['title']
             layergroupid = r.json()['rows'][0]['layergroupid']
