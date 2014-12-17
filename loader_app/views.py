@@ -14,7 +14,7 @@ from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
 import functions as f
 from helper import mol_user_auth
-from cartodb_apikey import cartodb_url, api_key
+from cartodb_apikey import api_key
 
 # Main page
 @app.route('/')
@@ -312,14 +312,14 @@ def hello_user():
 @app.route('/datasets')
 @mol_user_auth('MOL_USER')
 def datasets():
-    """Dashboard"""    
+    """Dashboard"""
     
     current_user = g.get('user', None)
     if current_user:
         email = current_user['email']
         q = "select datasetid, title, created_at, creatoremail, metadataemail, public, license, geographicscope, temporalscope, taxonomicscope from point_uploads_registry where email='{0}'".format(email)
         params = {'q': q, 'api_key': api_key}
-        r = requests.get(cartodb_url, params=params)
+        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
         if r.status_code == 200:
             entries = r.json()['rows']
         else:
@@ -340,7 +340,7 @@ def records(datasetid):
         email = current_user['email']
         q = "select a.*, b.title from (select * from point_uploads where datasetid='{0}') as a left join point_uploads_registry as b using(datasetid)".format(datasetid)
         params = {'q': q, 'api_key': api_key}
-        r = requests.get(cartodb_url, params=params)
+        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
         print r.json()
         if r.status_code == 200:
             entries = r.json()['rows']
