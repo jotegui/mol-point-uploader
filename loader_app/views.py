@@ -2,41 +2,78 @@ __author__ = '@jotegui'
 
 import uuid
 import os
+import json
 
-from flask import render_template, redirect, url_for, request, send_from_directory, flash, session
-from werkzeug.utils import secure_filename
+from flask import render_template, redirect, url_for, request, flash, session, g, jsonify
 
 from loader_app import app
 from Parser import Parser
 from Uploader import Uploader
 from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
+
 from helper import mol_user_auth
 
 # Main page
 @app.route('/')
 @mol_user_auth('MOL_USER')
 def main():
-    return render_template("file_upload.html")
+    """Return main page."""
+    
+    # If coming from parsing content, show errors
+    if 'errors' in session.keys():
+        errors = session['errors']
+    
+    # Else, clear session and start fresh
+    else:
+        session.clear()
+        errors = []
+
+    # Mandatory headers and header types
+    session.pop('mandatory_fields_types', None)
+    session.pop('mandatory_fields', None)
+    
+    session['mandatory_fields_types'] = {
+        'scientificName': 'text',
+        'decimalLatitude': 'number',
+        'decimalLongitude': 'number',
+        'eventDate': 'text',
+        'recordedBy': 'text',
+        'geodeticDatum': 'text',
+        'coordinateUncertaintyInMeters': 'number'
+    }
+    session['mandatory_fields'] = session['mandatory_fields_types'].keys()
+
+    # Tracking variable
+    session['from'] = 'main'
+    
+    return render_template("main.html", errors=errors)
+
 
 # Help page
 @app.route('/help')
 def help():
+    """Return help page."""
+    
     return render_template("help.html")
 
 
 # Spreadsheet template
 @app.route('/spreadsheet_template')
 def download_spreadsheet():
+    """Serve xls template to user."""
+    
     return redirect(url_for('static', filename='spreadsheet_template.xls'))
 
 
-# File upload
-@app.route('/headers', methods=['GET','POST'])
+# Common operations and template selector
+@app.route('/headers_selector', methods = ['GET', 'POST'])
 @mol_user_auth('MOL_USER')
-def headers():
+def headers_selector():
+    """Basic file-level assessment and proper redirection."""
+    
+    # Generate and store new UUID for file
 
-    # Generate new UUID for file
     file_uuid = str(uuid.uuid4())
     session.pop('file_uuid', None)
     session['file_uuid'] = file_uuid
@@ -47,124 +84,177 @@ def headers():
         flash("Please, provide a file to upload")
         return redirect(url_for("main"))
     
-    # Parse and upload file to NDB
+    # Parse and upload file to NDB, key in session['raw_key']
     uploader = Uploader()
     uploader.parse_file(up_file)
     if uploader.any_error is True:
         return redirect(url_for('main'))
     
-    # Remove some extra values from session
-    session.pop('alignment', None)
-    session.pop('extra_fields', None)
-    
-    # If they are using our template
+    # Redirect to proper handler
+    session['from'] = 'headers_selector'
     if "useTemplate" in request.form:
-        
-        # We already know the names of the required fields
-        session['alignment'] = {
-            "scientificName": 'scientificName',
-            "decimalLatitude": 'decimalLatitude',
-            "decimalLongitude": 'decimalLongitude',
-            "eventDate": 'eventDate',
-            "recordedBy": 'recordedBy'
-        }
-        
-        full_schema = session['alignment']
-        full_schema["geodeticDatum"] = 'geodeticDatum'
-        full_schema["samplingProtocol"] = 'samplingProtocol'
-        full_schema["verbatimLocality"] = 'verbatimLocality'
-        full_schema["coordinateUncertaintyInMeters"] = 'coordinateUncertaintyInMeters'
-        
-        # Check if template was actually used
-        missing = [x for x in session['alignment'] if x not in session['file_headers']]
-        if len(missing) > 0:
-            flash("ERROR: The following fields are missing from the template: {0}".format(", ".join(missing)))
-            return redirect(url_for("main"))
-        
-        # Parse the content
-        parser = Parser()
-        parser.parse_content()
-        if len(parser.errors) > 0:
-            for i in parser.errors:
-                flash("ERROR: {0}".format(i))
-            flash("Please, fix these issues or remove the wrong records and try again.")
-            return redirect(url_for('main'))
-        
-        # Check for some extra fields in case they extended the template
-        extra_fields = [x for x in session['file_headers'] if x not in full_schema.values()]
-        
-        # If so, point to the metafields page
-        if len(extra_fields) > 0:
-            return render_template("metafields.html", extra_fields=extra_fields, dwc_terms=dwc_terms)
-        # Else, to the metadata page
-        else:
-            return render_template("metadata.html")
-    
-    # If they are not using our template,
+        return redirect(url_for('with_template'))
     else:
-        
-        # And go to header processing
-        return render_template("/headers.html")
+        return redirect(url_for('without_template'))
 
 
-# Metadata about the fields
-@app.route('/metafields', methods=['GET','POST'])
+# With template
+@app.route('/with_template')
 @mol_user_auth('MOL_USER')
-def metafields():
+def with_template():
+    """Automatically assign headers and defaults."""
     
-    # Process alignment
-    session['alignment'] = {
-        request.form['scientificName']: "scientificName",
-        request.form['decimalLatitude']: "decimalLatitude",
-        request.form['decimalLongitude']: "decimalLongitude",
-        request.form['eventDate']: "eventDate",
-        request.form['recordedBy']: "recordedBy"
-    }
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
     
-    # Parse the content
+    session['from'] = 'with_template'
+    return redirect(url_for('store_headers'))
+    
+
+# Without template
+@app.route('/without_template')
+@mol_user_auth('MOL_USER')
+def without_template():
+    """Return header alignment page."""
+    
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
+    
+    session['from'] = 'without_template'
+    return render_template('headers.html')
+    
+
+@app.route('/store_headers', methods=['GET', 'POST'])
+@mol_user_auth('MOL_USER')
+def store_headers():
+    """Store headers in session variables."""
+    
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
+    
+    session.pop('headers', None)
+    
+    # If GET request, template is used
+    if request.method == 'GET':
+        
+        # Store template headers
+        session.pop('headers', None)
+        session['headers'] = {}
+        for i in session['mandatory_fields']:
+            session['headers'][i] = unicode(i)
+        
+        # Check if template is actually used
+        for i in session['file_headers']:
+            if i not in session['headers']:
+                flash("We could not recognize the template. Redirected to header alignment")
+                return redirect(url_for('without_template'))
+        
+        # Store empty default values
+        session.pop('defaults', None)
+        session['defaults'] = {}
+        for i in session['mandatory_fields']:
+            session['defaults'][i] = ""
+    
+    # If POST request, template is not used
+    elif request.method == 'POST':
+        
+        # Store header alignment
+        session.pop('headers', None)
+        session['headers'] = {}
+        for i in session['mandatory_fields']:
+            session['headers'][i] = unicode(request.form[i]) if request.form[i] != "? undefined:undefined ?" else ""
+        
+        # Store default values
+        session.pop('defaults', None)
+        session['defaults'] = {}
+        for i in session['mandatory_fields']:
+            session['defaults'][i] = unicode(request.form[i+'Default'])
+    
+    session['from'] = 'with_template'
+    return redirect(url_for('parse'))
+
+
+
+@app.route('/parse')
+@mol_user_auth('MOL_USER')
+def parse():
+    """Check the consistency of the uploaded file."""
+    
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
+    
     parser = Parser()
     parser.parse_content()
-    if len(parser.errors) > 0:
-        for i in parser.errors:
-            flash("ERROR: {0}".format(i))
-        flash("Please, fix these issues or remove the wrong records and try again.")
-        return redirect(url_for('main'))
-
-    # Prepare extra fields for metadata
-    extra_fields = [x for x in session['file_headers'] if x not in session['alignment'].keys()]
     
-    if len(extra_fields) > 0:
-        return render_template("metafields.html", extra_fields=extra_fields, dwc_terms=dwc_terms)
+    if len(parser.errors) == 0:
+        target = 'metafields'
     else:
-        return render_template("metadata.html")
+        session.pop('errors', None)
+        session['errors'] = parser.errors
+        flash('ERROR: We found some problems when parsing your file. <a href="#" data-toggle="modal" data-target="#parsingModal">Click here</a> to get a detailed review.')
+        target = 'main'
+    return redirect(url_for(target))
 
 
-# General metadata
-@app.route('/metadata', methods=['GET', 'POST'])
+@app.route('/metafields', methods = ['GET', 'POST'])
+@mol_user_auth('MOL_USER')
+def metafields():
+    """Assess presence of extra fields and redirect properly."""
+    
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
+    
+    # Prepare extra fields for metadata
+    extra_fields = [x for x in session['file_headers'] if x not in session['headers'].values() and x not in session['headers'].keys()]
+    session.pop('extra_fields', None)
+    session['extra_fields'] = extra_fields
+    
+    # Decide where to go
+    if len(extra_fields) > 0:
+        session['from'] = 'metafields'
+        return render_template('metafields.html', dwc_terms = dwc_terms)
+    else:
+        return redirect(url_for('metadata'))
+
+
+
+@app.route('/metadata', methods = ['GET', 'POST'])
 @mol_user_auth('MOL_USER')
 def metadata():
+    """Store extra fields, if any, and prepare and upload meta.xml."""
     
-    session['extra_fields'] = {}
-    for i in request.form.keys():
-        if i != 'submitBtn' and not i.endswith("_dwc"):
-            term_dict = {"description": request.form[i], "term": request.form["{0}_dwc".format(i)]}
-            session['extra_fields'][i] = term_dict
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
     
+    # Parse metafields if coming from there
+    if session['from'] == 'metafields':
+        session['extra_fields'] = {}
+
+        for i in request.form.keys():
+            if i != 'submitBtn' and not i.endswith("_dwc"):
+                term_dict = {"description": request.form[i], "term": request.form["%s_dwc" % i]}
+                session['extra_fields'][i] = term_dict
+        
     # Create meta.xml
     meta = render_meta()
     
     # Upload to NDB datastore
     uploader = Uploader()
     uploader.upload_meta(meta)
-    print 'meta_key = {0}'.format(session['meta_key'])
     
-    return render_template("metadata.html")
+    # Render metadata template
+    session['from'] = 'metadata'
+    return render_template('metadata.html')
 
 
-# Build DarwinCore Archive
-@app.route('/upload', methods=['GET', 'POST'])
+
+@app.route('/upload', methods = ['POST'])
 @mol_user_auth('MOL_USER')
 def upload():
+    """Render and upload eml.xml, and create entry in registry table."""
+    
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
     
     # Create eml.xml
     eml = render_eml(request)
@@ -172,29 +262,50 @@ def upload():
     # Upload to NDB datastore
     uploader = Uploader()
     uploader.upload_eml(eml)
-    print 'eml_key = {0}'.format(session['eml_key'])
     
     # Create CartoDB registry record
     uploader.cartodb_meta(request.form)
     
     # Create occurrence.txt
-    uploader.build_occurrence()
-    
-    # Create and upload the DWCA
-    uploader.build_dwca()
-    
+#    uploader.build_occurrence()
+    # TODO: Implement build_dwca and move to Cloud Storage with googleapis    
+
+    session['from'] = 'upload'
     return render_template('upload_cartodb.html')
 
 
 @app.route('/upload_cartodb')
 @mol_user_auth('MOL_USER')
 def upload_cartodb():
+    """Parse records and upload to point table."""
+    
+    if 'file_uuid' not in session.keys():
+        return redirect(url_for('main'))
+    
+    uploader = Uploader()
     
     # Prepare the file for CartoDB
-    uploader = Uploader()
     uploader.cartodb_points()
     
-    # Delete objects from datastore
-    uploader.delete_ndb()
+    # Delete everything NDB datastore
+    uploader.delete_entity('raw_key')
+    uploader.delete_entity('meta_key')
+    uploader.delete_entity('eml_key')
+    #uploader.delete_entity('occurrence_key')
     
+    # Go back to main page
     return redirect(url_for('main'))
+
+
+@app.route('/hello')
+@mol_user_auth('MOL_USER')
+def hello_user():
+    user = g.get('user', None)
+    if user:
+        return jsonify(username=user['username'],
+                       email=user['email'],
+                       firstname=user['firstname'],
+                       lastname=user['lastname'],
+                       id=user['id'])
+
+    return 'Hello Guest'

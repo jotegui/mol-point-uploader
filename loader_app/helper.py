@@ -1,7 +1,8 @@
 __author__ = 'funkycoda'
 
 from functools import wraps
-from flask import request, abort, redirect
+
+from flask import request, abort, redirect, g
 
 import requests
 
@@ -35,6 +36,8 @@ def mol_user_auth(*role):
                 if user_details.get('has_role', False) is False:
                     abort(401)
                     return False
+
+            g.user = user_details
 
             return f(*args, **kwargs)
         return decorated_view

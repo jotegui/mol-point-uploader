@@ -32,7 +32,7 @@
             <electronicMailAddress>{{creator_electronicMailAddress}}</electronicMailAddress>        
         </contact>
         <pubDate>{{pubDate}}</pubDate>
-        <language>eng</language>
+        <language>{{lang}}</language>
         <abstract>
             <para>
                 {{abstract}}

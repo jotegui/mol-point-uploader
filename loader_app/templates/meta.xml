@@ -6,6 +6,7 @@
     <id index="0" />
     <field index="1" term="http://rs.tdwg.org/dwc/terms/datasetID"/>
     <field index="2" term="http://rs.tdwg.org/dwc/terms/basisOfRecord"/>{% for pos in range(fields|length) %}{% if pos > 2 %}
-    <field index="{{pos}}" term="{{fields[pos]}}"/>{% endif %}{% endfor %}
+    <field index="{{pos}}" term="{{fields[pos]}}"/>{% endif %}{% endfor %}{%for t, v in defaults.iteritems()%}
+    <field term="{{t}}" default="{{v}}"/>{%endfor%}
   </core>
 </archive>

@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-<div>
+<div><form action="/">
     <h3>About the terms</h3>
-    <p>We use DarwinCore standards, blah blah.</p>
+    <button class="btn btn-info" type="submit">Back</button>
     
     <h3>Description of the fields in the template</h3>
     <dl class="dl-horizontal">
@@ -11,36 +11,31 @@
         <dd><strong>Required</strong>. The full scientific name, with authorship and date information if known. When forming part of an Identification, this should be the name in lowest level taxonomic rank that can be determined. This term should not contain identification qualifications. <p>Examples: "Coleoptera" (order), "Vespertilionidae" (family), "Manis" (genus), "Ctenomys sociabilis" (genus + specificEpithet), "Ambystoma tigrinum diaboli" (genus + specificEpithet + infraspecificEpithet), "Roptrocerus typographi (Györfi, 1952)" (genus + specificEpithet + scientificNameAuthorship), "Quercus agrifolia var. oxyadenia (Torr.) J.T. Howell" (genus + specificEpithet + taxonRank + infraspecificEpithet + scientificNameAuthorship).<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#scientificName">http://rs.tdwg.org/dwc/terms/index.htm#scientificName</a></dd>
         
         <!-- Latitude -->
-        <dt>Latitude</dt>
+        <dt>Decimal latitude</dt>
         <dd><strong>Required</strong>. The geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic center of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive. <p>Example: "-41.0983423".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#decimalLatitude">http://rs.tdwg.org/dwc/terms/index.htm#decimalLatitude</a></dd>
         
         <!-- Longitude -->
-        <dt>Longitude</dt>
+        <dt>Decimal longitude</dt>
         <dd><strong>Required</strong>. The geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic center of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive. <p>Example: "-121.1761111".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#decimalLongitude">http://rs.tdwg.org/dwc/terms/index.htm#decimalLongitude</a></dd>
         
         <!-- Observation date -->
-        <dt>Observation date</dt>
+        <dt>Event date</dt>
         <dd><strong>Required</strong>. The date-time or interval during which an Event occurred. For occurrences, this is the date-time when the event was recorded. Not suitable for a time in a geological context. Only the date of the observation should be reported here; the whole time span of the project should be specified in the metadata form. Recommended best practice is to use an encoding scheme, such as ISO 8601:2004(E). <p>Examples: "1963-03-08T14:07-0600" is 8 Mar 1963 2:07pm in the time zone six hours earlier than UTC, "2009-02-20T08:40Z" is 20 Feb 2009 8:40am UTC, "1809-02-12" is 12 Feb 1809, "1906-06" is Jun 1906, "1971" is just that year, "2007-03-01T13:00:00Z/2008-05-11T15:30:00Z" is the interval between 1 Mar 2007 1pm UTC and 11 May 2008 3:30pm UTC, "2007-11-13/15" is the interval between 13 Nov 2007 and 15 Nov 2007.<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#eventDate">http://rs.tdwg.org/dwc/terms/index.htm#eventDate</a></dd>
         
         <!-- Collector -->
-        <dt>Collector</dt>
+        <dt>Recorded by</dt>
         <dd><strong>Required</strong>. A list (concatenated and separated) of names of people, groups, or organizations responsible for recording the original observation. The primary collector or observer should be listed first. <p>Example: "Oliver P. Pearson; Anita K. Pearson".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#recordedBy">http://rs.tdwg.org/dwc/terms/index.htm#recordedBy</a></dd>
         
         <!-- Geodetic datum -->
         <dt>Geodetic datum</dt>
-        <dd><strong>Optional</strong>. The ellipsoid, geodetic datum, or spatial reference system (SRS) upon which the geographic coordinates given in latitude and longitude are based. Recommended best practice is use the EPSG code as a controlled vocabulary to provide an SRS, if known. Otherwise use a controlled vocabulary for the name or code of the geodetic datum, if known. Otherwise use a controlled vocabulary for the name or code of the ellipsoid, if known. If none of these is known, use the value "unknown". <p>Examples: "EPSG:4326", "WGS84", "NAD27", "Campo Inchauspe", "European 1950", "Clarke 1866".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#geodeticDatum">http://rs.tdwg.org/dwc/terms/index.htm#geodeticDatum</a></dd>
-        
-        <!-- Sampling method -->
-        <dt>Sampling method</dt>
-        <dd><strong>Optional</strong>. The name of, reference to, or description of the method or protocol used during an Event. <p>Example: "UV light trap", "mist net", "bottom trawl", "ad hoc observation", "point count", "Penguins from space: faecal stains reveal the location of emperor penguin colonies, http://dx.doi.org/10.1111/j.1466-8238.2009.00467.x", "Takats et al. 2001. Guidelines for Nocturnal Owl Monitoring in North America. Beaverhill Bird Observatory and Bird Studies Canada, Edmonton, Alberta. 32 pp.", "http://www.bsc-eoc.org/download/Owl.pdf".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#samplingProtocol">http://rs.tdwg.org/dwc/terms/index.htm#samplingProtocol</a></dd>
-        
-        <!-- Verbatim locality -->
-        <dt>Verbatim locality</dt>
-        <dd><strong>Optional</strong>. The original textual description of the place. <p>Example: "25 km NNE Bariloche por R. Nac. 237".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#verbatimLocality">http://rs.tdwg.org/dwc/terms/index.htm#verbatimLocality</a></dd>
+        <dd><strong>Required</strong>. The ellipsoid, geodetic datum, or spatial reference system (SRS) upon which the geographic coordinates given in latitude and longitude are based. Recommended best practice is use the EPSG code as a controlled vocabulary to provide an SRS, if known. Otherwise use a controlled vocabulary for the name or code of the geodetic datum, if known. Otherwise use a controlled vocabulary for the name or code of the ellipsoid, if known. If none of these is known, use the value "unknown". <p>Examples: "EPSG:4326", "WGS84", "NAD27", "Campo Inchauspe", "European 1950", "Clarke 1866".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#geodeticDatum">http://rs.tdwg.org/dwc/terms/index.htm#geodeticDatum</a></dd>
         
         <!-- Coordinate uncertainty -->
-        <dt>Uncertainty</dt>
-        <dd><strong>Optional</strong>. The horizontal distance (in meters) from the given latitude and longitude describing the smallest circle containing the whole of the Location. Leave the value empty if the uncertainty is unknown, cannot be estimated, or is not applicable (because there are no coordinates). Zero is not a valid value for this term. <p>Examples: "30" (reasonable lower limit of a GPS reading under good conditions if the actual precision was not recorded at the time), "71" (uncertainty for a UTM coordinate having 100 meter precision and a known spatial reference system).<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters">http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters</a></dd>
+        <dt>Coord. uncertainty</dt>
+        <dd><strong>Required</strong>. The horizontal distance (in meters) from the given latitude and longitude describing the smallest circle containing the whole of the Location. Leave the value empty if the uncertainty is unknown, cannot be estimated, or is not applicable (because there are no coordinates). Zero is not a valid value for this term. <p>Examples: "30" (reasonable lower limit of a GPS reading under good conditions if the actual precision was not recorded at the time), "71" (uncertainty for a UTM coordinate having 100 meter precision and a known spatial reference system).<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters">http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters</a></dd>
+        
     </dl>
+    <button class="btn btn-info" type="submit">Back</button>
+    </form>
 </div>
 {% endblock %}
