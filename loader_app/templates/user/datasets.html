@@ -9,8 +9,6 @@
         <thead>
             <tr>
                 <th></th>
-                <th></th>
-                <th></th>
                 <th>Title</th>
                 <th>Created</th>
                 <th>Creator</th>
@@ -26,9 +24,7 @@
             {% for entry in entries %}
             <tr>
                 <td><input type="checkbox" name="chk" value="{{ entry.datasetid }}" id="chk_{{ entry.datasetid }}" /></td>
-                <td><a href="/map/{{ entry.datasetid }}"><i class="fa fa-globe"></i></a></td>
-                <td><a href="/records/{{ entry.datasetid }}"><i class="fa fa-search"></i></a></td>
-                <td>{{ entry.title }}</td>
+                <td><a href="/records/{{ entry.datasetid }}">{{ entry.title }}</a></td>
                 <td>{{ entry.created_at | format_timedelta }}</td>
                 <td>{{ entry.creatoremail }}</td>
                 <td>{{ entry.metadataemail }}</td>

@@ -26,6 +26,7 @@ class Uploader():
         self.dataset_uuid = session['file_uuid']
         self.cartodb_api = 'https://mol.cartodb.com/api/v2/sql'
         self.namedmaps_api = 'https://mol.cartodb.com/api/v1/map/named'
+        self.template_id = 'mol@mol_pointupload'
         self.any_error = False
         
         return
@@ -178,7 +179,7 @@ class Uploader():
         userEmail = user['email']
         
         # Instantiate named map
-        self.cdb_build_named_map()
+        self.cdb_instantiate_named_map()
         
         # Populate fields
         datasetId = session['file_uuid']
@@ -307,52 +308,16 @@ class Uploader():
         
         return values
 
-    
-    def cdb_build_named_map(self):
-        """Steps for building a CartoDB named map with uploaded data."""
-        
-        # Create the named map
-        self._cdb_create_named_map()
-        
-        # Instantiate the named map
-        if self.template_id is not None:
-            self._cdb_instantiate_named_map()
-        
-        return
-    
-    
-    def _cdb_create_named_map(self):
-        """Create a named map with the contents of the dataset."""
-        
-        self.namedmapname = 'mol_pointuploader_{0}'.format(self.dataset_uuid.replace('-',''))
-        
-        # Create template.json
-        template = render_template("named_map.json",
-                   namedmapname = self.namedmapname,
-                   datasetid = self.dataset_uuid
-        ).encode('utf-8')
-        
-        # Send creation request
-        params = {'api_key': api_key}
-        r = requests.post(self.namedmaps_api, params=params, data=template, headers={"content-type":"application/json"})
-        
-        if r.status_code == 200:
-            self.template_id = r.json()['template_id']
-        else:
-            self.template_id = None
-        print self.template_id
-        
-        return
-    
-    
-    def _cdb_instantiate_named_map(self):
+
+    def cdb_instantiate_named_map(self):
         """Instantiate a named map with the contents of the dataset."""
         
         params = {"api_key": api_key}
+        params_json = json.dumps({"datasetid": self.dataset_uuid})
         url = self.namedmaps_api+"/"+self.template_id
 
-        r = requests.post(url, params=params, headers={"content-type":"application/json"})
-        
+        r = requests.post(url, params=params, data=params_json, headers={"content-type":"application/json"})
+
         if r.status_code == 200:
             self.layergroupid = r.json()['layergroupid']
         else:

@@ -2,46 +2,93 @@
 {% block content %}
 
 <div class="container">
-    <h2>Records for {{ title }}</h2>
+
+    <div class="row">
+        <div class="col-xs-6">
+            <h2>Data on {{ title }}</h2>
+        </div>
+        
+        {% if entries and layergroupid%}
+        <div class="col-xs-6">
+            <div class="btn-group pull-right" data-toggle="buttons">
+                {% if entries %}
+                <label class="btn btn-primary" onclick="$('#mapPanel').hide(); $('#listPanel').show();">
+                    <input type="radio" name="view" id="listView" autocomplete="off" checked>List
+                </label>
+                {% endif %}
+                {% if layergroupid %}
+                <label class="btn btn-primary active" onclick="$('#mapPanel').show(); $('#listPanel').hide();">
+                    <input type="radio" name="view" id="mapView" autocomplete="off">Map
+                </label>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
     
-    {% if entries %}
-    <table class="table table-striped table-bordered table-hover">
-        <thead>
-            <tr>
-                <th></th>
-                <th>ID</th>
-                <th>Scientific Name</th>
-                <th>Coordinates</th>
-                <th>Datum</th>
-                <th>Uncertainty</th>
-                <th>Event Date</th>
-                <th>Recorded By</th>
-                {% for extra in entries[0]['extrafields'] %}
-                <th>{{ extra }}</th>
+    <div class="" id="listPanel" hidden>
+        {% if entries %}
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>ID</th>
+                    <th>Scientific Name</th>
+                    <th>Coordinates</th>
+                    <th>Datum</th>
+                    <th>Uncertainty</th>
+                    <th>Event Date</th>
+                    <th>Recorded By</th>
+                    {% for extra in entries[0]['extrafields'] %}
+                    <th>{{ extra }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td><input type="checkbox" name="chk" value="{{ entry.cartodb_id }}" id="chk_{{ entry.cartodb_id }}" /></td>
+                    <td>{{ entry.cartodb_id }}</td>
+                    <td>{{ entry.scientificname }}</td>
+                    <td>{{ entry.decimallatitude }}, {{ entry.decimallongitude }}</td>
+                    <td>{{ entry.geodeticdatum }}</td>
+                    <td>{{ entry.coordinateuncertaintyinmeters }}</td>
+                    <td>{{ entry.eventdate }}</td>
+                    <td>{{ entry.recordedby }}</td>
+                    {% for extra in entry['extrafields'] %}
+                    <td>{{ entry.extrafields[extra] }}</td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in entries %}
-            <tr>
-                <td><input type="checkbox" name="chk" value="{{ entry.cartodb_id }}" id="chk_{{ entry.cartodb_id }}" /></td>
-                <td>{{ entry.cartodb_id }}</td>
-                <td>{{ entry.scientificname }}</td>
-                <td>{{ entry.decimallatitude }}, {{ entry.decimallongitude }}</td>
-                <td>{{ entry.geodeticdatum }}</td>
-                <td>{{ entry.coordinateuncertaintyinmeters }}</td>
-                <td>{{ entry.eventdate }}</td>
-                <td>{{ entry.recordedby }}</td>
-                {% for extra in entry['extrafields'] %}
-                <td>{{ entry.extrafields[extra] }}</td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No records available</p>
-    {% endif %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No records available</p>
+        {% endif %}
+    </div>
+    
+    <div id="mapPanel" class="active">
+        {% if layergroupid %}
+        
+        <div id="map" class="well"></div>
+        <p>http://mol.cartodb.com/api/v1/map/{{layergroupid}}/{z}/{x}/{y}.png</p>
+
+        <script>
+            $(window).load(function () {
+                var map = L.map('map').setView([42.810427, -1.657049], 13);
+                L.tileLayer('http://mol.cartodb.com/api/v1/map/{{layergroupid}}/{z}/{x}/{y}.png', {
+                    attribution: 'Stamen',
+                    maxZoom: 18
+                }).addTo(map);
+                
+            });
+        </script>
+        
+        {% else %}
+        <p>No map available</p>
+        {% endif %}
+    </div>
+    
     <button class="btn btn-default" onclick="window.location.replace('/datasets')">Back</button>
 </div>
 

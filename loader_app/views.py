@@ -338,31 +338,17 @@ def records(datasetid):
     current_user = g.get('user', None)
     if current_user:
         email = current_user['email']
-        q = "select a.*, b.title from (select * from point_uploads where datasetid='{0}') as a left join point_uploads_registry as b using(datasetid)".format(datasetid)
+        
+        # Get points
+        q = "select * from point_uploads where datasetid='{0}'".format(datasetid)
         params = {'q': q, 'api_key': api_key}
         r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
-        print r.json()
         if r.status_code == 200:
             entries = r.json()['rows']
-            title = entries[0]['title']
         else:
             entries = None
-            title = None
-    else:
-        entries = None
-        title = None
-    
-    return render_template('user/records.html', entries=entries, title=title)
-
-
-@app.route('/map/<datasetid>')
-@mol_user_auth('MOL_USER')
-def map(datasetid):
-    """User submitted species observations via the point uploader, map view"""
-    
-    current_user = g.get('user', None)
-    if current_user:
-        email = current_user['email']
+        
+        # Get layergroupid and title
         q = "select title, layergroupid from point_uploads_registry where datasetid='{0}'".format(datasetid)
         params = {'q': q, 'api_key': api_key}
         r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
@@ -373,7 +359,8 @@ def map(datasetid):
             layergroupid = None
             title = None
     else:
-        layergroupid = None
+        entries = None
         title = None
+        layergroupid = None
     
-    return render_template('user/map.html', layergroupid=layergroupid, title=title)
+    return render_template('user/records.html', entries=entries, title=title, layergroupid=layergroupid)
