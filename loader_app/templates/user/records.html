@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+    <h2>Records for {{ title }}</h2>
+    
+    {% if entries %}
+    <table class="table table-striped table-bordered table-hover">
+        <thead>
+            <tr>
+                <th></th>
+                <th>ID</th>
+                <th>Scientific Name</th>
+                <th>Coordinates</th>
+                <th>Datum</th>
+                <th>Uncertainty</th>
+                <th>Event Date</th>
+                <th>Recorded By</th>
+                {% for extra in entries[0]['extrafields'] %}
+                <th>{{ extra }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td><input type="checkbox" name="chk" value="{{ entry.cartodb_id }}" id="chk_{{ entry.cartodb_id }}" /></td>
+                <td>{{ entry.cartodb_id }}</td>
+                <td>{{ entry.scientificname }}</td>
+                <td>{{ entry.decimallatitude }}, {{ entry.decimallongitude }}</td>
+                <td>{{ entry.geodeticdatum }}</td>
+                <td>{{ entry.coordinateuncertaintyinmeters }}</td>
+                <td>{{ entry.eventdate }}</td>
+                <td>{{ entry.recordedby }}</td>
+                {% for extra in entry['extrafields'] %}
+                <td>{{ entry.extrafields[extra] }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No records available</p>
+    {% endif %}
+    <button class="btn btn-default" onclick="window.location.replace('/datasets')">Back</button>
+</div>
+
+{% endblock %}

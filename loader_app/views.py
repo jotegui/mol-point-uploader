@@ -3,6 +3,7 @@ __author__ = '@jotegui'
 import uuid
 import os
 import json
+import requests
 
 from flask import render_template, redirect, url_for, request, flash, session, g, jsonify
 
@@ -13,6 +14,7 @@ from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
 import functions as f
 from helper import mol_user_auth
+from cartodb_apikey import cartodb_url, api_key
 
 # Main page
 @app.route('/')
@@ -305,3 +307,73 @@ def hello_user():
                        id=user['id'])
 
     return 'Hello Guest'
+
+
+@app.route('/datasets')
+@mol_user_auth('MOL_USER')
+def datasets():
+    """Dashboard"""    
+    
+    current_user = g.get('user', None)
+    if current_user:
+        email = current_user['email']
+        q = "select datasetid, title, created_at, creatoremail, metadataemail, public, license, geographicscope, temporalscope, taxonomicscope from point_uploads_registry where email='{0}'".format(email)
+        params = {'q': q, 'api_key': api_key}
+        r = requests.get(cartodb_url, params=params)
+        if r.status_code == 200:
+            entries = r.json()['rows']
+        else:
+            entries = None
+    else:
+        entries = None
+    
+    return render_template('user/datasets.html', entries=entries)
+
+
+@app.route('/records/<datasetid>')
+@mol_user_auth('MOL_USER')
+def records(datasetid):
+    """User submitted species observations via the point uploader, table view"""
+    
+    current_user = g.get('user', None)
+    if current_user:
+        email = current_user['email']
+        q = "select a.*, b.title from (select * from point_uploads where datasetid='{0}') as a left join point_uploads_registry as b using(datasetid)".format(datasetid)
+        params = {'q': q, 'api_key': api_key}
+        r = requests.get(cartodb_url, params=params)
+        print r.json()
+        if r.status_code == 200:
+            entries = r.json()['rows']
+            title = entries[0]['title']
+        else:
+            entries = None
+            title = None
+    else:
+        entries = None
+        title = None
+    
+    return render_template('user/records.html', entries=entries, title=title)
+
+
+@app.route('/map/<datasetid>')
+@mol_user_auth('MOL_USER')
+def map(datasetid):
+    """User submitted species observations via the point uploader, map view"""
+    
+    current_user = g.get('user', None)
+    if current_user:
+        email = current_user['email']
+        q = "select title, layergroupid from point_uploads_registry where datasetid='{0}'".format(datasetid)
+        params = {'q': q, 'api_key': api_key}
+        r = requests.get(cartodb_url, params=params)
+        if r.status_code == 200:
+            title = r.json()['rows'][0]['title']
+            layergroupid = r.json()['rows'][0]['layergroupid']
+        else:
+            layergroupid = None
+            title = None
+    else:
+        layergroupid = None
+        title = None
+    
+    return render_template('user/map.html', layergroupid=layergroupid, title=title)

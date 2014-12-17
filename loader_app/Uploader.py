@@ -10,7 +10,7 @@ from zipfile import ZipFile
 
 from loader_app import app
 from cartodb_apikey import api_key
-from flask import session, flash, g
+from flask import session, flash, g, render_template
 
 from google.appengine.ext import ndb
 from Models import UploadedFile
@@ -25,6 +25,7 @@ class Uploader():
         """Initialize the class and create storage for errors and warnings."""
         self.dataset_uuid = session['file_uuid']
         self.cartodb_api = 'https://mol.cartodb.com/api/v2/sql'
+        self.namedmaps_api = 'https://mol.cartodb.com/api/v1/map/named'
         self.any_error = False
         
         return
@@ -176,6 +177,9 @@ class Uploader():
         user = g.get('user', None)
         userEmail = user['email']
         
+        # Instantiate named map
+        self.cdb_build_named_map()
+        
         # Populate fields
         datasetId = session['file_uuid']
         public = True if 'public' in request.keys() and request['public'] == 'on' else False
@@ -194,6 +198,7 @@ class Uploader():
         keywords = json.dumps([x.strip() for x in request['keywords'].split(';')], ensure_ascii=False).replace('[','{').replace(']','}').encode('utf-8')
         license = request['license'].encode('utf-8')
         additionalInformation = request['additional_information'].encode('utf-8')
+        layergroupid = self.layergroupid if self.layergroupid is not None else ""
         
         # Build extrafields with the description and headers of non-mandatory fields
         extrafields = {}
@@ -204,7 +209,7 @@ class Uploader():
             extrafields[i.encode('utf-8')] = dic
         extrafields = unicode(json.dumps(extrafields), 'utf-8')
         
-        query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, email) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}', '{18}', '{19}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, userEmail), 'utf-8')
+        query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, email, layergroupid) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}', '{18}', '{19}', '{20}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, userEmail, layergroupid), 'utf-8')
         
         params = {'q': query, 'api_key': api_key}
         r = requests.post(self.cartodb_api, data=params)
@@ -301,3 +306,59 @@ class Uploader():
         values = unicode("('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', ST_SetSRID(ST_Point({3}, {2}),4326), ST_SetSRID(ST_Point({3}, {2}),3857))".format(datasetId, vals['scientificName'], vals['decimalLatitude'], vals['decimalLongitude'], vals['eventDate'], vals['recordedBy'], json.dumps(extraFields)), 'utf-8')
         
         return values
+
+    
+    def cdb_build_named_map(self):
+        """Steps for building a CartoDB named map with uploaded data."""
+        
+        # Create the named map
+        self._cdb_create_named_map()
+        
+        # Instantiate the named map
+        if self.template_id is not None:
+            self._cdb_instantiate_named_map()
+        
+        return
+    
+    
+    def _cdb_create_named_map(self):
+        """Create a named map with the contents of the dataset."""
+        
+        self.namedmapname = 'mol_pointuploader_{0}'.format(self.dataset_uuid.replace('-',''))
+        
+        # Create template.json
+        template = render_template("named_map.json",
+                   namedmapname = self.namedmapname,
+                   datasetid = self.dataset_uuid
+        ).encode('utf-8')
+        
+        # Send creation request
+        params = {'api_key': api_key}
+        r = requests.post(self.namedmaps_api, params=params, data=template, headers={"content-type":"application/json"})
+        
+        if r.status_code == 200:
+            self.template_id = r.json()['template_id']
+        else:
+            self.template_id = None
+        print self.template_id
+        
+        return
+    
+    
+    def _cdb_instantiate_named_map(self):
+        """Instantiate a named map with the contents of the dataset."""
+        
+        params = {"api_key": api_key}
+        url = self.namedmaps_api+"/"+self.template_id
+
+        r = requests.post(url, params=params, headers={"content-type":"application/json"})
+        
+        if r.status_code == 200:
+            self.layergroupid = r.json()['layergroupid']
+        else:
+            self.layergroupid = None
+        print self.layergroupid
+        
+        return
+        
+        return

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+    <h2>Map for {{ title }}</h2>
+    
+    {% if layergroupid %}
+    
+    <p><strong>LayerGroupID</strong>: http://mol.cartodb.com/api/v1/map/{{layergroupid}}/{z}/{x}/{y}.png</p>
+    
+    {% else %}
+    <p>No records available</p>
+    {% endif %}
+    <button class="btn btn-default" onclick="window.location.replace('/datasets')">Back</button>
+</div>
+
+{% endblock %}
