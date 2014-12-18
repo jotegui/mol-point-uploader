@@ -4,36 +4,61 @@
 <div class="container">
 
     <div class="row">
-        <div class="col-xs-8">
-            <h2>Data on {{ title }}</h2>
+        <div class="col-xs-6">
+            <h2>{{ title }}</h2>
         </div>
         
-        {% if entries and layergroupid%}
-        <div class="col-xs-4">
-            <div class="btn-group pull-right" data-toggle="buttons">
-                {% if entries %}
-                <label class="btn btn-primary" onclick="$('#mapPanel').hide(); $('#listPanel').show();">
-                    <input type="radio" name="view" id="listView" autocomplete="off" checked>List
-                </label>
-                {% endif %}
-                {% if layergroupid %}
-                <label class="btn btn-primary active" onclick="$('#mapPanel').show(); $('#listPanel').hide();">
-                    <input type="radio" name="view" id="mapView" autocomplete="off">Map
-                </label>
-                {% endif %}
+        {% if entries %}
+        
+        <div class="col-xs-6">
+            <div class="btn-toolbar pull-right" role="toolbar">
+                
+                <!-- 'back' button -->
+                <div class="btn-group " role="group">
+                    <button class="btn btn-default" onclick="window.location.replace('/datasets')">Back</button>
+                </div>
+                
+                <!-- all/species toggle -->
+                <div id="speciesbuttons" class="btn-group" role="group">
+                    <button type="button" id="allspecies" class="btn btn-primary active">All species</button>
+
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" value="Single species">
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            {% for i in species %}
+                            <li><a id="{{i|replace(" ", "_")}}">{{ i }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+        
+                <!-- list/map switch -->
+                <div role="group" class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-primary active" onclick="$('#mapPanel').show(); $('#listPanel').hide(); $('#speciesbuttons').show();">
+                        <input type="radio" name="view" id="mapView" autocomplete="off">Map
+                    </label>
+                    <label class="btn btn-primary" onclick="$('#mapPanel').hide(); $('#listPanel').show(); $('#speciesbuttons').hide();">
+                        <input type="radio" name="view" id="listView" autocomplete="off" checked>List
+                    </label>
+                </div>
+
             </div>
         </div>
         {% endif %}
+        
     </div>
-    
-    <div class="" id="listPanel" hidden>
-        {% if entries %}
-        <table class="table table-striped table-bordered table-hover">
+
+{% if entries %}
+        
+    <div id="listPanel" hidden>
+
+        <table class="table table-striped table-bordered table-hover" id="recordsTable" data-sort-name="scientificname">
             <thead>
                 <tr>
-                    <th></th>
                     <th>ID</th>
-                    <th>Scientific Name</th>
+                    <th data-field="scientificname" data-sortable="true">Scientific Name</th>
                     <th>Coordinates</th>
                     <th>Datum</th>
                     <th>Uncertainty</th>
@@ -47,7 +72,6 @@
             <tbody>
                 {% for entry in entries %}
                 <tr>
-                    <td><input type="checkbox" name="chk" value="{{ entry.cartodb_id }}" id="chk_{{ entry.cartodb_id }}" /></td>
                     <td>{{ entry.cartodb_id }}</td>
                     <td>{{ entry.scientificname }}</td>
                     <td>{{ entry.decimallatitude }}, {{ entry.decimallongitude }}</td>
@@ -62,37 +86,61 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% else %}
-        <p>No records available</p>
-        {% endif %}
+        
     </div>
     
     <div id="mapPanel" class="active">
-        {% if layergroupid %}
-        
-        <div id="map" class="well"></div>
+        <style>
+            #map_canvas {height: 650px;}
+        </style>
+        <div id="map_canvas" class="well"></div>
 
         <script>
-            $(window).load(function () {
 
-                var map = L.map('map').setView({{centroid}}, 3);
-
-                L.tileLayer('https://dnv9my2eseobd.cloudfront.net/v3/cartodb.map-4xtxp73f/{z}/{x}/{y}.png', {
-                    maxZoom: 18
-                }).addTo(map);
-
+            var stringToColour = function(str) {
+                // str to hash
+                for (var i = 0, hash = 0; i < str.length; hash = str.charCodeAt(i++) + ((hash << 5) - hash));
+                // int/hash to hex
+                for (var i = 0, colour = "#"; i < 3; colour += ("00" + ((hash >> i++ * 8) & 0xFF).toString(16)).slice(-2));
+                return colour;
+            }
+            
+            var createMapConfig = function(species) {
+                var layers = [];
+                
+                for (var i=0; i<species.length; i++) {
+                    layers[i] = {
+                        "type": "cartodb",
+                        "options": {
+                          "cartocss_version": "2.1.1",
+                          "cartocss": "#layer{marker-fill: "+stringToColour(species[i])+"; marker-width: 5; marker-line-color: gray; marker-line-width: 0.5;}",
+                          "sql": "select * from point_uploads where datasetid='{{ datasetid }}' and scientificname='"+species[i]+"'"
+                        }
+                      }
+                }
+                
                 var mapconfig = {
                   "version": "1.0.1",
-                  "layers": [{
-                    "type": "cartodb",
-                    "options": {
-                      "cartocss_version": "2.1.1",
-                      "cartocss": "#layer{marker-fill: #109DCD; marker-width: 5; marker-line-color: white; marker-line-width: 0;}",
-                      "sql": "select * from point_uploads where datasetid='{{datasetid}}'"
-                    }
-                  }]
+                  "layers": layers
                 }
+                return mapconfig;
+            }
 
+            var createMap = function(species) {
+                
+                // create map
+                var map = new L.map('map_canvas').setView({{centroid}}, 3);
+                
+                // add base layer
+                L.tileLayer('https://dnv9my2eseobd.cloudfront.net/v3/cartodb.map-4xtxp73f/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: '&copy; <a href="http://www.mol.org">Map of Life</a>, 2014'
+                }).addTo(map);
+                
+                // define mapconfig for ad-hoc anonymous map
+                var mapconfig = createMapConfig(species);
+                
+                // initialize and attach ad-hoc map
                 $.ajax({
                   type: 'POST',
                   dataType: 'json',
@@ -103,18 +151,60 @@
                     var templateUrl = 'http://mol.cartodb.com/api/v1/map/' + data.layergroupid + '/{z}/{x}/{y}.png'
                     L.tileLayer(templateUrl, {
                         maxZoom: 18
-                    }).addTo(map);
+                    }).addTo(map)
                   }
-                })
+                });
+                
+                return map;
+            }
+            
+            var resetMap = function(map, species) {
+                map.remove();
+                var map = createMap(species);
+                return map;
+            }
+            
+            {% for i in species %}
+            $('#{{i|replace(" ", "_")}}').click(function() {
+                var species = ['{{i}}'];
+                map = resetMap(map, species);
+                $('#allspecies').removeClass('active');
+                return map;
             });
+            {% endfor %}
+            
+            $('#allspecies').click(function() {
+                var species = [
+                    {% for i in species %}'{{ i }}',
+                    {% endfor %}
+                ];
+                map = resetMap(map, species);
+            });
+            
+            
+            var species = [
+                {% for i in species %}'{{ i }}',
+                {% endfor %}
+            ];
+            
+            var map = createMap(species);
+
         </script>
-        
-        {% else %}
-        <p>No map available</p>
-        {% endif %}
+
     </div>
-    
-    <button class="btn btn-default" onclick="window.location.replace('/datasets')">Back</button>
+
+{% else %}
+
+    <div>
+        <p>No map available</p>
+    </div>
+
+{% endif %}
+<script>
+$(document).ready(function() {
+    $('#recordsTable').dataTable();
+} );
+</script>
 </div>
 
 {% endblock %}

@@ -317,7 +317,7 @@ def datasets():
     current_user = g.get('user', None)
     if current_user:
         email = current_user['email']
-        q = "select datasetid, title, created_at, creatoremail, metadataemail, public, license, geographicscope, temporalscope, taxonomicscope from point_uploads_registry where email='{0}'".format(email)
+        q = "select datasetid, title, created_at, creatoremail, creatorfirst, creatorlast, metadataemail, metadatafirst, metadatalast, public, license, geographicscope, temporalscope, taxonomicscope from point_uploads_registry where email='{0}'".format(email)
         params = {'q': q, 'api_key': api_key}
         r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
         if r.status_code == 200:
@@ -349,14 +349,12 @@ def records(datasetid):
             entries = None
         
         # Get layergroupid and title
-        q = "select title, layergroupid from point_uploads_registry where datasetid='{0}'".format(datasetid)
+        q = "select title from point_uploads_registry where datasetid='{0}'".format(datasetid)
         params = {'q': q, 'api_key': api_key}
         r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
         if r.status_code == 200:
             title = r.json()['rows'][0]['title']
-            layergroupid = r.json()['rows'][0]['layergroupid']
         else:
-            layergroupid = None
             title = None
             
         # Get centroid
@@ -368,10 +366,19 @@ def records(datasetid):
         else:
             centroid = None
 
+        # Get speces
+        q = "select distinct scientificname as species from point_uploads where datasetid='{0}' order by scientificname".format(datasetid)
+        params = {'q': q, 'api_key': api_key}
+        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
+        if r.status_code == 200:
+            species = [x['species'] for x in r.json()['rows']]
+        else:
+            species = None
+
     else:
         entries = None
         title = None
-        layergroupid = None
         centroid = None
+        species = None
 
-    return render_template('user/records.html', entries=entries, title=title, layergroupid=layergroupid, datasetid=datasetid, centroid=centroid)
+    return render_template('user/records.html', entries=entries, title=title, datasetid=datasetid, centroid=centroid, species=species)
