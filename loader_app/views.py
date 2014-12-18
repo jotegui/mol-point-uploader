@@ -358,9 +358,20 @@ def records(datasetid):
         else:
             layergroupid = None
             title = None
+            
+        # Get centroid
+        q = "select ST_X(centroid) as lng, ST_Y(centroid) as lat from (select ST_Centroid(ST_Union(the_geom)) as centroid from (select the_geom from point_uploads where datasetid='{0}') as foo) as bar".format(datasetid)
+        params = {'q': q, 'api_key': api_key}
+        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
+        if r.status_code == 200:
+            centroid = [r.json()['rows'][0]['lat'], r.json()['rows'][0]['lng']]
+        else:
+            centroid = None
+
     else:
         entries = None
         title = None
         layergroupid = None
-    
-    return render_template('user/records.html', entries=entries, title=title, layergroupid=layergroupid, datasetid=datasetid)
+        centroid = None
+
+    return render_template('user/records.html', entries=entries, title=title, layergroupid=layergroupid, datasetid=datasetid, centroid=centroid)

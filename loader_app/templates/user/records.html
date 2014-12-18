@@ -4,12 +4,12 @@
 <div class="container">
 
     <div class="row">
-        <div class="col-xs-6">
+        <div class="col-xs-8">
             <h2>Data on {{ title }}</h2>
         </div>
         
         {% if entries and layergroupid%}
-        <div class="col-xs-6">
+        <div class="col-xs-4">
             <div class="btn-group pull-right" data-toggle="buttons">
                 {% if entries %}
                 <label class="btn btn-primary" onclick="$('#mapPanel').hide(); $('#listPanel').show();">
@@ -71,11 +71,11 @@
         {% if layergroupid %}
         
         <div id="map" class="well"></div>
-
+        {{centroid}}
         <script>
             $(window).load(function () {
 
-                var map = L.map('map').setView([42.12, 5.13], 7);
+                var map = L.map('map').setView({{centroid}}, 3);
 
                 L.tileLayer('https://dnv9my2eseobd.cloudfront.net/v3/cartodb.map-4xtxp73f/{z}/{x}/{y}.png', {
                     maxZoom: 18
