@@ -71,16 +71,41 @@
         {% if layergroupid %}
         
         <div id="map" class="well"></div>
-        <p>http://mol.cartodb.com/api/v1/map/{{layergroupid}}/{z}/{x}/{y}.png</p>
 
         <script>
             $(window).load(function () {
-                var map = L.map('map').setView([42.810427, -1.657049], 13);
-                L.tileLayer('http://mol.cartodb.com/api/v1/map/{{layergroupid}}/{z}/{x}/{y}.png', {
-                    attribution: 'Stamen',
+
+                var map = L.map('map').setView([42.12, 5.13], 7);
+
+                L.tileLayer('https://dnv9my2eseobd.cloudfront.net/v3/cartodb.map-4xtxp73f/{z}/{x}/{y}.png', {
                     maxZoom: 18
                 }).addTo(map);
-                
+
+                var mapconfig = {
+                  "version": "1.0.1",
+                  "layers": [{
+                    "type": "cartodb",
+                    "options": {
+                      "cartocss_version": "2.1.1",
+                      "cartocss": "#layer{marker-fill: #109DCD; marker-width: 5; marker-line-color: white; marker-line-width: 0;}",
+                      "sql": "select * from point_uploads where datasetid='{{datasetid}}'"
+                    }
+                  }]
+                }
+
+                $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                  contentType: 'application/json',
+                  url: 'http://mol.cartodb.com/api/v1/map',
+                  data: JSON.stringify(mapconfig),
+                  success: function(data) {
+                    var templateUrl = 'http://mol.cartodb.com/api/v1/map/' + data.layergroupid + '/{z}/{x}/{y}.png'
+                    L.tileLayer(templateUrl, {
+                        maxZoom: 18
+                    }).addTo(map);
+                  }
+                })
             });
         </script>
         

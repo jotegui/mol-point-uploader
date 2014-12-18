@@ -363,4 +363,4 @@ def records(datasetid):
         title = None
         layergroupid = None
     
-    return render_template('user/records.html', entries=entries, title=title, layergroupid=layergroupid)
+    return render_template('user/records.html', entries=entries, title=title, layergroupid=layergroupid, datasetid=datasetid)
