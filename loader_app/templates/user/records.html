@@ -92,9 +92,39 @@
     <div id="mapPanel" class="active">
         <style>
             #map_canvas {height: 650px;}
+            .legend {
+                line-height: 18px;
+                color: #555;
+                background-color: #FFF;
+                opacity: 0.6;
+            }
+            .legend i {
+                width: 18px;
+                height: 18px;
+                float: left;
+                margin-right: 8px;
+                opacity: 0.7;
+            }
         </style>
         <div id="map_canvas" class="well"></div>
-
+        
+        <div id="legend" style="display:none;">
+          <strong>The Title or Explanation of your Map</strong>
+          <nav class='legend clearfix'>
+            <span style='background:#F1EEF6;'></span>
+            <span style='background:#BDC9E1;'></span>
+            <span style='background:#74A9CF;'></span>
+            <span style='background:#2B8CBE;'></span>
+            <span style='background:#045A8D;'></span>
+            <label>0 - 20%</label>
+            <label>40%</label>
+            <label>60%</label>
+            <label>80%</label>
+            <label>100%</label>
+            <small>Source: <a href="#link to source">Name of source</a></small>
+          </nav>
+        </div>
+        
         <script>
 
             var stringToColour = function(str) {
@@ -125,7 +155,38 @@
                 }
                 return mapconfig;
             }
+            
+            function getColor(d) {
+                for (var i=0; i<species.length; i++) {
+                    if (d==species[i]) {
+                        var color = stringToColour(species[i])
+                    }
+                }
+                return color
+            }
 
+            
+            function createLegend(map, species) {
+                var legend = L.control({position: 'bottomleft'});
+                
+                legend.onAdd = function (map) {
+
+                    var div = L.DomUtil.create('div', 'info legend'),
+                        grades = [],
+                        labels = species;
+
+                    // loop through our density intervals and generate a label with a colored square for each interval
+                    for (var i = 0; i < labels.length; i++) {
+                        div.innerHTML +=
+                            '<i style="background:' + getColor(labels[i]) + '"></i> ' + labels[i] + '&nbsp <br>';
+                    }
+
+                    return div;
+                };
+
+                legend.addTo(map);
+            }
+            
             var createMap = function(species) {
                 
                 // create map
@@ -154,6 +215,8 @@
                     }).addTo(map)
                   }
                 });
+
+                createLegend(map, species);
                 
                 return map;
             }
@@ -166,7 +229,7 @@
             
             {% for i in species %}
             $('#{{i|replace(" ", "_")}}').click(function() {
-                var species = ['{{i}}'];
+                species = ['{{i}}'];
                 map = resetMap(map, species);
                 $('#allspecies').removeClass('active');
                 return map;
@@ -174,7 +237,7 @@
             {% endfor %}
             
             $('#allspecies').click(function() {
-                var species = [
+                species = [
                     {% for i in species %}'{{ i }}',
                     {% endfor %}
                 ];
@@ -182,7 +245,7 @@
             });
             
             
-            var species = [
+            species = [
                 {% for i in species %}'{{ i }}',
                 {% endfor %}
             ];
