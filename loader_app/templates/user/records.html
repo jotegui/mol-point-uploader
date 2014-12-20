@@ -2,7 +2,11 @@
 {% block content %}
 
 <div class="container">
-
+    
+    <div class="row">
+        <button class="btn btn-default" onclick="window.location.replace('/datasets')">Back</button>
+    </div>
+    
     <div class="row">
         <div class="col-xs-6">
             <h2>{{ title }}</h2>
@@ -13,20 +17,16 @@
         <div class="col-xs-6">
             <div class="btn-toolbar pull-right" role="toolbar">
                 
-                <!-- 'back' button -->
-                <div class="btn-group " role="group">
-                    <button class="btn btn-default" onclick="window.location.replace('/datasets')">Back</button>
-                </div>
-                
                 <!-- all/species toggle -->
                 <div id="speciesbuttons" class="btn-group" role="group">
-                    <button type="button" id="allspecies" class="btn btn-primary active">All species</button>
+                    <input type="button" id="allspeciesfield" class="btn btn-primary" disabled value="All species">
 
                     <div class="btn-group" role="group">
                         <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" value="Single species">
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" role="menu">
+                            <li><a id="allspecies">All species</a></li>
                             {% for i in species %}
                             <li><a id="{{i|replace(" ", "_")}}">{{ i }}</a></li>
                             {% endfor %}
@@ -91,12 +91,12 @@
     
     <div id="mapPanel" class="active">
         <style>
-            #map_canvas {height: 650px;}
+            #map_canvas {height: 650px; z-index: -1;}
             .legend {
                 line-height: 18px;
                 color: #555;
                 background-color: #FFF;
-                opacity: 0.6;
+                opacity: 0.8;
             }
             .legend i {
                 width: 18px;
@@ -107,23 +107,6 @@
             }
         </style>
         <div id="map_canvas" class="well"></div>
-        
-        <div id="legend" style="display:none;">
-          <strong>The Title or Explanation of your Map</strong>
-          <nav class='legend clearfix'>
-            <span style='background:#F1EEF6;'></span>
-            <span style='background:#BDC9E1;'></span>
-            <span style='background:#74A9CF;'></span>
-            <span style='background:#2B8CBE;'></span>
-            <span style='background:#045A8D;'></span>
-            <label>0 - 20%</label>
-            <label>40%</label>
-            <label>60%</label>
-            <label>80%</label>
-            <label>100%</label>
-            <small>Source: <a href="#link to source">Name of source</a></small>
-          </nav>
-        </div>
         
         <script>
 
@@ -167,7 +150,7 @@
 
             
             function createLegend(map, species) {
-                var legend = L.control({position: 'bottomleft'});
+                var legend = L.control({position: 'topright'});
                 
                 legend.onAdd = function (map) {
 
@@ -230,6 +213,7 @@
             {% for i in species %}
             $('#{{i|replace(" ", "_")}}').click(function() {
                 species = ['{{i}}'];
+                $("#allspeciesfield").val('{{i}}');
                 map = resetMap(map, species);
                 $('#allspecies').removeClass('active');
                 return map;
@@ -241,6 +225,7 @@
                     {% for i in species %}'{{ i }}',
                     {% endfor %}
                 ];
+                $("#allspeciesfield").val('All species');
                 map = resetMap(map, species);
             });
             

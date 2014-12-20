@@ -2,49 +2,56 @@
 {% block content %}
 
 <div class="container">
-    <h2>Uploaded datasets</h2>
     
-    {% if entries %}
-    <table class="table table-striped table-bordered table-hover" id="datasetsTable">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Created on</th>
-                <th>Creator</th>
-                <th>Metadata author</th>
-                <th>Public</th>
-                <th>License</th>
-                <th>Geographic scope</th>
-                <th>Temporal scope</th>
-                <th>Taxonomic scope</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in entries %}
-            <tr>
-                <td><a href="/records/{{ entry.datasetid }}">{{ entry.title }}</a></td>
-                <td>{{ entry.created_at | format_timedelta }}</td>
-                <td><a href="mailto:{{ entry.creatoremail }}">{{entry.creatorfirst}} {{entry.creatorlast}}</td>
-                <td><a href="mailto:{{ entry.metadataemail }}">{{entry.metadatafirst}} {{entry.metadatalast}}</td>
-                <td>{{ entry.public }}</td>
-                <td>{{ entry.license }}</td>
-                <td>{{ entry.geographicscope }}</td>
-                <td>{{ entry.temporalscope }}</td>
-                <td>{{ entry.taxonomicscope }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No dataset available</p>
-    {% endif %}
-    <button class="btn btn-default" onclick="window.location.replace('/')">Back</button>
+    <div class="row">
+        <button class="btn btn-default" onclick="window.location.replace('/')">Back</button>    
+    </div>
 
-<script>
-$(document).ready(function() {
-    $('#datasetsTable').dataTable();
-} );
-</script>
+    <div class="row">
+        <h2>Uploaded datasets</h2>
+        
+        {% if entries %}
+        <table class="table table-striped table-bordered table-hover" id="datasetsTable">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Created on</th>
+                    <th>Creator</th>
+                    <th>Metadata author</th>
+                    <th>Public</th>
+                    <th>License</th>
+                    <th>Geographic scope</th>
+                    <th>Temporal scope</th>
+                    <th>Taxonomic scope</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td><a href="/records/{{ entry.datasetid }}">{{ entry.title }}</a></td>
+                    <td>{{entry.created_at | format_datetime}}<br>({{ entry.created_at | format_timedelta }} ago)</td>
+                    <td><a href="mailto:{{ entry.creatoremail }}">{{entry.creatorfirst}} {{entry.creatorlast}}</td>
+                    <td><a href="mailto:{{ entry.metadataemail }}">{{entry.metadatafirst}} {{entry.metadatalast}}</td>
+                    <td>{{ entry.public }}</td>
+                    <td>{{ entry.license }}</td>
+                    <td>{{ entry.geographicscope }}</td>
+                    <td>{{ entry.temporalscope }}</td>
+                    <td>{{ entry.taxonomicscope }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No dataset available</p>
+        {% endif %}
+
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        $('#datasetsTable').dataTable();
+    } );
+    </script>
 
 </div>
 
