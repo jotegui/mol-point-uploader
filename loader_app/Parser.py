@@ -68,15 +68,15 @@ class Parser():
     def parse_coordinates(self, lat, lng):
         """Assess the completeness and quality of the coordinate fields."""
         
-        # Completeness
-        if lat == "":
-            self.bad_record = True
-            self.errors.append("Latitude missing in record #{0}".format(self.cont))
-            return
-        if lng == "":
-            self.bad_record = True
-            self.errors.append("Longitude missing in record #{0}".format(self.cont))
-            return
+#        # Completeness
+#        if lat == "":
+#            self.bad_record = True
+#            self.errors.append("Latitude missing in record #{0}".format(self.cont))
+#            return
+#        if lng == "":
+#            self.bad_record = True
+#            self.errors.append("Longitude missing in record #{0}".format(self.cont))
+#            return
         
         # Values are float numbers
         try:
@@ -121,11 +121,11 @@ class Parser():
         # Accepted date field separators: "/", "-", "."
         accepted_separators = ['/', '-', '.']
         
-        # Completeness
-        if date == "":
-            self.bad_record = True
-            self.errors.append("Date missing in record #{0}".format(self.cont))
-            return
+#        # Completeness
+#        if date == "":
+#            self.bad_record = True
+#            self.errors.append("Date missing in record #{0}".format(self.cont))
+#            return
         
         # Accepted date formats
         
@@ -281,11 +281,11 @@ class Parser():
     def parse_scientificName(self, sciname):
         """Assess the completeness and quality of the scientificName field."""
         
-        # Completeness
-        if sciname == "":
-            self.bad_record = True
-            self.errors.append("Scientific Name missing in record #{0}".format(self.cont))
-            return
+#        # Completeness
+#        if sciname == "":
+#            self.bad_record = True
+#            self.errors.append("Scientific Name missing in record #{0}".format(self.cont))
+#            return
         
         # Quotes in scientificName
         if "'" in sciname or '"' in sciname:
@@ -300,11 +300,11 @@ class Parser():
     def parse_recordedBy(self, recordedBy):
         """Assess the completeness and quality of the recordedBy field."""
         
-        # Completeness
-        if recordedBy == "":
-            self.bad_record = True
-            self.errors.append("recordedBy missing in record #{0}".format(self.cont))
-            return
+#        # Completeness
+#        if recordedBy == "":
+#            self.bad_record = True
+#            self.errors.append("recordedBy missing in record #{0}".format(self.cont))
+#            return
         
         # More to be added
         return
@@ -313,11 +313,11 @@ class Parser():
     def parse_geodeticDatum(self, geodeticDatum):
         """Assess the completeness and quality of the geodeticDatum field."""
         
-        # Completeness
-        if geodeticDatum == "":
-            self.bad_record = True
-            self.errors.append("geodeticDatum missing in record #{0}".format(self.cont))
-            return
+#        # Completeness
+#        if geodeticDatum == "":
+#            self.bad_record = True
+#            self.errors.append("geodeticDatum missing in record #{0}".format(self.cont))
+#            return
         
         # More to be added
         return
@@ -326,11 +326,11 @@ class Parser():
     def parse_coordinateUncertaintyInMeters(self, coordinateUncertaintyInMeters):
         """Assess the completeness and quality of the coordinateUncertaintyInMeters field."""
         
-        # Completeness
-        if coordinateUncertaintyInMeters == "":
-            self.bad_record = True
-            self.errors.append("coordinateUncertaintyInMeters missing in record #{0}".format(self.cont))
-            return
+#        # Completeness
+#        if coordinateUncertaintyInMeters == "":
+#            self.bad_record = True
+#            self.errors.append("coordinateUncertaintyInMeters missing in record #{0}".format(self.cont))
+#            return
 
         # Values are numbers
         try:
