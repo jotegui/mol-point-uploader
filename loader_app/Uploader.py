@@ -84,8 +84,10 @@ class Uploader():
         session.pop('file_headers', None)
         session['file_headers'] = headerline.split(session['field_separator'])
         
-        # Remove trailing newline
+        # Read file into unicode
         content = up_file.read()
+
+        # Remove trailing newline
         if content[-1] == "\n":
             content = content[:-1]
         
@@ -178,28 +180,24 @@ class Uploader():
         user = g.get('user', None)
         userEmail = user['email']
         
-        # Instantiate named map
-        self.cdb_instantiate_named_map()
-        
         # Populate fields
         datasetId = session['file_uuid']
         public = True if 'public' in request.keys() and request['public'] == 'on' else False
-        title = request['title'].encode('utf-8')
-        abstract = request['abstract'].encode('utf-8')
-        creatorEmail = request['resource_creator_email'].encode('utf-8')
-        creatorFirst = request['resource_creator_first_name'].encode('utf-8')
-        creatorLast = request['resource_creator_last_name'].encode('utf-8')
-        metadataEmail = request['metadata_creator_email'].encode('utf-8')
-        metadataFirst = request['metadata_creator_first_name'].encode('utf-8')
-        metadataLast = request['metadata_creator_last_name'].encode('utf-8')
-        lang = request['lang'].encode('utf-8') if 'lang' in request and request['lang'] != "" else 'en'
-        geographicScope = request['geographic_scope'].encode('utf-8')
-        temporalScope = request['temporal_scope'].encode('utf-8')
-        taxonomicScope = request['taxonomic_scope'].encode('utf-8')
+        title = request['title'].replace("'", "''").encode('utf-8')
+        abstract = request['abstract'].replace("'", "''").encode('utf-8')
+        creatorEmail = request['resource_creator_email'].replace("'", "''").encode('utf-8')
+        creatorFirst = request['resource_creator_first_name'].replace("'", "''").encode('utf-8')
+        creatorLast = request['resource_creator_last_name'].replace("'", "''").encode('utf-8')
+        metadataEmail = request['metadata_creator_email'].replace("'", "''").encode('utf-8')
+        metadataFirst = request['metadata_creator_first_name'].replace("'", "''").encode('utf-8')
+        metadataLast = request['metadata_creator_last_name'].replace("'", "''").encode('utf-8')
+        lang = request['lang'].replace("'", "''").encode('utf-8') if 'lang' in request and request['lang'] != "" else 'en'
+        geographicScope = request['geographic_scope'].replace("'", "''").encode('utf-8')
+        temporalScope = request['temporal_scope'].replace("'", "''").encode('utf-8')
+        taxonomicScope = request['taxonomic_scope'].replace("'", "''").encode('utf-8')
         keywords = json.dumps([x.strip() for x in request['keywords'].split(';')], ensure_ascii=False).replace('[','{').replace(']','}').encode('utf-8')
-        license = request['license'].encode('utf-8')
-        additionalInformation = request['additional_information'].encode('utf-8')
-        layergroupid = self.layergroupid if self.layergroupid is not None else ""
+        license = request['license'].replace("'", "''").encode('utf-8')
+        additionalInformation = request['additional_information'].replace("'", "''").encode('utf-8')
         
         # Build extrafields with the description and headers of non-mandatory fields
         extrafields = {}
@@ -210,11 +208,11 @@ class Uploader():
             extrafields[i.encode('utf-8')] = dic
         extrafields = unicode(json.dumps(extrafields), 'utf-8')
         
-        query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, email, layergroupid) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}', '{18}', '{19}', '{20}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, userEmail, layergroupid), 'utf-8')
+        query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, email) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}', '{18}', '{19}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, userEmail), 'utf-8')
         
         params = {'q': query, 'api_key': api_key}
         r = requests.post(self.cartodb_api, data=params)
-        
+
         if r.status_code == 200:
             print 'Registry entry added'
         else:
@@ -238,7 +236,8 @@ class Uploader():
         query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, extraFields, the_geom, the_geom_webmercator) values ".format(table_name)
         values = []
         for record in csvreader:
-            value = self.add_record_to_query([unicode(x, 'utf-8') for x in record])
+            print record
+            value = self.add_record_to_query([unicode(x, 'utf-8', errors="ignore") for x in record])
             if value:
                 values.append(value)
         
@@ -303,27 +302,38 @@ class Uploader():
                 extraFields[key] = value
         
         
-        # Build record for query
-        values = unicode("('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', ST_SetSRID(ST_Point({3}, {2}),4326), ST_SetSRID(ST_Point({3}, {2}),3857))".format(datasetId, vals['scientificName'], vals['decimalLatitude'], vals['decimalLongitude'], vals['eventDate'], vals['recordedBy'], json.dumps(extraFields)), 'utf-8')
+        # Build geom fields
+        if vals['decimalLatitude'] == "" or vals['decimalLongitude'] == "":
+            geoms = "null, null"
+        else:
+            geoms = "ST_SetSRID(ST_Point({0}, {1}),4326), ST_SetSRID(ST_Point({0}, {1}),3857)".format(vals['decimalLongitude'], vals['decimalLatitude'])
+            
         
+        # Change some empty values for nulls
+        if vals['decimalLatitude'] == '':
+            vals['decimalLatitude'] = 'null'
+        if vals['decimalLongitude'] == '':
+            vals['decimalLongitude'] = 'null'
+        
+        # Build record for query
+        values = unicode("('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', {7})".format(datasetId, vals['scientificName'], vals['decimalLatitude'], vals['decimalLongitude'], vals['eventDate'], vals['recordedBy'], json.dumps(extraFields), geoms), 'utf-8')
+        print values
         return values
 
 
-    def cdb_instantiate_named_map(self):
-        """Instantiate a named map with the contents of the dataset."""
-        
-        params = {"api_key": api_key}
-        params_json = json.dumps({"datasetid": self.dataset_uuid})
-        url = self.namedmaps_api+"/"+self.template_id
+#    def cdb_instantiate_named_map(self):
+#        """Instantiate a named map with the contents of the dataset."""
+#        
+#        params = {"api_key": api_key}
+#        params_json = json.dumps({"datasetid": self.dataset_uuid})
+#        url = self.namedmaps_api+"/"+self.template_id
 
-        r = requests.post(url, params=params, data=params_json, headers={"content-type":"application/json"})
+#        r = requests.post(url, params=params, data=params_json, headers={"content-type":"application/json"})
 
-        if r.status_code == 200:
-            self.layergroupid = r.json()['layergroupid']
-        else:
-            self.layergroupid = None
-        print self.layergroupid
-        
-        return
-        
-        return
+#        if r.status_code == 200:
+#            self.layergroupid = r.json()['layergroupid']
+#        else:
+#            self.layergroupid = None
+#        print self.layergroupid
+#        
+#        return

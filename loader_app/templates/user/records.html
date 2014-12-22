@@ -87,7 +87,7 @@
     
     <div id="mapPanel" class="active">
         <style>
-            #map_canvas {height: 650px; z-index: -1;}
+            #map_canvas {height: 650px; }
             .legend {
                 line-height: 18px;
                 color: #555;
@@ -146,7 +146,7 @@
 
             
             function createLegend(map, species) {
-                var legend = L.control({position: 'topright'});
+                var legend = L.control({position: 'topleft'});
                 
                 legend.onAdd = function (map) {
 

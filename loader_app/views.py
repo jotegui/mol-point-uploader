@@ -367,7 +367,7 @@ def records(datasetid):
             centroid = None
 
         # Get speces
-        q = "select distinct scientificname as species from point_uploads where datasetid='{0}' order by scientificname".format(datasetid)
+        q = "select distinct scientificname as species from point_uploads where datasetid='{0}' and scientificname is not null and scientificname !='' and decimalLatitude is not null and decimalLongitude is not null order by scientificname".format(datasetid)
         params = {'q': q, 'api_key': api_key}
         r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
         if r.status_code == 200:

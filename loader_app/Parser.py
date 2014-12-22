@@ -1,7 +1,8 @@
 __author__ = '@jotegui'
 
 import csv
-from datetime import datetime
+import datetime
+from dateutil import parser
 
 from loader_app import app
 from flask import session
@@ -68,15 +69,15 @@ class Parser():
     def parse_coordinates(self, lat, lng):
         """Assess the completeness and quality of the coordinate fields."""
         
-#        # Completeness
-#        if lat == "":
+        # Completeness
+        if lat == "":
 #            self.bad_record = True
 #            self.errors.append("Latitude missing in record #{0}".format(self.cont))
-#            return
-#        if lng == "":
+            return
+        if lng == "":
 #            self.bad_record = True
 #            self.errors.append("Longitude missing in record #{0}".format(self.cont))
-#            return
+            return
         
         # Values are float numbers
         try:
@@ -118,174 +119,32 @@ class Parser():
     def parse_eventDate(self, date):
         """Assess the completeness and quality of the eventDate field."""
         
-        # Accepted date field separators: "/", "-", "."
-        accepted_separators = ['/', '-', '.']
-        
-#        # Completeness
-#        if date == "":
+        # Completeness
+        if date == "":
 #            self.bad_record = True
 #            self.errors.append("Date missing in record #{0}".format(self.cont))
-#            return
-        
-        # Accepted date formats
-        
-        # Year only
-        if len(date) == 4:
-            # Check if is number
-            try:
-                int(date)
-            except ValueError:
-                self.bad_record = True
-                self.errors.append("Invalid date format in record #{0}".format(self.cont))
-                return
-                
-            # Check if within reasonable years (1750 - this year)
-            if int(date) < 1750 or int(date) > datetime.today().year:
-                self.bad_record = True
-                self.errors.append("Year out of range in record #{0}".format(self.cont))
-                return
-                
-        # Year-month, without separator
-        elif len(date) == 6:
-            # Check if correct format
-            try:
-                int(date[:4])
-                int(date[4:])
-            except ValueError:
-                self.bad_record = True
-                self.errors.append("Invalid date format in record #{0}".format(self.cont))
-                return
-                
-            # Check if year within reasonable years (1750 - this year)
-            if int(date[:4]) < 1750 or int(date[:4]) > datetime.today().year:
-                self.bad_record = True
-                self.errors.append("Year out of range in record #{0}".format(self.cont))
-                return
-                
-            # Check if month within accepted range
-            if int(date[4:]) < 1 or int(date[4:]) > 12:
-                self.bad_record = True
-                self.errors.append("Month out of range in record #{0}".format(self.cont))
-                return
-                
-        # Year-month with separator.
-        elif len(date) == 7:
-            # Check if correct format
-            try:
-                int(date[:4])
-                int(date[5:])
-            except ValueError:
-                self.bad_record = True
-                self.errors.append("Invalid date format in record #{0}".format(self.cont))
-                return
-                
-            if date[4] not in accepted_separators:
-                self.bad_record = True
-                self.errors.append("Invalid date field separator in record #{0}".format(self.cont))
-                return
-                
-            # Check if year within reasonable years (1750 - this year)
-            if int(date[:4]) < 1750 or int(date[:4]) > datetime.today().year:
-                self.bad_record = True
-                self.errors.append("Year out of range in record #{0}".format(self.cont))
-                return
-                
-            # Check if month within accepted range
-            if int(date[5:]) < 1 or int(date[5:]) > 12:
-                self.bad_record = True
-                self.errors.append("Month out of range in record #{0}".format(self.cont))
-                return
-                
-        # TODO: Update adding final case (year-month-day with separator and both month and day with single-digit values)
-        # Year-month-day, without separator, or year-month-day with separator and both month and day with single-digit values
-        elif len(date) == 8:
-            # Check if correct format
-            try:
-                int(date[:4])
-                int(date[4:6])
-                int(date[6:])
-            except ValueError:
-                self.bad_record = True
-                self.errors.append("Invalid date format in record #{0}".format(self.cont))
             return
-            
-            # Check if year within reasonable years (1750 - this year)
-            if int(date[:4]) < 1750 or int(date[:4]) > datetime.today().year:
-                self.bad_record = True
-                self.errors.append("Year out of range in record #{0}".format(self.cont))
-                return
-                
-            # Check if month within accepted range
-            if int(date[4:6]) < 1 or int(date[4:6]) > 12:
-                self.bad_record = True
-                self.errors.append("Month out of range in record #{0}".format(self.cont))
-                return
-                
-            # Check if day within accepted range
-            if int(date[6:]) < 1 or int(date[6:]) > 31:
-                self.bad_record = True
-                self.errors.append("Day out of range in record #{0}".format(self.cont))
-                return
         
+        # Set minimum date to detect Nones
+        nulldate = datetime.datetime(datetime.MINYEAR, 1, 1)
         
-        # TODO: complete this
-        # Year-month-day, with either month or day with single-digit value
-        elif len(date) == 9:
-            pass
-        
-        
-        # Year-month-day with separator.
-        elif len(date) == 10:
-            # Check if correct format
-            try:
-                int(date[:4])
-                int(date[5:7])
-                int(date[8:])
-            except ValueError:
-                self.bad_record = True
-                self.errors.append("Invalid date format in record #{0}".format(self.cont))
-                return
-                
-            if date[4] not in accepted_separators or date[7] not in accepted_separators or date[4] != date[7]:
-                self.bad_record = True
-                self.errors.append("Invalid date field separator in record #{0}".format(self.cont))
-                return
-                
-            # Check if year within reasonable years (1750 - this year)
-            if int(date[:4]) < 1750 or int(date[:4]) > datetime.today().year:
-                self.bad_record = True
-                self.errors.append("Year out of range in record #{0}".format(self.cont))
-                return
-                
-            # Check if month within accepted range
-            if int(date[5:7]) < 1 or int(date[5:7]) > 12:
-                self.bad_record = True
-                self.errors.append("Month out of range in record #{0}".format(self.cont))
-                return
-                
-            # Check if day within accepted range
-            if int(date[8:]) < 1 or int(date[8:]) > 31:
-                self.bad_record = True
-                self.errors.append("Day out of range in record #{0}".format(self.cont))
-                return
-            
-        # More to be added
-        else:
+        # Parse date and if nulldate is returned, return empty
+        dt = parser.parse(date, default=nulldate).date()
+        if dt == nulldate:
             self.bad_record = True
-            self.errors.append("Unrecognised date format in record #{0}".format(self.cont))
+            self.errors.append("Date could not be recognized in record #{0}".format(self.cont))
             return
-        
         return
     
     
     def parse_scientificName(self, sciname):
         """Assess the completeness and quality of the scientificName field."""
         
-#        # Completeness
-#        if sciname == "":
+        # Completeness
+        if sciname == "":
 #            self.bad_record = True
 #            self.errors.append("Scientific Name missing in record #{0}".format(self.cont))
-#            return
+            return
         
         # Quotes in scientificName
         if "'" in sciname or '"' in sciname:
@@ -300,11 +159,11 @@ class Parser():
     def parse_recordedBy(self, recordedBy):
         """Assess the completeness and quality of the recordedBy field."""
         
-#        # Completeness
-#        if recordedBy == "":
+        # Completeness
+        if recordedBy == "":
 #            self.bad_record = True
 #            self.errors.append("recordedBy missing in record #{0}".format(self.cont))
-#            return
+            return
         
         # More to be added
         return
@@ -313,11 +172,11 @@ class Parser():
     def parse_geodeticDatum(self, geodeticDatum):
         """Assess the completeness and quality of the geodeticDatum field."""
         
-#        # Completeness
-#        if geodeticDatum == "":
+        # Completeness
+        if geodeticDatum == "":
 #            self.bad_record = True
 #            self.errors.append("geodeticDatum missing in record #{0}".format(self.cont))
-#            return
+            return
         
         # More to be added
         return
@@ -326,11 +185,11 @@ class Parser():
     def parse_coordinateUncertaintyInMeters(self, coordinateUncertaintyInMeters):
         """Assess the completeness and quality of the coordinateUncertaintyInMeters field."""
         
-#        # Completeness
-#        if coordinateUncertaintyInMeters == "":
+        # Completeness
+        if coordinateUncertaintyInMeters == "":
 #            self.bad_record = True
 #            self.errors.append("coordinateUncertaintyInMeters missing in record #{0}".format(self.cont))
-#            return
+            return
 
         # Values are numbers
         try:
