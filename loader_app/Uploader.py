@@ -303,12 +303,13 @@ class Uploader():
         
         
         # Build geom fields
-        if vals['decimalLatitude'] == "" or vals['decimalLongitude'] == "":
+        try:
+           latval = float(vals['decimalLatitude'])
+           lngval = float(vals['decimalLongitude'])
+           geoms = "ST_SetSRID(ST_Point({0}, {1}),4326), ST_SetSRID(ST_Point({0}, {1}),3857)".format(vals['decimalLongitude'], vals['decimalLatitude'])
+        except ValueError:
             geoms = "null, null"
-        else:
-            geoms = "ST_SetSRID(ST_Point({0}, {1}),4326), ST_SetSRID(ST_Point({0}, {1}),3857)".format(vals['decimalLongitude'], vals['decimalLatitude'])
-            
-        
+
         # Change some empty values for nulls
         if vals['decimalLatitude'] == '':
             vals['decimalLatitude'] = 'null'
