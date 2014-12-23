@@ -54,6 +54,7 @@ def main():
 
 # Help page
 @app.route('/help')
+@mol_user_auth('MOL_USER')
 def help():
     """Return help page."""
     
@@ -62,6 +63,7 @@ def help():
 
 # Spreadsheet template
 @app.route('/spreadsheet_template')
+@mol_user_auth('MOL_USER')
 def download_spreadsheet():
     """Serve xls template to user."""
     
