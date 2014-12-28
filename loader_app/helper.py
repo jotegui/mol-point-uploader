@@ -1,9 +1,10 @@
 __author__ = 'funkycoda'
 
 from functools import wraps
-from flask import request, abort, redirect, g
+from flask import request, abort, redirect, g, render_template
 
 import requests
+from requests import ConnectionError
 
 from loader_app import app
 
@@ -15,6 +16,10 @@ def mol_user_auth(*role):
             cookie_name = app.config.get('REMEMBER_COOKIE_NAME', 'muprsns')
             auth_base_url = app.config.get('MOL_AUTH_BASE_URL', 'http://auth.mol.org/')
 
+            retry_count = kwargs.get('retry', 0)
+            if retry_count > 1:
+                return redirect('%s/login?next=%s' % (auth_base_url, request.url))
+
             if cookie_name not in request.cookies:
                 return redirect('%s/login?next=%s' % (auth_base_url, request.url))
 
@@ -23,7 +28,11 @@ def mol_user_auth(*role):
             if role is not None:
                 payload.update(role_check=role)
 
-            r = requests.get('%s/api/me' % auth_base_url, params=payload)
+            try:
+                r = requests.get('%s/api/me' % auth_base_url, params=payload)
+            except ConnectionError:
+                retry_count += 1
+                return decorated_view(retry=retry_count)
 
             if r.status_code != 200:
                 abort(403)
@@ -42,3 +51,35 @@ def mol_user_auth(*role):
         return decorated_view
     return wrapper
 
+
+@app.route('/contact')
+def contact():
+    return redirect('http://auth.mol.org/contact')
+
+
+@app.errorhandler(401)
+def error_unauthorized(e):
+    """Return a custom 403 error."""
+
+    return render_template('error/403.html'), 401
+
+
+@app.errorhandler(403)
+def error_forbidden(e):
+    """Return a custom 403 error."""
+
+    return render_template('error/403.html'), 403
+
+
+@app.errorhandler(404)
+def error_page_not_found(e):
+    """Return a custom 404 error."""
+
+    return render_template('error/404.html'), 404
+
+
+@app.errorhandler(500)
+def error_internal_server_error(e):
+    """Return a custom 500 error."""
+
+    return render_template('error/500.html'), 500
