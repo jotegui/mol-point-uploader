@@ -21,14 +21,17 @@ from cartodb_apikey import api_key
 @mol_user_auth('MOL_USER')
 def main():
     """Return main page."""
-    
+
     # If coming from parsing content, show errors
     if 'errors' in session.keys():
         errors = session['errors']
     
-    # Else, clear session and start fresh
+    # Else, clear session except for any messages and start fresh
     else:
+        messages = session.get('_flashes', None)
         session.clear()
+        if messages is not None:
+            session['_flashes'] = messages
         errors = []
 
     # Mandatory headers and header types
