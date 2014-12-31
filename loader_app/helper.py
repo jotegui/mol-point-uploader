@@ -29,7 +29,7 @@ def mol_user_auth(*role):
                 payload.update(role_check=role)
 
             try:
-                r = requests.get('%s/api/me' % auth_base_url, params=payload)
+                r = requests.get('%s/api/me' % auth_base_url, params=payload, timeout=None)
             except ConnectionError:
                 retry_count += 1
                 return decorated_view(retry=retry_count)
