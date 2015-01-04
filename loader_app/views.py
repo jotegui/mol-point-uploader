@@ -305,7 +305,7 @@ def upload_cartodb():
     #uploader.delete_entity('occurrence_key')
     
     # Go back to main page
-    return redirect(url_for('main'))
+    return redirect(url_for('records', datasetid=session['file_uuid']))
 
 
 @app.route('/hello')
