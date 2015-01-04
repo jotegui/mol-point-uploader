@@ -24,7 +24,7 @@
         {% for cl in dwc_terms | sort %}
             <optgroup label="{{cl}}">
             {% for i in dwc_terms[cl] | sort %}
-                <option value="{{dwc_terms[cl][i]}}">{{i}}</option>
+                <option value="{{dwc_terms[cl][i]['url']}}">{{i}}<!-- - {{dwc_terms[cl][i]['def']}}--></option>
             {% endfor %}
             </optgroup>
         {% endfor %}
