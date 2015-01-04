@@ -3,39 +3,53 @@
 
     <div id="main-form" name="main-form" class="center-block">
         
-        <p>Steps for the correct upload of observation data:</p>
+        <div class="row">
+            <div class="col-xs-12 col-md-8">
+                <h1>Observation data loader</h1>
+            </div>
+            
+            <!-- File Upload form -->
+            <div class="col-xs-12 col-md-4">
+                <form id="fileUpload" name="fileUpload" action="/headers_selector" method="POST" enctype="multipart/form-data">
+                
+<!--                <div class="form-group col-xs-12">-->
+<!--                    <input type="checkbox" name="useTemplate">-->
+<!--                    <label for="useTemplate">Check if you used our template</label></p>-->
+<!--                </div>-->
+
+                <div class="form-group col-xs-12">
+                    <label for="file">Select your file</label>
+                    <input type="file" id="file" name="file">
+                </div>
+                
+                <input class="btn btn-primary btn-lg col-xs-12" type="submit" value="Upload">
+                
+                </form>
+            </div>
+        </div>
         
-        <ol>
-            <li>Download the <a href="./spreadsheet_template">spreadsheet template</a></li>
-            <li>Fill it out. You can find some information about each field <a href="/help">here</a>, if you need it</li>
-            <li>Save the spreadsheet as a csv file</li>
-            <li>Upload the spreadsheet with the button below</li>
-        </ol>
-        <p>You can also upload the data in your own format, as long as it has (at least) the following fields (or default values for them):</p>
+        <hr>
+        
+        <h3>Instructions</h3>
+        
+        <p>This tool allows you to upload your point observation data into the MOL infrastructure. There are a few requirements for a correct upload of your records.</p>
+        
+        <p>Only <strong>CSV or TXT files</strong> are supported, with one of these characters as field-delimiters: <strong>tab, semi-colon (;) or pipe (|)</strong>. If you need help, there are many resources out there that <a href="https://www.google.es/?#q=save+excel+as+csv" target="_blank">show how to do this</a>.</p>
+        
+        <p>You can upload the data in your own structure, as long as it has (at least) the following fields:</p>
         <ul>
             <li>Scientific Name</li>
             <li>Latitude and Longitude, in <a href="http://en.wikipedia.org/wiki/Decimal_degrees" target="_blank">decimal degrees</a></li>
             <li>Observation Date</li>
-            <li>Collector's name</li>
+            <li>Observer's name</li>
             <li>Coordinate Uncertainty</li>
 <!--            <li>Geodetic Datum</li> -->
         </ul>
         
-        <hr>
-        <!-- File Upload form -->
-        <form id="fileUpload" name="fileUpload" action="/headers_selector" method="POST" enctype="multipart/form-data">
-        <div>
-            <div class="form-group">
-                <label for="file">Select your csv file</label>
-                <input type="file" id="file" name="file">
-            </div>
-            <div class="form-group">
-                <input type="checkbox" name="useTemplate">
-                <label for="useTemplate">Check this box if you used our template (see above)</label></p>
-            </div>
-            <input class="btn btn-primary" type="submit" value="Upload">
-        </div>
-        </form>
+        <p>Your file can have more columns, and all will be uploaded, but this is the minimum set of fields required to properly integrate the records into MOL. If you don't have any of these columns because a common value is shared by all records (say, all your observations were made the same date, or belong to the same species), the tool has a special section to insert default values for any of these fields.</p>
+        
+        <p>Lastly, when your dataset has been parsed but before upload, you will be asked to fill a simple form for specifying metadata associated to the dataset (who collected the records, to what project it belongs, if any...). After that, your data will be uploaded to MOL and you will be able to see the records on a map and as a table.</p>
+        
     </div>
 
 
