@@ -24,24 +24,101 @@ $(function () {
     
     <div class="col-xs-12">&nbsp</div>
     
-    {% for field, type in session['mandatory_fields_types'].iteritems() | sort%}
-    <!-- {{field}} -->
+    <!-- Scientific Name -->
     <div class="row">
-        <div class="form-group col-md-6 col-xs-12" id="{{field}}Select">    
-            <label for="{{field}}" class="control-label">{{field}}</label>
-            <select class="form-control" ng-model="headerCtrl.headers.{{field}}" id="{{field}}" name="{{field}}">
+        <div class="form-group col-md-6 col-xs-12" id="scientificNameSelect">    
+            <label for="scientificName" class="control-label">Scientific Name</label>
+            <select class="form-control" ng-model="headerCtrl.headers.scientificName" id="scientificName" name="scientificName">
             {% for header in session['file_headers'] %}
                 <option value="{{header}}">{{header}}</option>
             {% endfor %}
             </select>
         </div>
-        <div class=" form-group col-md-6 col-xs-12" id="{{field}}DefaultInput">
-            <label for="{{field}}Default" class="control-label col-md-12 hidden-xs hidden-sm">&nbsp</label>
-            <input type="{{type}}" class="form-control" ng-model="headerCtrl.headers.{{field}}Default" id="{{field}}Default" name="{{field}}Default" placeholder="Default value for {{field}}, {{type}}{%if field=='eventDate'%}, ISO8601 compliant format{% elif field=='decimalLatitude'%} between -90 and 90{% elif field=='decimalLongitude'%} between -180 and 180{%endif%}"{%if field=='decimalLatitude'%}min="-90" max="90"{%endif%}{%if field=='decimalLongitude'%}min="-180" max="180"{%endif%}>
+        <div class=" form-group col-md-6 col-xs-12" id="scientificNameDefaultInput">
+            <label for="scientificNameDefault" class="control-label col-md-12 hidden-xs hidden-sm">&nbsp</label>
+            <input type="text" class="form-control" ng-model="headerCtrl.headers.scientificNameDefault" id="scientificNameDefault" name="scientificNameDefault" placeholder="Default value for Scientific Name, text">
         </div>
     </div>
-    {% endfor %}
 
+    <!-- decimalLatitude -->
+    <div class="row">
+        <div class="form-group col-md-6 col-xs-12" id="decimalLatitudeSelect">    
+            <label for="decimalLatitude" class="control-label">Latitude (in decimal degrees)</label>
+            <select class="form-control" ng-model="headerCtrl.headers.decimalLatitude" id="decimalLatitude" name="decimalLatitude">
+            {% for header in session['file_headers'] %}
+                <option value="{{header}}">{{header}}</option>
+            {% endfor %}
+            </select>
+        </div>
+        <div class=" form-group col-md-6 col-xs-12" id="decimalLatitudeDefaultInput">
+            <label for="decimalLatitudeDefault" class="control-label col-md-12 hidden-xs hidden-sm">&nbsp</label>
+            <input type="number" class="form-control" ng-model="headerCtrl.headers.decimalLatitudeDefault" id="decimalLatitudeDefault" name="decimalLatitudeDefault" placeholder="Default value for Latitude, number between -90 and 90" min="-90" max="90">
+        </div>
+    </div>
+
+    <!-- decimalLongitude -->
+    <div class="row">
+        <div class="form-group col-md-6 col-xs-12" id="decimalLongitudeSelect">    
+            <label for="decimalLongitude" class="control-label">Longitude (in decimal degrees)</label>
+            <select class="form-control" ng-model="headerCtrl.headers.decimalLongitude" id="decimalLongitude" name="decimalLongitude">
+            {% for header in session['file_headers'] %}
+                <option value="{{header}}">{{header}}</option>
+            {% endfor %}
+            </select>
+        </div>
+        <div class=" form-group col-md-6 col-xs-12" id="decimalLongitudeDefaultInput">
+            <label for="decimalLongitudeDefault" class="control-label col-md-12 hidden-xs hidden-sm">&nbsp</label>
+            <input type="number" class="form-control" ng-model="headerCtrl.headers.decimalLongitudeDefault" id="decimalLongitudeDefault" name="decimalLongitudeDefault" placeholder="Default value for Longitude, number between -180 and 180" min="-180" max="180">
+        </div>
+    </div>
+
+    <!-- coordinateUncertaintyInMeters -->
+    <div class="row">
+        <div class="form-group col-md-6 col-xs-12" id="coordinateUncertaintyInMetersSelect">    
+            <label for="coordinateUncertaintyInMeters" class="control-label">Coord. Uncertainty (in meters)</label>
+            <select class="form-control" ng-model="headerCtrl.headers.coordinateUncertaintyInMeters" id="coordinateUncertaintyInMeters" name="coordinateUncertaintyInMeters">
+            {% for header in session['file_headers'] %}
+                <option value="{{header}}">{{header}}</option>
+            {% endfor %}
+            </select>
+        </div>
+        <div class=" form-group col-md-6 col-xs-12" id="coordinateUncertaintyInMetersDefaultInput">
+            <label for="coordinateUncertaintyInMetersDefault" class="control-label col-md-12 hidden-xs hidden-sm">&nbsp</label>
+            <input type="number" class="form-control" ng-model="headerCtrl.headers.coordinateUncertaintyInMetersDefault" id="coordinateUncertaintyInMetersDefault" name="coordinateUncertaintyInMetersDefault" placeholder="Default value for uncertainty, in meters, number">
+        </div>
+    </div>
+
+    <!-- eventDate -->
+    <div class="row">
+        <div class="form-group col-md-6 col-xs-12" id="eventDateSelect">    
+            <label for="eventDate" class="control-label">Date and Time</label>
+            <select class="form-control" ng-model="headerCtrl.headers.eventDate" id="eventDate" name="eventDate">
+            {% for header in session['file_headers'] %}
+                <option value="{{header}}">{{header}}</option>
+            {% endfor %}
+            </select>
+        </div>
+        <div class=" form-group col-md-6 col-xs-12" id="eventDateDefaultInput">
+            <label for="eventDateDefault" class="control-label col-md-12 hidden-xs hidden-sm">&nbsp</label>
+            <input type="text" class="form-control" ng-model="headerCtrl.headers.eventDateDefault" id="eventDateDefault" name="eventDateDefault" placeholder="Default value for Date and Time, text, ISO8601 compliant format">
+        </div>
+    </div>
+
+    <!-- recordedBy -->
+    <div class="row">
+        <div class="form-group col-md-6 col-xs-12" id="recordedBySelect">    
+            <label for="recordedBy" class="control-label">Observer</label>
+            <select class="form-control" ng-model="headerCtrl.headers.recordedBy" id="recordedBy" name="recordedBy">
+            {% for header in session['file_headers'] %}
+                <option value="{{header}}">{{header}}</option>
+            {% endfor %}
+            </select>
+        </div>
+        <div class=" form-group col-md-6 col-xs-12" id="recordedByDefaultInput">
+            <label for="recordedByDefault" class="control-label col-md-12 hidden-xs hidden-sm">&nbsp</label>
+            <input type="text" class="form-control" ng-model="headerCtrl.headers.recordedByDefault" id="recordedByDefault" name="recordedByDefault" placeholder="Default value for Observer, text">
+        </div>
+    </div>
 
     <div class="alert alert-danger" id="warningMessage" ng-show="headerCtrl.warning" >
         <button type="button" class="close" data-dismiss="alert">
@@ -64,17 +141,18 @@ $(function () {
       </div>
       <div class="modal-body">
       
-      <p>This step is what we call header (or field) alignment. In order to properly map your records, we need to know where to find certain pieces of information from your file. In this section, we ask you to tell us which of the fields in your file correspond to these basic DarwinCore terms:
+      <p>This step is what we call header (or field) alignment. In order to properly map your records, we need to know where to find certain pieces of information from your file. In this section, we ask you to tell us which of the fields in your file correspond to these basic terms:
       <ul>
-        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="The horizontal distance (in meters) from the given decimalLatitude and decimalLongitude describing the smallest circle containing the whole of the Location. Leave the value empty if the uncertainty is unknown, cannot be estimated, or is not applicable (because there are no coordinates). Zero is not a valid value for this term.">coordinateUncertaintyInMeters</a></li>
-        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="The geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic center of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.">decimalLatitude</a></li>
-        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="The geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic center of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.">decimalLongitude</a></li>
-        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="The date-time or interval during which an Event occurred. For occurrences, this is the date-time when the event was recorded. Not suitable for a time in a geological context. Recommended best practice is to use an encoding scheme, such as ISO 8601:2004(E).">eventDate</a></li>
+        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="The full scientific name, with authorship and date information if known. When forming part of an Identification, this should be the name in lowest level taxonomic rank that can be determined. This term should not contain identification qualifications, which should instead be supplied in the IdentificationQualifier term.">Scientific Name</a></li>
+        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="The geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic center of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive.">Latitude</a></li>
+        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="The geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic center of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive.">Longitude</a></li>
+        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="The horizontal distance (in meters) from the given decimalLatitude and decimalLongitude describing the smallest circle containing the whole of the Location. Leave the value empty if the uncertainty is unknown, cannot be estimated, or is not applicable (because there are no coordinates). Zero is not a valid value for this term.">Coordinate Uncertainty</a></li>
+        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="The date-time or interval during which an Event occurred. For occurrences, this is the date-time when the event was recorded. Not suitable for a time in a geological context. Recommended best practice is to use an encoding scheme, such as ISO 8601:2004(E).">Date and Time</a></li>
 <!--
         <li><a href="#" data-toggle="popover" data-placement="right" title="DarwinCore definition" data-content="The ellipsoid, geodetic datum, or spatial reference system (SRS) upon which the geographic coordinates given in decimalLatitude and decimalLongitude as based. Recommended best practice is use the EPSG code as a controlled vocabulary to provide an SRS, if known. Otherwise use a controlled vocabulary for the name or code of the geodetic datum, if known. Otherwise use a controlled vocabulary for the name or code of the ellipsoid, if known. If none of these is known, use the value 'unknown'.">geodeticDatum</a></li>
 -->
-        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="A list (concatenated and separated) of names of people, groups, or organizations responsible for recording the original Occurrence. The primary collector or observer, especially one who applies a personal identifier (recordNumber), should be listed first.">recordedBy</a></li>
-        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="The full scientific name, with authorship and date information if known. When forming part of an Identification, this should be the name in lowest level taxonomic rank that can be determined. This term should not contain identification qualifications, which should instead be supplied in the IdentificationQualifier term.">scientificName</a></li>
+        <li><a href="#" data-toggle="popover" data-trigger="focus" data-placement="right" title="DarwinCore definition" data-content="A list (concatenated and separated) of names of people, groups, or organizations responsible for recording the original Occurrence. The primary collector or observer, especially one who applies a personal identifier (recordNumber), should be listed first.">Observer</a></li>
+
       </ul>
       </p>
 
