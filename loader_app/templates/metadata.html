@@ -21,7 +21,7 @@
                 <label for="public" class="control-label">Would you like the data set to be publicly available?</label>
                 <div>
                     <input type="checkbox" id="public" name="public" ng-model="formCtrl.formData.public" ng-checked="1">
-                    <span class="help-block">Required. Mark the checkbox if you want to make the data set available in the public domain.</span>
+                    <span class="help-block">Mark the checkbox if you want to make the data set available in the public domain.</span>
                 </div>
             </div>
             
@@ -82,14 +82,25 @@
                 </div>
             </div>
             
+            <!-- Datum -->
+            <div class="form-group col-xs-12 col-md-6">
+                <label for="datum" class="control-label">Geodetic Datum used for the coordinates</label>
+                <div>
+                    <input type="text" class="form-control" id="datum" name="datum" ng-model="formCtrl.formData.datum" placeholder="Default: WGS84">
+                    <span class="help-block">Required. Insert the datum in which observations were recorded. If left empty, "WGS84" will be used.</span>
+                </div>
+            </div>
+
             <!-- Language -->
-            <div class="form-group col-md-12">
+            <div class="form-group col-xs-12 col-md-6">
                 <label for="lang" class="control-label">Lanuage of the dataset/project</label>
                 <div>
                     <input type="text" class="form-control" id="lang" name="lang" ng-model="formCtrl.formData.lang" placeholder="Default: en">
                     <span class="help-block">Optional. Recommended 2 character-code: "en" for English, "es" for Spanish, "fr" for French... See <a href="http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes" target="_blank">here</a> for a list of codes. </span>
                 </div>
             </div>
+            
+
             
             <!-- Geographic scope -->
             <div class="form-group col-md-12">

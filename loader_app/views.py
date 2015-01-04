@@ -44,7 +44,7 @@ def main():
         'decimalLongitude': 'number',
         'eventDate': 'text',
         'recordedBy': 'text',
-        'geodeticDatum': 'text',
+#        'geodeticDatum': 'text',
         'coordinateUncertaintyInMeters': 'number'
     }
     session['mandatory_fields'] = session['mandatory_fields_types'].keys()
@@ -238,7 +238,9 @@ def metadata():
             if i != 'submitBtn' and not i.endswith("_dwc"):
                 term_dict = {"description": request.form[i], "term": request.form["%s_dwc" % i]}
                 session['extra_fields'][i] = term_dict
-        
+    
+    print session['extra_fields']
+    
     # Create meta.xml
     meta = render_meta()
     
@@ -267,7 +269,13 @@ def upload():
     uploader.upload_eml(eml)
     
     # Create CartoDB registry record
-    uploader.cartodb_meta(request.form)
+    success = uploader.cartodb_meta(request.form)
+    if success == False:
+        return render_template('metadata.html')
+    
+    # Store datum
+    session.pop('geodeticDatum', None)
+    session['geodeticDatum'] = request.form['datum'] if 'datum' in request.form and request.form['datum'] != "" else "WGS84"
     
     # Create occurrence.txt
 #    uploader.build_occurrence()

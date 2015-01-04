@@ -17,7 +17,7 @@
     this.headers = {};
     
     // Fields to check
-    this.allheaders = ['coordinateUncertaintyInMeters', 'decimalLatitude', 'decimalLongitude', 'eventDate', 'geodeticDatum', 'recordedBy', 'scientificName'];
+    this.allheaders = ['coordinateUncertaintyInMeters', 'decimalLatitude', 'decimalLongitude', 'eventDate',/* 'geodeticDatum',*/ 'recordedBy', 'scientificName'];
     
     // Execute when clicking 'submit' button
     this.checkFields = function() {

@@ -56,8 +56,8 @@ class Parser():
         # Parse recordedBy
         self.parse_recordedBy(vals['recordedBy'])
         
-        # Parse geodeticDatum
-        self.parse_geodeticDatum(vals['geodeticDatum'])
+#        # Parse geodeticDatum
+#        self.parse_geodeticDatum(vals['geodeticDatum'])
         
         # Parse coordinateUncertaintyInMeters
         self.parse_coordinateUncertaintyInMeters(vals['coordinateUncertaintyInMeters'])

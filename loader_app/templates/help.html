@@ -27,9 +27,11 @@
         <dd><strong>Required</strong>. A list (concatenated and separated) of names of people, groups, or organizations responsible for recording the original observation. The primary collector or observer should be listed first. <p>Example: "Oliver P. Pearson; Anita K. Pearson".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#recordedBy">http://rs.tdwg.org/dwc/terms/index.htm#recordedBy</a></dd>
         
         <!-- Geodetic datum -->
+<!--
         <dt>Geodetic datum</dt>
         <dd><strong>Required</strong>. The ellipsoid, geodetic datum, or spatial reference system (SRS) upon which the geographic coordinates given in latitude and longitude are based. Recommended best practice is use the EPSG code as a controlled vocabulary to provide an SRS, if known. Otherwise use a controlled vocabulary for the name or code of the geodetic datum, if known. Otherwise use a controlled vocabulary for the name or code of the ellipsoid, if known. If none of these is known, use the value "unknown". <p>Examples: "EPSG:4326", "WGS84", "NAD27", "Campo Inchauspe", "European 1950", "Clarke 1866".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#geodeticDatum">http://rs.tdwg.org/dwc/terms/index.htm#geodeticDatum</a></dd>
-        
+-->
+
         <!-- Coordinate uncertainty -->
         <dt>Coord. uncertainty</dt>
         <dd><strong>Required</strong>. The horizontal distance (in meters) from the given latitude and longitude describing the smallest circle containing the whole of the Location. Leave the value empty if the uncertainty is unknown, cannot be estimated, or is not applicable (because there are no coordinates). Zero is not a valid value for this term. <p>Examples: "30" (reasonable lower limit of a GPS reading under good conditions if the actual precision was not recorded at the time), "71" (uncertainty for a UTM coordinate having 100 meter precision and a known spatial reference system).<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters">http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters</a></dd>

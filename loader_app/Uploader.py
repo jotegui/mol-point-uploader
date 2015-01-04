@@ -53,7 +53,9 @@ class Uploader():
         for key in ['raw_key', 'meta_key', 'eml_key', 'occurrence_key']:
             self.delete_entity(key)
         return
+        
     
+    # FILE PARSING AND UPLOADING
     
     def parse_file(self, up_file):
         """Validate the uploaded file."""
@@ -84,12 +86,12 @@ class Uploader():
         session.pop('file_headers', None)
         session['file_headers'] = headerline.split(session['field_separator'])
         
-        # Read file into unicode
-        content = up_file.read()
+        # Read file content
+        content = up_file.read().rstrip()
 
-        # Remove trailing newline
-        if content[-1] == "\n":
-            content = content[:-1]
+#        # Remove trailing newline
+#        if content[-1] == "\n":
+#            content = content[:-1]
         
         # Save the file to NDB
         session['raw_key'] = str(self.upload_ndb(name='raw', content=content))
@@ -211,7 +213,11 @@ class Uploader():
         query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, email) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}', '{18}', '{19}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, userEmail), 'utf-8')
         
         params = {'q': query, 'api_key': api_key}
-        r = requests.post(self.cartodb_api, data=params)
+        try:
+            r = requests.post(self.cartodb_api, data=params)
+        except ConnectionError:
+            flash("Hm... Looks like there is something wrong with an external databasing service. Please, try again in a few minutes. If this persists, please contact us.")
+            return False
 
         if r.status_code == 200:
             print 'Registry entry added'
@@ -220,7 +226,7 @@ class Uploader():
             print r.status_code
             print r.text
         
-        return
+        return True
     
     def cartodb_points(self):
         """Iterate through all records to build the records to upoad to CartoDB"""
@@ -233,7 +239,7 @@ class Uploader():
         # and for each record
         csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
 
-        query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, extraFields, the_geom, the_geom_webmercator) values ".format(table_name)
+        query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, geodeticDatum, coordinateuncertaintyinmeters, extraFields, the_geom, the_geom_webmercator) values ".format(table_name)
         values = []
         for record in csvreader:
             print record
@@ -315,9 +321,11 @@ class Uploader():
             vals['decimalLatitude'] = 'null'
         if vals['decimalLongitude'] == '':
             vals['decimalLongitude'] = 'null'
+        if vals['coordinateUncertaintyInMeters'] == '':
+            vals['coordinateUncertaintyInMeters'] = 'null'
         
         # Build record for query
-        values = unicode("('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', {7})".format(datasetId, vals['scientificName'], vals['decimalLatitude'], vals['decimalLongitude'], vals['eventDate'], vals['recordedBy'], json.dumps(extraFields), geoms), 'utf-8')
+        values = unicode("('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', {7}, '{8}', {9})".format(datasetId, vals['scientificName'], vals['decimalLatitude'], vals['decimalLongitude'], vals['eventDate'], vals['recordedBy'], session['geodeticDatum'], vals['coordinateUncertaintyInMeters'], json.dumps(extraFields), geoms), 'utf-8')
         print values
         return values
 
