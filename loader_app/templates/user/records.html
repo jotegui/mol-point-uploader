@@ -185,10 +185,10 @@
                   type: 'POST',
                   dataType: 'json',
                   contentType: 'application/json',
-                  url: 'http://mol.cartodb.com/api/v1/map',
+                  url: 'https://mol.cartodb.com/api/v1/map',
                   data: JSON.stringify(mapconfig),
                   success: function(data) {
-                    var templateUrl = 'http://mol.cartodb.com/api/v1/map/' + data.layergroupid + '/{z}/{x}/{y}.png'
+                    var templateUrl = 'https://mol.cartodb.com/api/v1/map/' + data.layergroupid + '/{z}/{x}/{y}.png'
                     L.tileLayer(templateUrl, {
                         maxZoom: 18
                     }).addTo(map)
