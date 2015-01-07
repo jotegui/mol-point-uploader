@@ -14,7 +14,7 @@ def mol_user_auth(*role):
         @wraps(f)
         def decorated_view(*args, **kwargs):
             cookie_name = app.config.get('REMEMBER_COOKIE_NAME', 'muprsns')
-            auth_base_url = app.config.get('MOL_AUTH_BASE_URL', 'http://auth.mol.org/')
+            auth_base_url = app.config.get('MOL_AUTH_BASE_URL', 'https://auth.mol.org/')
 
             retry_count = kwargs.get('retry', 0)
             if retry_count > 1:

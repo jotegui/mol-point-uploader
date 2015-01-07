@@ -106,6 +106,18 @@
         
         <script>
 
+            var DEFAULT_CARTOCSS = "";
+            DEFAULT_CARTOCSS += "#layer {";
+            DEFAULT_CARTOCSS += "   marker-fill-opacity: 0.7;";
+            DEFAULT_CARTOCSS += "   marker-line-color: #333333;";
+            DEFAULT_CARTOCSS += "   marker-line-width: 1.5;";
+            DEFAULT_CARTOCSS += "   marker-line-opacity: 0.8;";
+            DEFAULT_CARTOCSS += "   marker-placement: point;";
+            DEFAULT_CARTOCSS += "   marker-type: ellipse;";
+            DEFAULT_CARTOCSS += "   marker-width: 10;";
+            DEFAULT_CARTOCSS += "   marker-allow-overlap: true;";
+            DEFAULT_CARTOCSS += "}";
+
             var stringToColour = function(str) {
                 // str to hash
                 for (var i = 0, hash = 0; i < str.length; hash = str.charCodeAt(i++) + ((hash << 5) - hash));
@@ -116,18 +128,39 @@
             
             var createMapConfig = function(species) {
                 var layers = [];
-                
-                for (var i=0; i<species.length; i++) {
-                    layers[i] = {
+                var species_layer_id = 0;
+                var species_layer_sql = "";
+                var colour_list = "";
+
+                if (species.length == 1) {
+                    species_layer_id = 1;
+                    species_layer_sql = "select * from point_uploads where datasetid='{{ datasetid }}' and scientificname='"+species[0]+"'";
+                    colour_list = "#layer{marker-fill: "+stringToColour(species[0])+";}";
+                    layers[0] = {
                         "type": "cartodb",
                         "options": {
                           "cartocss_version": "2.1.1",
-                          "cartocss": "#layer{marker-fill: "+stringToColour(species[i])+"; marker-width: 5; marker-line-color: gray; marker-line-width: 0.5;}",
-                          "sql": "select * from point_uploads where datasetid='{{ datasetid }}' and scientificname='"+species[i]+"'"
+                          "cartocss": "#layer{polygon-fill:#448833;polygon-opacity: 0.5;line-opacity:1;line-width:1;line-color: #448833;}",
+                          "sql": "SELECT * FROM get_species_tile('"+species[0]+"')"
                         }
                       }
+                } else {
+                    species_layer_sql = "select row_number() over() as id, ST_Union(the_geom_webmercator) as the_geom_webmercator FROM point_uploads WHERE datasetid = '{{ datasetid }}' GROUP BY  scientificname";
+                    colour_list = "#layer[id=1] {marker-fill: "+stringToColour(species[0])+";}";
+                    for (var i=1; i<species.length; i++) {
+                        colour_list += "#layer[id="+(i+1)+"] {marker-fill: "+stringToColour(species[i])+";}";
+                    }
                 }
-                
+
+                layers[species_layer_id] = {
+                    "type": "cartodb",
+                    "options": {
+                      "cartocss_version": "2.1.1",
+                      "cartocss": DEFAULT_CARTOCSS + colour_list,
+                      "sql": species_layer_sql
+                    }
+                  }
+
                 var mapconfig = {
                   "version": "1.0.1",
                   "layers": layers
@@ -172,7 +205,8 @@
                 var map = new L.map('map_canvas').setView({{centroid}}, 3);
                 
                 // add base layer
-                L.tileLayer('https://dnv9my2eseobd.cloudfront.net/v3/cartodb.map-4xtxp73f/{z}/{x}/{y}.png', {
+                // 'https://dnv9my2eseobd.cloudfront.net/v3/cartodb.map-4xtxp73f/{z}/{x}/{y}.png'
+                L.tileLayer('http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
                     maxZoom: 18,
                     attribution: '&copy; <a href="http://www.mol.org">Map of Life</a>, 2014'
                 }).addTo(map);
@@ -185,10 +219,10 @@
                   type: 'POST',
                   dataType: 'json',
                   contentType: 'application/json',
-                  url: 'http://mol.cartodb.com/api/v1/map',
+                  url: 'https://mol.cartodb.com/api/v1/map',
                   data: JSON.stringify(mapconfig),
                   success: function(data) {
-                    var templateUrl = 'http://mol.cartodb.com/api/v1/map/' + data.layergroupid + '/{z}/{x}/{y}.png'
+                    var templateUrl = 'https://mol.cartodb.com/api/v1/map/' + data.layergroupid + '/{z}/{x}/{y}.png'
                     L.tileLayer(templateUrl, {
                         maxZoom: 18
                     }).addTo(map)
