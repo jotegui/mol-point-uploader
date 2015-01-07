@@ -118,6 +118,16 @@
             DEFAULT_CARTOCSS += "   marker-allow-overlap: true;";
             DEFAULT_CARTOCSS += "}";
 
+            var DEFAULT_UNCERT_CARTOCSS = "";
+            DEFAULT_UNCERT_CARTOCSS += "#layer {";
+            DEFAULT_UNCERT_CARTOCSS += "  polygon-fill: #F84F40;";
+            DEFAULT_UNCERT_CARTOCSS += "  polygon-opacity: 0.5;";
+            DEFAULT_UNCERT_CARTOCSS += "  polygon-comp-op: darken;";
+            DEFAULT_UNCERT_CARTOCSS += "  line-color: #FFF;";
+            DEFAULT_UNCERT_CARTOCSS += "  line-width: 2;";
+            DEFAULT_UNCERT_CARTOCSS += "  line-opacity: 0.8;";
+            DEFAULT_UNCERT_CARTOCSS += "}";
+
             var stringToColour = function(str) {
                 // str to hash
                 for (var i = 0, hash = 0; i < str.length; hash = str.charCodeAt(i++) + ((hash << 5) - hash));
@@ -153,6 +163,14 @@
                 }
 
                 layers[species_layer_id] = {
+                    "type": "cartodb",
+                    "options": {
+                      "cartocss_version": "2.1.1",
+                      "cartocss": DEFAULT_UNCERT_CARTOCSS,
+                      "sql": "SELECT cartodb_id, ST_Buffer(tt.the_geom_webmercator, tt.uncert) as the_geom_webmercator FROM ( SELECT COALESCE(coordinateuncertaintyinmeters, 5000) as uncert, * FROM point_uploads WHERE datasetid = '{{ datasetid }}' ) tt"
+                    }
+                  }
+                layers[species_layer_id+1] = {
                     "type": "cartodb",
                     "options": {
                       "cartocss_version": "2.1.1",
