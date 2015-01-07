@@ -16,9 +16,9 @@ def mol_user_auth(*role):
             cookie_name = app.config.get('REMEMBER_COOKIE_NAME', 'muprsns')
             auth_base_url = app.config.get('MOL_AUTH_BASE_URL', 'https://auth.mol.org/')
 
-            retry_count = kwargs.get('retry', 0)
-            if retry_count > 1:
-                return redirect('%s/login?next=%s' % (auth_base_url, request.url))
+            # retry_count = kwargs.get('retry', 0)
+            # if retry_count > 1:
+            #     return redirect('%s/login?next=%s' % (auth_base_url, request.url))
 
             if cookie_name not in request.cookies:
                 return redirect('%s/login?next=%s' % (auth_base_url, request.url))
@@ -28,11 +28,13 @@ def mol_user_auth(*role):
             if role is not None:
                 payload.update(role_check=role)
 
-            try:
-                r = requests.get('%s/api/me' % auth_base_url, params=payload, timeout=None)
-            except ConnectionError:
-                retry_count += 1
-                return decorated_view(retry=retry_count)
+            # try:
+            #     r = requests.get('%s/api/me' % auth_base_url, params=payload, timeout=None)
+            # except ConnectionError:
+            #     retry_count += 1
+            #     return decorated_view(retry=retry_count)
+
+            r = requests.get('%s/api/me' % auth_base_url, params=payload, timeout=30)
 
             if r.status_code != 200:
                 abort(403)
