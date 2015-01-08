@@ -395,3 +395,18 @@ def records(datasetid):
         species = None
 
     return render_template('user/records.html', entries=entries, title=title, datasetid=datasetid, centroid=centroid, species=species)
+
+
+@app.route('/delete/<datasetid>')
+@mol_user_auth('MOL_USER')
+def delete(datasetid):
+    """Delete user submitted dataset"""
+
+    current_user = g.get('user', None)
+    if current_user:
+        success = f.delete_dataset(current_user, datasetid)
+        if success is True:
+            flash("Dataset successfully deleted")
+        else:
+            flash("ERROR: Dataset could not be deleted")
+    return redirect(url_for("datasets"))
