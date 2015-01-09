@@ -37,8 +37,7 @@ Rec2Field1, Rec2Field2, Rec2Field3</pre>
     <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
       <div class="panel-body">
         <p>
-        None of the fields is purely mandatory, in the sense that you can specify default values (values that will be applied to all records) for every field. However, there is a set of fields that must either be present in the file or have a default value: scientific name, latitude, longitude, coordinate uncertainty, observation date and observer name or id.
-        </p>
+        None of the fields is purely mandatory, in the sense that you can specify default values (values that will be applied to all records) for every field. However, there is a set of fields that must either be present in the file or have a default value: scientific name, latitude, longitude, coordinate uncertainty, observation date and observer name or id.</p>
       </div>
     </div>
   </div>
@@ -48,21 +47,19 @@ Rec2Field1, Rec2Field2, Rec2Field3</pre>
     <div class="panel-heading" role="tab" id="headingThree">
       <h4 class="panel-title">
         <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
-          What is the best format for the mandatory fields?
+          What is the best format for the mandatory fields? 
         </a>
       </h4>
     </div>
     <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
       <div class="panel-body">
-        <p>
-        In order to maximise the integration with the rest of the MOL infrastructure, we recommend you to prepare the mandatory fields in the way described below:
+        <p>In order to maximise the integration with the rest of the MOL infrastructure, we recommend you to prepare the mandatory fields in the way described below:</p>
         <ul>
             <li>Scientific name should have a properly built binomial for the taxon</li>
-            <li>Coordinates should be stored in <a href="https://en.wikipedia.org/wiki/Decimal_degrees" target="_blank">decimal degree format</a></li>
+            <li>Coordinates should be stored in decimal degree format</li>
             <li>Uncertainty should be stored as a single number, representing meters</li>
-            <li>Observation date and time should comply with the <a href="https://en.wikipedia.org/wiki/ISO_8601" target="_blank">ISO 8601 standard<a></li>
+            <li>Observation date and time should comply with the ISO 8601 standard</li>
         </ul>
-        </p>
       </div>
     </div>
   </div>
@@ -72,15 +69,13 @@ Rec2Field1, Rec2Field2, Rec2Field3</pre>
     <div class="panel-heading" role="tab" id="headingFour">
       <h4 class="panel-title">
         <a data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="true" aria-controls="collapseFour">
-          My file does not have one (or more) of the mandatory fields, but a common value can be applied to all records. Do I have to create a column just for that?
+          My file does not have one (or more) of the mandatory fields, but a common value can be applied to all records. Do I have to create a column just for that? 
         </a>
       </h4>
     </div>
     <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
       <div class="panel-body">
-          <p>
-          <strong>No.</strong> You can specify that value in the corresponding “default” field. The tool will create the column for you, populating every record with the specified value.
-          </p>
+          <p><strong>No.</strong> You can specify that value in the corresponding “default” field. The tool will create the column for you, populating every record with the specified value.</p>
       </div>
     </div>
   </div>
@@ -96,9 +91,7 @@ Rec2Field1, Rec2Field2, Rec2Field3</pre>
     </div>
     <div id="collapseFive" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
       <div class="panel-body">
-          <p>
-          <strong>No.</strong> You can put that default value in the “default” field and it will be applied only to empty fields. It will not overwrite any existing information, just fill the blanks.
-          </p>
+          <p><strong>No.</strong> You can put that default value in the “default” field and it will be applied only to empty fields. It will not overwrite any existing information, just fill the blanks.</p>
       </div>
     </div>
   </div>
@@ -114,9 +107,7 @@ Rec2Field1, Rec2Field2, Rec2Field3</pre>
     </div>
     <div id="collapseSix" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSix">
       <div class="panel-body">
-          <p>
-          That means the parser found quality issues in your dataset. There are many possible causes, and you will be provided a link with a list of all the problems in your record/s. Most likely, it will be a type mismatch (e.g., putting letters in numeric fields like uncertainty, or putting coordinates in formats other than decimal degrees). You will need to fix those to be able to continue. See the FAQ “What is the best format for the mandatory fields?” for information on how to prepare the content of the fields.
-          </p>
+          <p>That means the parser found quality issues in your dataset. There are many possible causes, and you will be provided a link with a list of all the problems in your record/s. Most likely, it will be a type mismatch (e.g., putting letters in numeric fields like uncertainty, or putting coordinates in formats other than decimal degrees). You will need to fix those to be able to continue. See the FAQ “What is the best format for the mandatory fields?” for information on how to prepare the content of the fields.</p>
       </div>
     </div>
   </div>
@@ -132,8 +123,7 @@ Rec2Field1, Rec2Field2, Rec2Field3</pre>
     </div>
     <div id="collapseSeven" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSeven">
       <div class="panel-body">
-          <p>
-          Just a few of them, and all have the word “Required” next to them. We encourage you to fill all fields, but only these are actually required:
+          <p>Just a few of them, and all have the word “Required” next to them. We encourage you to fill all fields, but only these are actually required:</p>
         <ul>
             <li>Title of the dataset</li>
             <li>Abstract of the dataset</li>
@@ -141,7 +131,6 @@ Rec2Field1, Rec2Field2, Rec2Field3</pre>
             <li>Creator of the metadata</li>
             <li>Geodetic Datum</li>
         </ul>
-          </p>
       </div>
     </div>
   </div>
