@@ -69,7 +69,7 @@ def render_meta():
     dwc_terms_flat = {}
     for cl in dwc_terms:
         for t in dwc_terms[cl]:
-            dwc_terms_flat[t] = dwc_terms[cl][t]
+            dwc_terms_flat[t] = dwc_terms[cl][t]['url']
     
     # Grab values from the session variables
     cont = 0
