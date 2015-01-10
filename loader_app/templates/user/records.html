@@ -29,7 +29,14 @@
                         </ul>
                     </div>
                 </div>
-        
+
+                <!-- annotate button -->
+                <div role="group" class="btn-group" data-toggle="buttons">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#annotateModal">
+                        Annotate
+                    </button>
+                </div>
+
                 <!-- list/map switch -->
                 <div role="group" class="btn-group" data-toggle="buttons">
                     <label class="btn btn-primary active" onclick="$('#mapPanel').show(); $('#listPanel').hide(); $('#speciesbuttons').show();">
@@ -106,6 +113,8 @@
         
         <script>
 
+            var selectedSpecies = "";
+
             var DEFAULT_CARTOCSS = "";
             DEFAULT_CARTOCSS += "#layer {";
             DEFAULT_CARTOCSS += "   marker-fill-opacity: 0.7;";
@@ -144,6 +153,7 @@
                 var colour_list = "";
 
                 if (species.length == 1) {
+                    selectedSpecies = species[0];
                     species_layer_id = 1;
                     species_layer_sql = "select * from point_uploads where datasetid='{{ datasetid }}' and scientificname='"+species[0]+"'";
                     species_uncert_layer_sql = "SELECT cartodb_id, ST_Buffer(tt.the_geom_webmercator, tt.uncert) as the_geom_webmercator FROM ( SELECT COALESCE(coordinateuncertaintyinmeters, 5000) as uncert, * FROM point_uploads WHERE datasetid = '{{ datasetid }}' and scientificname='"+species[0]+"' ) tt";
@@ -256,6 +266,7 @@
             }
             
             var resetMap = function(map, species) {
+                selectedSpecies = "";
                 map.remove();
                 var map = createMap(species);
                 return map;
@@ -302,8 +313,115 @@
 <script>
 $(document).ready(function() {
     $('#recordsTable').dataTable();
+
+    // annotations
+    $('#submitAnnotation').on( 'click', function (event) {
+        var form = $("#annotateModal").find('form');
+        var annotateURL = 'https://api.mol.org/annotate?' + $( form ).serialize();
+        if (selectedSpecies != "") {
+            annotateURL += "&scientificname=" + selectedSpecies;
+        }
+
+        $.get( annotateURL );
+        $('#annotateModal').modal('hide')
+    });
+
 } );
 </script>
 </div>
+
+
+<!-- Annotate Modal -->
+<div class="modal fade" id="annotateModal" tabindex="-1" role="dialog" aria-labelledby="annotateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="annotateModalLabel">Annotate</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+            <input type="hidden" name="datasetid" value="{{ datasetid }}" />
+            <!-- annotation datasets -->
+          <div class="form-group">
+            <label class="control-label">Annotation dataset</label>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="annotations" value="MCD43A4_EVI">
+                MCD43A4_EVI - MODIS 16day EVI (500m)
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="annotations" value="MOD11A2">
+                MOD11A2 - MODIS 8-day LST (1000m)
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="annotations" value="MODCF">
+                MODCF - MODIS Monthly Average Cloud Frequency (1000m)
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="annotations" value="worldclim_tmean">
+                worldclim_tmean - WorldClim Monthly Average Temperature (1000m)
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="annotations" value="worldclim_prec">
+                worldclim_prec - WorldClim Monthly Total Precipitation (1000m)
+              </label>
+            </div>
+          </div>
+
+            <!-- -->
+            <div class="form-group">
+                <label class="control-label">Spatial grain</label>
+                <div>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="spatial_grain" value="1"> 1km
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="spatial_grain" value="2"> 2km
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="spatial_grain" value="4"> 4km
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="spatial_grain" value="8"> 8km
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="spatial_grain" value="16"> 16km
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="spatial_grain" value="32"> 32km
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="spatial_grain" value="64"> 64km
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="spatial_grain" value="128"> 128km
+                </label>
+                </div>
+            </div>
+
+            <!-- buffer -->
+          <div class="form-group">
+            <label for="annotation-buffer" class="control-label">Buffer: 1km (default)</label>
+            <!-- <textarea class="form-control" id="annotation-buffer"></textarea> -->
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="submitAnnotation">Annotate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 {% endblock %}
