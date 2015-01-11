@@ -322,7 +322,7 @@ $(document).ready(function() {
             annotateURL += "&scientificname=" + selectedSpecies;
         }
 
-        $.get( annotateURL );
+        location.href = annotateURL;
         $('#annotateModal').modal('hide')
     });
 
