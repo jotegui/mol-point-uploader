@@ -353,7 +353,7 @@ def records(datasetid):
         email = current_user['email']
         
         # Get points
-        q = "select * from point_uploads where datasetid='{0}'".format(datasetid)
+        q = "select * from point_uploads_master where datasetid='{0}'".format(datasetid)
         params = {'q': q, 'api_key': api_key}
         r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
         if r.status_code == 200:
@@ -371,7 +371,7 @@ def records(datasetid):
             title = None
             
         # Get centroid
-        q = "select ST_X(centroid) as lng, ST_Y(centroid) as lat from (select ST_Centroid(ST_Union(the_geom)) as centroid from (select the_geom from point_uploads where datasetid='{0}') as foo) as bar".format(datasetid)
+        q = "select ST_X(centroid) as lng, ST_Y(centroid) as lat from (select ST_Centroid(ST_Union(the_geom)) as centroid from (select the_geom from point_uploads_master where datasetid='{0}') as foo) as bar".format(datasetid)
         params = {'q': q, 'api_key': api_key}
         r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
         if r.status_code == 200:
@@ -380,7 +380,7 @@ def records(datasetid):
             centroid = None
 
         # Get speces
-        q = "select distinct scientificname as species from point_uploads where datasetid='{0}' and scientificname is not null and scientificname !='' and decimalLatitude is not null and decimalLongitude is not null order by scientificname".format(datasetid)
+        q = "select distinct scientificname as species from point_uploads_master where datasetid='{0}' and scientificname is not null and scientificname !='' and decimalLatitude is not null and decimalLongitude is not null order by scientificname".format(datasetid)
         params = {'q': q, 'api_key': api_key}
         r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
         if r.status_code == 200:

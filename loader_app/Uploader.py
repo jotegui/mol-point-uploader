@@ -231,7 +231,17 @@ class Uploader():
     def cartodb_points(self):
         """Iterate through all records to build the records to upoad to CartoDB"""
         
-        table_name = 'point_uploads'
+        # Create inherited table
+        table_name = 'point_uploads_{0}'.format(session['file_uuid'].replace("-","_"))
+        query = "create table {0} (CHECK (datasetid='{1}')) inherits (point_uploads_master);".format(table_name, session['file_uuid'])
+        params = {'q': query, 'api_key': api_key}
+        r = requests.get(self.cartodb_api, params=params)
+        if r.status_code == 200:
+            print "Table {0} created successfully".format(table_name)
+        else:
+            print "Error creating table {0}".format(table_name)
+            print query
+            print r.json()
         
         # Open raw data file
         blob = ndb.Key(urlsafe=session['raw_key']).get().content
@@ -240,20 +250,20 @@ class Uploader():
         csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
 
         query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, geodeticDatum, coordinateuncertaintyinmeters, extraFields, the_geom, the_geom_webmercator) values ".format(table_name)
+        print query_base
         values = []
         for record in csvreader:
-            print record
             value = self.add_record_to_query([unicode(x, 'utf-8', errors="ignore") for x in record])
             if value:
                 values.append(value)
-        
+        print values[-1]
         # All at once
         query = query_base + ", ".join(values)
         print "Inserting {0} records".format(len(values))
         params = {'q': query, 'api_key': api_key}
         r = requests.post(self.cartodb_api, data=params)
         if r.status_code == 200:
-            flash('File uploaded successfuly!')
+            flash('File uploaded successfully!')
         else:
             flash('ERROR: something went wrong with the upload.')
             flash(r.text)
@@ -312,7 +322,7 @@ class Uploader():
         try:
            latval = float(vals['decimalLatitude'])
            lngval = float(vals['decimalLongitude'])
-           geoms = "ST_SetSRID(ST_Point({0}, {1}),4326), ST_SetSRID(ST_Point({0}, {1}),3857)".format(vals['decimalLongitude'], vals['decimalLatitude'])
+           geoms = "ST_SetSRID(ST_Point({0}, {1}),4326), ST_Transform(ST_SetSRID(ST_Point({0}, {1}),4326), 3857)".format(vals['decimalLongitude'], vals['decimalLatitude'])
         except ValueError:
             geoms = "null, null"
 
@@ -326,7 +336,7 @@ class Uploader():
         
         # Build record for query
         values = unicode("('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', {7}, '{8}', {9})".format(datasetId, vals['scientificName'], vals['decimalLatitude'], vals['decimalLongitude'], vals['eventDate'], vals['recordedBy'], session['geodeticDatum'], vals['coordinateUncertaintyInMeters'], json.dumps(extraFields), geoms), 'utf-8')
-        print values
+        #print values
         return values
 
 

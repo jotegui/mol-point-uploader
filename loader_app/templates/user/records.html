@@ -155,8 +155,8 @@
                 if (species.length == 1) {
                     selectedSpecies = species[0];
                     species_layer_id = 1;
-                    species_layer_sql = "select * from point_uploads where datasetid='{{ datasetid }}' and scientificname='"+species[0]+"'";
-                    species_uncert_layer_sql = "SELECT cartodb_id, ST_Buffer(tt.the_geom_webmercator, tt.uncert) as the_geom_webmercator FROM ( SELECT COALESCE(coordinateuncertaintyinmeters, 5000) as uncert, * FROM point_uploads WHERE datasetid = '{{ datasetid }}' and scientificname='"+species[0]+"' ) tt";
+                    species_layer_sql = "select * from point_uploads_master where datasetid='{{ datasetid }}' and scientificname='"+species[0]+"'";
+                    species_uncert_layer_sql = "SELECT cartodb_id, ST_Buffer(tt.the_geom_webmercator, tt.uncert) as the_geom_webmercator FROM ( SELECT COALESCE(coordinateuncertaintyinmeters, 5000) as uncert, * FROM point_uploads_master WHERE datasetid = '{{ datasetid }}' and scientificname='"+species[0]+"' ) tt";
                     colour_list = "#layer{marker-fill: "+stringToColour(species[0])+";}";
                     layers[0] = {
                         "type": "cartodb",
@@ -167,8 +167,8 @@
                         }
                       }
                 } else {
-                    species_layer_sql = "select row_number() over() as id, ST_Union(the_geom_webmercator) as the_geom_webmercator FROM point_uploads WHERE datasetid = '{{ datasetid }}' GROUP BY  scientificname";
-                    species_uncert_layer_sql = "SELECT cartodb_id, ST_Buffer(tt.the_geom_webmercator, tt.uncert) as the_geom_webmercator FROM ( SELECT COALESCE(coordinateuncertaintyinmeters, 5000) as uncert, * FROM point_uploads WHERE datasetid = '{{ datasetid }}' ) tt";
+                    species_layer_sql = "select row_number() over() as id, ST_Union(the_geom_webmercator) as the_geom_webmercator FROM point_uploads_master WHERE datasetid = '{{ datasetid }}' GROUP BY  scientificname";
+                    species_uncert_layer_sql = "SELECT cartodb_id, ST_Buffer(tt.the_geom_webmercator, tt.uncert) as the_geom_webmercator FROM ( SELECT COALESCE(coordinateuncertaintyinmeters, 5000) as uncert, * FROM point_uploads_master WHERE datasetid = '{{ datasetid }}' ) tt";
                     colour_list = "#layer[id=1] {marker-fill: "+stringToColour(species[0])+";}";
                     for (var i=1; i<species.length; i++) {
                         colour_list += "#layer[id="+(i+1)+"] {marker-fill: "+stringToColour(species[i])+";}";

@@ -18,8 +18,8 @@ def delete_dataset(current_user, datasetid):
     
     if entries == 1:
         
-        # Delete records from point_uploads
-        q = "delete from point_uploads where datasetid='{0}'".format(datasetid)
+        # Delete point_uploads_XXX table
+        q = "drop table point_uploads_{0}".format(datasetid.replace('-','_'))
         params = {'q': q, 'api_key': api_key}
         r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
         if r.status_code == 200:
