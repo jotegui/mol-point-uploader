@@ -1,5 +1,5 @@
 application: map-of-life
-version: point-uploads
+version: beta
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -7,16 +7,23 @@ api_version: 1
 builtins:
 - remote_api: on
 
+inbound_services:
+- warmup
+
 handlers:
 - url: /static
   static_dir: loader_app/static
+  secure: always
 - url: /templates
   static_dir: templates
+  secure: always
 - url: /uploads
   static_dir: uploads
+  secure: always
 
 - url: .*
   script: loader_app.app
+  secure: always
 
 libraries:
 - name: pycrypto

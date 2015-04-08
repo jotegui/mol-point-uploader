@@ -3,6 +3,7 @@ __author__ = '@jotegui'
 import uuid
 import os
 import json
+import requests
 
 from flask import render_template, redirect, url_for, request, flash, session, g, jsonify
 
@@ -13,20 +14,24 @@ from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
 
 from helper import mol_user_auth
+from cartodb_apikey import api_key
 
 # Main page
 @app.route('/')
 @mol_user_auth('MOL_USER')
 def main():
     """Return main page."""
-    
+
     # If coming from parsing content, show errors
     if 'errors' in session.keys():
         errors = session['errors']
     
-    # Else, clear session and start fresh
+    # Else, clear session except for any messages and start fresh
     else:
+        messages = session.get('_flashes', None)
         session.clear()
+        if messages is not None:
+            session['_flashes'] = messages
         errors = []
 
     # Mandatory headers and header types
@@ -39,7 +44,7 @@ def main():
         'decimalLongitude': 'number',
         'eventDate': 'text',
         'recordedBy': 'text',
-        'geodeticDatum': 'text',
+#        'geodeticDatum': 'text',
         'coordinateUncertaintyInMeters': 'number'
     }
     session['mandatory_fields'] = session['mandatory_fields_types'].keys()
@@ -52,6 +57,7 @@ def main():
 
 # Help page
 @app.route('/help')
+@mol_user_auth('MOL_USER')
 def help():
     """Return help page."""
     
@@ -60,6 +66,7 @@ def help():
 
 # Spreadsheet template
 @app.route('/spreadsheet_template')
+@mol_user_auth('MOL_USER')
 def download_spreadsheet():
     """Serve xls template to user."""
     
@@ -234,7 +241,9 @@ def metadata():
             if i != 'submitBtn' and not i.endswith("_dwc"):
                 term_dict = {"description": request.form[i], "term": request.form["%s_dwc" % i]}
                 session['extra_fields'][i] = term_dict
-        
+    
+    print session['extra_fields']
+    
     # Create meta.xml
     meta = render_meta()
     
@@ -264,7 +273,13 @@ def upload():
     uploader.upload_eml(eml)
     
     # Create CartoDB registry record
-    uploader.cartodb_meta(request.form)
+    success = uploader.cartodb_meta(request.form)
+    if success == False:
+        return render_template('metadata.html')
+    
+    # Store datum
+    session.pop('geodeticDatum', None)
+    session['geodeticDatum'] = request.form['datum'] if 'datum' in request.form and request.form['datum'] != "" else "WGS84"
     
     # Create occurrence.txt
 #    uploader.build_occurrence()
@@ -294,7 +309,7 @@ def upload_cartodb():
     #uploader.delete_entity('occurrence_key')
     
     # Go back to main page
-    return redirect(url_for('main'))
+    return redirect(url_for('records', datasetid=session['file_uuid']))
 
 
 @app.route('/hello')
@@ -309,3 +324,93 @@ def hello_user():
                        id=user['id'])
 
     return 'Hello Guest'
+
+
+@app.route('/datasets')
+@mol_user_auth('MOL_USER')
+def datasets():
+    """Dashboard"""
+    
+    current_user = g.get('user', None)
+    if current_user:
+        email = current_user['email']
+        q = "select datasetid, title, created_at, creatoremail, creatorfirst, creatorlast, metadataemail, metadatafirst, metadatalast, public, license, geographicscope, temporalscope, taxonomicscope from point_uploads_registry where email='{0}'".format(email)
+        params = {'q': q, 'api_key': api_key}
+        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
+        if r.status_code == 200:
+            entries = r.json()['rows']
+        else:
+            entries = None
+    else:
+        entries = None
+    
+    return render_template('user/datasets.html', entries=entries)
+
+
+@app.route('/records/<datasetid>')
+@mol_user_auth('MOL_USER')
+def records(datasetid):
+    """User submitted species observations via the point uploader, table view"""
+    
+    current_user = g.get('user', None)
+    if current_user:
+        email = current_user['email']
+        
+        # Get points
+        q = "select * from point_uploads_master where datasetid='{0}'".format(datasetid)
+        params = {'q': q, 'api_key': api_key}
+        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
+        if r.status_code == 200:
+            entries = r.json()['rows']
+        else:
+            entries = None
+        
+        # Get layergroupid and title
+        q = "select title from point_uploads_registry where datasetid='{0}'".format(datasetid)
+        params = {'q': q, 'api_key': api_key}
+        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
+        if r.status_code == 200:
+            title = r.json()['rows'][0]['title']
+        else:
+            title = None
+            
+        # Get centroid
+        q = "select ST_X(centroid) as lng, ST_Y(centroid) as lat from (select ST_Centroid(ST_Union(the_geom)) as centroid from (select the_geom from point_uploads_master where datasetid='{0}') as foo) as bar".format(datasetid)
+        params = {'q': q, 'api_key': api_key}
+        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
+        if r.status_code == 200:
+            centroid = [r.json()['rows'][0]['lat'], r.json()['rows'][0]['lng']]
+        else:
+            centroid = None
+
+        # Get speces
+        q = "select distinct scientificname as species from point_uploads_master where datasetid='{0}' and scientificname is not null and scientificname !='' and decimalLatitude is not null and decimalLongitude is not null order by scientificname".format(datasetid)
+        params = {'q': q, 'api_key': api_key}
+        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
+        if r.status_code == 200:
+            species = [x['species'] for x in r.json()['rows']]
+        else:
+            species = None
+
+    else:
+        entries = None
+        title = None
+        centroid = None
+        species = None
+
+    return render_template('user/records.html', entries=entries, title=title, datasetid=datasetid, centroid=centroid, species=species)
+
+
+@app.route('/delete/<datasetid>')
+@mol_user_auth('MOL_USER')
+def delete(datasetid):
+    """Delete user submitted dataset"""
+
+    current_user = g.get('user', None)
+    if current_user:
+        success = f.delete_dataset(current_user, datasetid)
+        if success is True:
+            flash("Dataset successfully deleted")
+        else:
+            flash("ERROR: Dataset could not be deleted")
+    return redirect(url_for("datasets"))

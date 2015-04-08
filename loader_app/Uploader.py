@@ -10,7 +10,7 @@ from zipfile import ZipFile
 
 from loader_app import app
 from cartodb_apikey import api_key
-from flask import session, flash, g
+from flask import session, flash, g, render_template
 
 from google.appengine.ext import ndb
 from Models import UploadedFile
@@ -25,6 +25,8 @@ class Uploader():
         """Initialize the class and create storage for errors and warnings."""
         self.dataset_uuid = session['file_uuid']
         self.cartodb_api = 'https://mol.cartodb.com/api/v2/sql'
+        self.namedmaps_api = 'https://mol.cartodb.com/api/v1/map/named'
+        self.template_id = 'mol@mol_pointupload'
         self.any_error = False
         
         return
@@ -51,7 +53,9 @@ class Uploader():
         for key in ['raw_key', 'meta_key', 'eml_key', 'occurrence_key']:
             self.delete_entity(key)
         return
+        
     
+    # FILE PARSING AND UPLOADING
     
     def parse_file(self, up_file):
         """Validate the uploaded file."""
@@ -82,10 +86,12 @@ class Uploader():
         session.pop('file_headers', None)
         session['file_headers'] = headerline.split(session['field_separator'])
         
-        # Remove trailing newline
-        content = up_file.read()
-        if content[-1] == "\n":
-            content = content[:-1]
+        # Read file content
+        content = up_file.read().rstrip()
+
+#        # Remove trailing newline
+#        if content[-1] == "\n":
+#            content = content[:-1]
         
         # Save the file to NDB
         session['raw_key'] = str(self.upload_ndb(name='raw', content=content))
@@ -179,21 +185,21 @@ class Uploader():
         # Populate fields
         datasetId = session['file_uuid']
         public = True if 'public' in request.keys() and request['public'] == 'on' else False
-        title = request['title'].encode('utf-8')
-        abstract = request['abstract'].encode('utf-8')
-        creatorEmail = request['resource_creator_email'].encode('utf-8')
-        creatorFirst = request['resource_creator_first_name'].encode('utf-8')
-        creatorLast = request['resource_creator_last_name'].encode('utf-8')
-        metadataEmail = request['metadata_creator_email'].encode('utf-8')
-        metadataFirst = request['metadata_creator_first_name'].encode('utf-8')
-        metadataLast = request['metadata_creator_last_name'].encode('utf-8')
-        lang = request['lang'].encode('utf-8') if 'lang' in request and request['lang'] != "" else 'en'
-        geographicScope = request['geographic_scope'].encode('utf-8')
-        temporalScope = request['temporal_scope'].encode('utf-8')
-        taxonomicScope = request['taxonomic_scope'].encode('utf-8')
+        title = request['title'].replace("'", "''").encode('utf-8')
+        abstract = request['abstract'].replace("'", "''").encode('utf-8')
+        creatorEmail = request['resource_creator_email'].replace("'", "''").encode('utf-8')
+        creatorFirst = request['resource_creator_first_name'].replace("'", "''").encode('utf-8')
+        creatorLast = request['resource_creator_last_name'].replace("'", "''").encode('utf-8')
+        metadataEmail = request['metadata_creator_email'].replace("'", "''").encode('utf-8')
+        metadataFirst = request['metadata_creator_first_name'].replace("'", "''").encode('utf-8')
+        metadataLast = request['metadata_creator_last_name'].replace("'", "''").encode('utf-8')
+        lang = request['lang'].replace("'", "''").encode('utf-8') if 'lang' in request and request['lang'] != "" else 'en'
+        geographicScope = request['geographic_scope'].replace("'", "''").encode('utf-8')
+        temporalScope = request['temporal_scope'].replace("'", "''").encode('utf-8')
+        taxonomicScope = request['taxonomic_scope'].replace("'", "''").encode('utf-8')
         keywords = json.dumps([x.strip() for x in request['keywords'].split(';')], ensure_ascii=False).replace('[','{').replace(']','}').encode('utf-8')
-        license = request['license'].encode('utf-8')
-        additionalInformation = request['additional_information'].encode('utf-8')
+        license = request['license'].replace("'", "''").encode('utf-8')
+        additionalInformation = request['additional_information'].replace("'", "''").encode('utf-8')
         
         # Build extrafields with the description and headers of non-mandatory fields
         extrafields = {}
@@ -207,8 +213,12 @@ class Uploader():
         query = unicode("insert into {0} (datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, email) values ('{1}', {2}, '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}', '{18}', '{19}')".format(table_name, datasetId, public, title, abstract, creatorEmail, creatorFirst, creatorLast, metadataEmail, metadataFirst, metadataLast, lang, geographicScope, temporalScope, taxonomicScope, keywords, license, additionalInformation, extrafields, userEmail), 'utf-8')
         
         params = {'q': query, 'api_key': api_key}
-        r = requests.post(self.cartodb_api, data=params)
-        
+        try:
+            r = requests.post(self.cartodb_api, data=params)
+        except ConnectionError:
+            flash("Hm... Looks like there is something wrong with an external databasing service. Please, try again in a few minutes. If this persists, please contact us.")
+            return False
+
         if r.status_code == 200:
             print 'Registry entry added'
         else:
@@ -216,12 +226,22 @@ class Uploader():
             print r.status_code
             print r.text
         
-        return
+        return True
     
     def cartodb_points(self):
         """Iterate through all records to build the records to upoad to CartoDB"""
         
-        table_name = 'point_uploads'
+        # Create inherited table
+        table_name = 'point_uploads_{0}'.format(session['file_uuid'].replace("-","_"))
+        query = "create table {0} (CHECK (datasetid='{1}')) inherits (point_uploads_master);".format(table_name, session['file_uuid'])
+        params = {'q': query, 'api_key': api_key}
+        r = requests.get(self.cartodb_api, params=params)
+        if r.status_code == 200:
+            print "Table {0} created successfully".format(table_name)
+        else:
+            print "Error creating table {0}".format(table_name)
+            print query
+            print r.json()
         
         # Open raw data file
         blob = ndb.Key(urlsafe=session['raw_key']).get().content
@@ -229,20 +249,21 @@ class Uploader():
         # and for each record
         csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
 
-        query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, extraFields, the_geom, the_geom_webmercator) values ".format(table_name)
+        query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, geodeticDatum, coordinateuncertaintyinmeters, extraFields, the_geom, the_geom_webmercator) values ".format(table_name)
+        print query_base
         values = []
         for record in csvreader:
-            value = self.add_record_to_query([unicode(x, 'utf-8') for x in record])
+            value = self.add_record_to_query([unicode(x, 'utf-8', errors="ignore") for x in record])
             if value:
                 values.append(value)
-        
+        print values[-1]
         # All at once
         query = query_base + ", ".join(values)
         print "Inserting {0} records".format(len(values))
         params = {'q': query, 'api_key': api_key}
         r = requests.post(self.cartodb_api, data=params)
         if r.status_code == 200:
-            flash('File uploaded successfuly!')
+            flash('File uploaded successfully!')
         else:
             flash('ERROR: something went wrong with the upload.')
             flash(r.text)
@@ -297,7 +318,41 @@ class Uploader():
                 extraFields[key] = value
         
         
-        # Build record for query
-        values = unicode("('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', ST_SetSRID(ST_Point({3}, {2}),4326), ST_SetSRID(ST_Point({3}, {2}),3857))".format(datasetId, vals['scientificName'], vals['decimalLatitude'], vals['decimalLongitude'], vals['eventDate'], vals['recordedBy'], json.dumps(extraFields)), 'utf-8')
+        # Build geom fields
+        try:
+           latval = float(vals['decimalLatitude'])
+           lngval = float(vals['decimalLongitude'])
+           geoms = "ST_SetSRID(ST_Point({0}, {1}),4326), ST_Transform(ST_SetSRID(ST_Point({0}, {1}),4326), 3857)".format(vals['decimalLongitude'], vals['decimalLatitude'])
+        except ValueError:
+            geoms = "null, null"
+
+        # Change some empty values for nulls
+        if vals['decimalLatitude'] == '':
+            vals['decimalLatitude'] = 'null'
+        if vals['decimalLongitude'] == '':
+            vals['decimalLongitude'] = 'null'
+        if vals['coordinateUncertaintyInMeters'] == '':
+            vals['coordinateUncertaintyInMeters'] = 'null'
         
+        # Build record for query
+        values = unicode("('{0}', '{1}', {2}, {3}, '{4}', '{5}', '{6}', {7}, '{8}', {9})".format(datasetId, vals['scientificName'], vals['decimalLatitude'], vals['decimalLongitude'], vals['eventDate'], vals['recordedBy'], session['geodeticDatum'], vals['coordinateUncertaintyInMeters'], json.dumps(extraFields), geoms), 'utf-8')
+        #print values
         return values
+
+
+#    def cdb_instantiate_named_map(self):
+#        """Instantiate a named map with the contents of the dataset."""
+#        
+#        params = {"api_key": api_key}
+#        params_json = json.dumps({"datasetid": self.dataset_uuid})
+#        url = self.namedmaps_api+"/"+self.template_id
+
+#        r = requests.post(url, params=params, data=params_json, headers={"content-type":"application/json"})
+
+#        if r.status_code == 200:
+#            self.layergroupid = r.json()['layergroupid']
+#        else:
+#            self.layergroupid = None
+#        print self.layergroupid
+#        
+#        return

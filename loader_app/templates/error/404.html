@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <div class="container">
+        <h2>Opps! Page not found</h2>
+        <p>You can do the following:</p>
+        <ul>
+            <li>Check the url</li>
+            <li>Check out the <a href="{{ url_for('help') }}">Help</a></li>
+            <li>Let us know about it via the <a href="{{ url_for('contact') }}">Contact</a> form.</li>
+        </ul>
+    </div>
+
+{% endblock %}

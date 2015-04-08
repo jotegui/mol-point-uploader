@@ -1,41 +1,158 @@
 {% extends "base.html" %}
 {% block content %}
-<div><form action="/">
-    <h3>About the terms</h3>
-    <button class="btn btn-info" type="submit">Back</button>
-    
-    <h3>Description of the fields in the template</h3>
-    <dl class="dl-horizontal">
-        <!-- Scientific name -->
-        <dt>Scientific name</dt>
-        <dd><strong>Required</strong>. The full scientific name, with authorship and date information if known. When forming part of an Identification, this should be the name in lowest level taxonomic rank that can be determined. This term should not contain identification qualifications. <p>Examples: "Coleoptera" (order), "Vespertilionidae" (family), "Manis" (genus), "Ctenomys sociabilis" (genus + specificEpithet), "Ambystoma tigrinum diaboli" (genus + specificEpithet + infraspecificEpithet), "Roptrocerus typographi (Györfi, 1952)" (genus + specificEpithet + scientificNameAuthorship), "Quercus agrifolia var. oxyadenia (Torr.) J.T. Howell" (genus + specificEpithet + taxonRank + infraspecificEpithet + scientificNameAuthorship).<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#scientificName">http://rs.tdwg.org/dwc/terms/index.htm#scientificName</a></dd>
-        
-        <!-- Latitude -->
-        <dt>Decimal latitude</dt>
-        <dd><strong>Required</strong>. The geographic latitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic center of a Location. Positive values are north of the Equator, negative values are south of it. Legal values lie between -90 and 90, inclusive. <p>Example: "-41.0983423".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#decimalLatitude">http://rs.tdwg.org/dwc/terms/index.htm#decimalLatitude</a></dd>
-        
-        <!-- Longitude -->
-        <dt>Decimal longitude</dt>
-        <dd><strong>Required</strong>. The geographic longitude (in decimal degrees, using the spatial reference system given in geodeticDatum) of the geographic center of a Location. Positive values are east of the Greenwich Meridian, negative values are west of it. Legal values lie between -180 and 180, inclusive. <p>Example: "-121.1761111".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#decimalLongitude">http://rs.tdwg.org/dwc/terms/index.htm#decimalLongitude</a></dd>
-        
-        <!-- Observation date -->
-        <dt>Event date</dt>
-        <dd><strong>Required</strong>. The date-time or interval during which an Event occurred. For occurrences, this is the date-time when the event was recorded. Not suitable for a time in a geological context. Only the date of the observation should be reported here; the whole time span of the project should be specified in the metadata form. Recommended best practice is to use an encoding scheme, such as ISO 8601:2004(E). <p>Examples: "1963-03-08T14:07-0600" is 8 Mar 1963 2:07pm in the time zone six hours earlier than UTC, "2009-02-20T08:40Z" is 20 Feb 2009 8:40am UTC, "1809-02-12" is 12 Feb 1809, "1906-06" is Jun 1906, "1971" is just that year, "2007-03-01T13:00:00Z/2008-05-11T15:30:00Z" is the interval between 1 Mar 2007 1pm UTC and 11 May 2008 3:30pm UTC, "2007-11-13/15" is the interval between 13 Nov 2007 and 15 Nov 2007.<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#eventDate">http://rs.tdwg.org/dwc/terms/index.htm#eventDate</a></dd>
-        
-        <!-- Collector -->
-        <dt>Recorded by</dt>
-        <dd><strong>Required</strong>. A list (concatenated and separated) of names of people, groups, or organizations responsible for recording the original observation. The primary collector or observer should be listed first. <p>Example: "Oliver P. Pearson; Anita K. Pearson".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#recordedBy">http://rs.tdwg.org/dwc/terms/index.htm#recordedBy</a></dd>
-        
-        <!-- Geodetic datum -->
-        <dt>Geodetic datum</dt>
-        <dd><strong>Required</strong>. The ellipsoid, geodetic datum, or spatial reference system (SRS) upon which the geographic coordinates given in latitude and longitude are based. Recommended best practice is use the EPSG code as a controlled vocabulary to provide an SRS, if known. Otherwise use a controlled vocabulary for the name or code of the geodetic datum, if known. Otherwise use a controlled vocabulary for the name or code of the ellipsoid, if known. If none of these is known, use the value "unknown". <p>Examples: "EPSG:4326", "WGS84", "NAD27", "Campo Inchauspe", "European 1950", "Clarke 1866".<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#geodeticDatum">http://rs.tdwg.org/dwc/terms/index.htm#geodeticDatum</a></dd>
-        
-        <!-- Coordinate uncertainty -->
-        <dt>Coord. uncertainty</dt>
-        <dd><strong>Required</strong>. The horizontal distance (in meters) from the given latitude and longitude describing the smallest circle containing the whole of the Location. Leave the value empty if the uncertainty is unknown, cannot be estimated, or is not applicable (because there are no coordinates). Zero is not a valid value for this term. <p>Examples: "30" (reasonable lower limit of a GPS reading under good conditions if the actual precision was not recorded at the time), "71" (uncertainty for a UTM coordinate having 100 meter precision and a known spatial reference system).<br><a target="_blank" href="http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters">http://rs.tdwg.org/dwc/terms/index.htm#coordinateUncertaintyInMeters</a></dd>
-        
-    </dl>
-    <button class="btn btn-info" type="submit">Back</button>
-    </form>
+<div>
+   
+    <h3>Frequently Asked Questions (FAQ)</h3>
+
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="headingOne">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          How should I prepare the file for upload?
+        </a>
+      </h4>
+    </div>
+    <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+      <div class="panel-body">
+        <p>The file must have one of the following extensions: CSV, TXT or TSV. The first row must contain the headers, and the rest of the file must contain a single record per row (with newline characters separating rows) and fields must be separated with one of the following characters (only one in a file): semi-colon (;), comma (,) or tab. Here’s an example of a comma separated file:</p>
+        <i>File Name: myDataset.csv</i>
+        <pre>Header1,Header2,Header3
+Rec1Field1,Rec1Field2,Rec1Field3
+Rec2Field1,Rec2Field2,Rec2Field3</pre>
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="headingTwo">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+          What are the mandatory fields a file must have?
+        </a>
+      </h4>
+    </div>
+    <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+      <div class="panel-body">
+        <p>
+        None of the fields is purely mandatory, in the sense that you can specify default values (values that will be applied to all records) for every field. However, there is a set of fields that must either be present in the file or have a default value: scientific name, latitude, longitude, coordinate uncertainty, observation date and observer name or id.</p>
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="headingThree">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+          What is the best format for the mandatory fields? 
+        </a>
+      </h4>
+    </div>
+    <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+      <div class="panel-body">
+        <p>In order to maximise the integration with the rest of the MOL infrastructure, we recommend you to prepare the mandatory fields in the way described below:</p>
+        <ul>
+            <li>Scientific name should have a properly built binomial for the taxon</li>
+            <li>Coordinates should be stored in decimal degree format</li>
+            <li>Uncertainty should be stored as a single number, representing meters</li>
+            <li>Observation date and time should comply with the ISO 8601 standard</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="headingFour">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="true" aria-controls="collapseFour">
+          My file does not have one (or more) of the mandatory fields, but a common value can be applied to all records. Do I have to create a column just for that? 
+        </a>
+      </h4>
+    </div>
+    <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+      <div class="panel-body">
+          <p><strong>No.</strong> You can specify that value in the corresponding “default” field. The tool will create the column for you, populating every record with the specified value.</p>
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="headingFive">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseFive" aria-expanded="true" aria-controls="collapseFive">
+          Some of my records are missing a value in a mandatory field because a default value can be applied. Do I have to fill these empty fields?
+        </a>
+      </h4>
+    </div>
+    <div id="collapseFive" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
+      <div class="panel-body">
+          <p><strong>No.</strong> You can put that default value in the “default” field and it will be applied only to empty fields. It will not overwrite any existing information, just fill the blanks.</p>
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="headingSix">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseSix" aria-expanded="true" aria-controls="collapseSix">
+          After aligning the headers, I have been redirected to the main page with a warning message. What’s wrong?
+        </a>
+      </h4>
+    </div>
+    <div id="collapseSix" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSix">
+      <div class="panel-body">
+          <p>That means the parser found quality issues in your dataset. There are many possible causes, and you will be provided a link with a list of all the problems in your record/s. Most likely, it will be a type mismatch (e.g., putting letters in numeric fields like uncertainty, or putting coordinates in formats other than decimal degrees). You will need to fix those to be able to continue. See the FAQ “What is the best format for the mandatory fields?” for information on how to prepare the content of the fields.</p>
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="headingSeven">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseSeven" aria-expanded="true" aria-controls="collapseSeven">
+          What are the mandatory fields in the metadata form?
+        </a>
+      </h4>
+    </div>
+    <div id="collapseSeven" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSeven">
+      <div class="panel-body">
+          <p>Just a few of them, and all have the word “Required” next to them. We encourage you to fill all fields, but only these are actually required:</p>
+        <ul>
+            <li>Title of the dataset</li>
+            <li>Abstract of the dataset</li>
+            <li>Creator of the dataset</li>
+            <li>Creator of the metadata</li>
+            <li>Geodetic Datum</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="headingEight">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseEight" aria-expanded="true" aria-controls="collapseEight">
+          I have filled every form with correct values but I keep getting an “Opps! There seems to be an issue with your request” error after sending the metadata form. What’s going on?
+        </a>
+      </h4>
+    </div>
+    <div id="collapseEight" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingEight">
+      <div class="panel-body">
+          <p>
+          Lately we have been experiencing difficulties with a third-party service that registers the uploaded information. Unfortunately, If you have filled everything correctly and still receive this error, your data could not be uploaded and you will have to wait a few minutes and try again. We are sorry for this inconvenience.
+          </p>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div>
 {% endblock %}

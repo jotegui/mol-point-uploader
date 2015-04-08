@@ -17,7 +17,7 @@
     this.headers = {};
     
     // Fields to check
-    this.allheaders = ['coordinateUncertaintyInMeters', 'decimalLatitude', 'decimalLongitude', 'eventDate', 'geodeticDatum', 'recordedBy', 'scientificName'];
+    this.allheaders = ['scientificName', 'decimalLatitude', 'decimalLongitude', 'coordinateUncertaintyInMeters',/* 'geodeticDatum',*/ 'eventDate', 'recordedBy'];
     
     // Execute when clicking 'submit' button
     this.checkFields = function() {
@@ -28,6 +28,19 @@
         
         for (var i=0; i<this.allheaders.length; i++) {
             var key=this.allheaders[i];
+            if (key=="scientificName") {
+                var layman="scientific name";
+            } else if (key=="decimalLatitude") {
+                var layman="latitude";
+            } else if (key=="decimalLongitude") {
+                var layman="longitude";
+            } else if (key=="coordinateUncertaintyInMeters") {
+                var layman="uncertainty";
+            } else if (key=="eventDate") {
+                var layman="date and time";
+            } else if (key=="recordedBy") {
+                var layman="observer";
+            }
 
             // Check missing fields with no default value
             // If a header is missing, 
@@ -36,7 +49,7 @@
                 if (!(key+"Default" in this.headers)) {
                     // Raise issue
                     if (this.warning == "") {
-                        this.warning = "Warning: "+key+" is missing, with no default value"
+                        this.warning = "Warning: "+layman+" is missing, with no default value"
                    } 
                 }
             }
