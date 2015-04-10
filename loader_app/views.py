@@ -12,9 +12,15 @@ from Parser import Parser
 from Uploader import Uploader
 from dwca_templates import render_eml, render_meta
 from dwc_terms import dwc_terms
-import functions as f
+
 from helper import mol_user_auth
 from cartodb_apikey import api_key
+
+import functions_viz as f
+from functions_gcs import GoogleCloudStorage
+
+project_id = 206753940765
+bucket_name = "point_uploads"
 
 # Main page
 @app.route('/')
@@ -71,6 +77,58 @@ def download_spreadsheet():
     """Serve xls template to user."""
     
     return redirect(url_for('static', filename='spreadsheet_template.xls'))
+
+
+# Shortcut to check user data
+@app.route('/hello')
+@mol_user_auth('MOL_USER')
+def hello_user():
+    user = g.get('user', None)
+    if user:
+        return jsonify(username=user['username'],
+                       email=user['email'],
+                       firstname=user['firstname'],
+                       lastname=user['lastname'],
+                       id=user['id'])
+
+    return 'Hello Guest'
+
+
+# Testing site
+@app.route('/test')
+@mol_user_auth('MOL_USER')
+def test():
+    
+    resp = ""
+    
+    gcs = GoogleCloudStorage(project_id, bucket_name)
+    
+    gcs.create_file("1.txt")
+    gcs.create_file("2.txt", "Content of the file")
+    gcs.create_file("3.txt")
+    gcs.create_file("4.txt")
+    
+    ls = gcs.list_bucket()
+    if len(ls) == 4:
+        resp += "File creation and listing works properly.<br>"
+    
+    o = gcs.open_file("2.txt")
+    text = o.read()
+    o.close()
+    if text == "Content of the file":
+        resp += "File reading works properly.<br>"
+    
+    gcs.delete_file("1.txt")
+    ls = gcs.list_bucket()
+    if len(ls) == 3:
+        resp += "Individual deletion works properly.<br>"
+    
+    gcs.empty_bucket()
+    ls = gcs.list_bucket()
+    if len(ls) == 0:
+        resp += "Bucket emptying works properly."
+    
+    return resp
 
 
 # Common operations and template selector
@@ -308,20 +366,6 @@ def upload_cartodb():
     return redirect(url_for('records', datasetid=session['file_uuid']))
 
 
-@app.route('/hello')
-@mol_user_auth('MOL_USER')
-def hello_user():
-    user = g.get('user', None)
-    if user:
-        return jsonify(username=user['username'],
-                       email=user['email'],
-                       firstname=user['firstname'],
-                       lastname=user['lastname'],
-                       id=user['id'])
-
-    return 'Hello Guest'
-
-
 @app.route('/datasets')
 @mol_user_auth('MOL_USER')
 def datasets():
@@ -329,14 +373,7 @@ def datasets():
     
     current_user = g.get('user', None)
     if current_user:
-        email = current_user['email']
-        q = "select datasetid, title, created_at, creatoremail, creatorfirst, creatorlast, metadataemail, metadatafirst, metadatalast, public, license, geographicscope, temporalscope, taxonomicscope from point_uploads_registry where email='{0}'".format(email)
-        params = {'q': q, 'api_key': api_key}
-        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
-        if r.status_code == 200:
-            entries = r.json()['rows']
-        else:
-            entries = None
+        entries = f.get_datasets_data(current_user)
     else:
         entries = None
     
@@ -350,44 +387,7 @@ def records(datasetid):
     
     current_user = g.get('user', None)
     if current_user:
-        email = current_user['email']
-        
-        # Get points
-        q = "select * from point_uploads_master where datasetid='{0}'".format(datasetid)
-        params = {'q': q, 'api_key': api_key}
-        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
-        if r.status_code == 200:
-            entries = r.json()['rows']
-        else:
-            entries = None
-        
-        # Get layergroupid and title
-        q = "select title from point_uploads_registry where datasetid='{0}'".format(datasetid)
-        params = {'q': q, 'api_key': api_key}
-        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
-        if r.status_code == 200:
-            title = r.json()['rows'][0]['title']
-        else:
-            title = None
-            
-        # Get centroid
-        q = "select ST_X(centroid) as lng, ST_Y(centroid) as lat from (select ST_Centroid(ST_Union(the_geom)) as centroid from (select the_geom from point_uploads_master where datasetid='{0}') as foo) as bar".format(datasetid)
-        params = {'q': q, 'api_key': api_key}
-        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
-        if r.status_code == 200:
-            centroid = [r.json()['rows'][0]['lat'], r.json()['rows'][0]['lng']]
-        else:
-            centroid = None
-
-        # Get speces
-        q = "select distinct scientificname as species from point_uploads_master where datasetid='{0}' and scientificname is not null and scientificname !='' and decimalLatitude is not null and decimalLongitude is not null order by scientificname".format(datasetid)
-        params = {'q': q, 'api_key': api_key}
-        r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)
-        if r.status_code == 200:
-            species = [x['species'] for x in r.json()['rows']]
-        else:
-            species = None
-
+        entries, title, centroid, species = f.get_points_data(current_user, datasetid)
     else:
         entries = None
         title = None

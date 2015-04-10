@@ -10,8 +10,9 @@ lib/
 # Python compiled
 *.pyc
 
-# CartoDB api key
+# API keys
 loader_app/cartodb_apikey.py
+loader_app/gcs_apikey.py
 
 # Management scripts
 launch.sh
