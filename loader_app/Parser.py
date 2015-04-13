@@ -12,12 +12,12 @@ from google.appengine.ext import ndb
 class Parser():
     """Assess the completeness and basic quality of the records."""
     
-    def __init__(self):
+    def __init__(self, ):
         """Initialize the class and create storage for headers, errors and warnings."""
         
-        # Load content
-        blob = ndb.Key(urlsafe=session['raw_key']).get().content
-        self.content = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
+        # Load content from NDB
+        #blob = ndb.Key(urlsafe=session['raw_key']).get().content
+        #self.content = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
         
         # Error and warning storage
         self.errors = []
@@ -25,8 +25,11 @@ class Parser():
         self.cont = 0
     
     
-    def parse_content(self):
+    def parse_content(self, f):
         """Evaluate the content of the uploaded file."""
+        
+        # Open file as CSV reader
+        self.content = csv.reader(f, delimiter=str(session['field_separator']), quotechar='"')
         
         # Process every line
         for record in self.content:
@@ -129,7 +132,10 @@ class Parser():
         nulldate = datetime.datetime(datetime.MINYEAR, 1, 1)
         
         # Parse date and if nulldate is returned, return empty
-        dt = parser.parse(date, default=nulldate).date()
+        try:
+            dt = parser.parse(date, default=nulldate).date()
+        except ValueError:
+            dt = nulldate
         if dt == nulldate:
             self.bad_record = True
             self.errors.append("Date could not be recognized in record #{0}".format(self.cont))

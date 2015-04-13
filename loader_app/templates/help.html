@@ -16,11 +16,11 @@
     </div>
     <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
       <div class="panel-body">
-        <p>The file must have one of the following extensions: CSV, TXT or TSV. The first row must contain the headers, and the rest of the file must contain a single record per row (with newline characters separating rows) and fields must be separated with one of the following characters (only one in a file): semi-colon (;), comma (,) or tab. Here’s an example of a comma separated file:</p>
+        <p>The file must have one of the following extensions: CSV, TXT or TSV. Besides, the size of the file must not exceed 10Mb (but you can split it into several chunks and upload them individually).The first row must contain the headers, and the rest of the file must contain a single record per row (with newline characters separating rows) and fields must be separated with one of the following characters (only one in a file): semi-colon (;), comma (,) or tab. Here’s an example of a comma separated file:</p>
         <i>File Name: myDataset.csv</i>
         <pre>Header1,Header2,Header3
-Rec1Field1,Rec1Field2,Rec1Field3
-Rec2Field1,Rec2Field2,Rec2Field3</pre>
+Record1Field1,Record1Field2,Record1Field3
+Record2Field1,Record2Field2,Record2Field3</pre>
       </div>
     </div>
   </div>
@@ -75,7 +75,7 @@ Rec2Field1,Rec2Field2,Rec2Field3</pre>
     </div>
     <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
       <div class="panel-body">
-          <p><strong>No.</strong> You can specify that value in the corresponding “default” field. The tool will create the column for you, populating every record with the specified value.</p>
+          <p><strong>No, you don't have to!</strong> You can specify that value in the corresponding “default” field. The tool will create the column for you, populating every record with the specified value.</p>
       </div>
     </div>
   </div>
@@ -91,7 +91,7 @@ Rec2Field1,Rec2Field2,Rec2Field3</pre>
     </div>
     <div id="collapseFive" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
       <div class="panel-body">
-          <p><strong>No.</strong> You can put that default value in the “default” field and it will be applied only to empty fields. It will not overwrite any existing information, just fill the blanks.</p>
+          <p><strong>No, you don't have to!</strong> You can put that default value in the “default” field and it will be applied only to empty fields. It will not overwrite any existing information, just fill the blanks.</p>
       </div>
     </div>
   </div>
@@ -129,7 +129,7 @@ Rec2Field1,Rec2Field2,Rec2Field3</pre>
             <li>Abstract of the dataset</li>
             <li>Creator of the dataset</li>
             <li>Creator of the metadata</li>
-            <li>Geodetic Datum</li>
+            <li>Geodetic Datum (actually, a default value of WGS84 is applied if you leave this empty)</li>
         </ul>
       </div>
     </div>
@@ -147,7 +147,7 @@ Rec2Field1,Rec2Field2,Rec2Field3</pre>
     <div id="collapseEight" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingEight">
       <div class="panel-body">
           <p>
-          Lately we have been experiencing difficulties with a third-party service that registers the uploaded information. Unfortunately, If you have filled everything correctly and still receive this error, your data could not be uploaded and you will have to wait a few minutes and try again. We are sorry for this inconvenience.
+          Please make sure your file is smaller than 10Mb. A third-party service that handles one of the data upload steps enforces that limit. If your file is smaller than 10Mb and you still receive this error, it might be a different issue. Lately we have been experiencing difficulties with a (different) third-party service that registers the uploaded information. Unfortunately, if you have filled everything correctly and still receive this error, your data could not be uploaded and you will have to wait a few minutes and try again. If after waiting a couple hours it still doesn't work, please send us an email! You can find contact information on the <a href="https://mol.org/about/team" target="_blank">team page</a>. We are really sorry for this inconvenience.
           </p>
       </div>
     </div>

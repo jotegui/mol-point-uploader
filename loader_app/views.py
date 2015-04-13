@@ -247,7 +247,9 @@ def parse():
         return redirect(url_for('main'))
     
     parser = Parser()
-    parser.parse_content()
+    uploader = Uploader()
+    f = uploader.open_file(session['file_uuid'])
+    parser.parse_content(f)
     
     if len(parser.errors) == 0:
         target = 'metafields'
@@ -296,8 +298,6 @@ def metadata():
             if i != 'submitBtn' and not i.endswith("_dwc"):
                 term_dict = {"description": request.form[i], "term": request.form["%s_dwc" % i]}
                 session['extra_fields'][i] = term_dict
-    
-    print session['extra_fields']
     
     # Create meta.xml
     meta = render_meta()
@@ -357,7 +357,7 @@ def upload_cartodb():
     uploader.cartodb_points()
     
     # Delete everything NDB datastore
-    uploader.delete_entity('raw_key')
+    #uploader.delete_entity('raw_key')
     uploader.delete_entity('meta_key')
     uploader.delete_entity('eml_key')
     #uploader.delete_entity('occurrence_key')

@@ -10,11 +10,10 @@ class GoogleCloudStorage():
         self.bucket = '/' + bucket_name
         return
     
-    def create_file(self, filename, content="Sample content"):
+    def create_file(self, filename, content=""):
         """Create a new file in the bucket with the given name and content."""
         filepath = self.bucket + '/' + filename
-        gcs_file = gcs.open(filepath, 'w', content_type='text/plain',
-                            #options={'x-goog-project-id': self.project_id}
+        gcs_file = gcs.open(filepath, 'w', content_type='text/plain'
                             )
         gcs_file.write(content)
         gcs_file.close()
