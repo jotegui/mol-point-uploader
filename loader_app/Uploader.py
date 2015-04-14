@@ -5,6 +5,7 @@ import json
 import os
 import csv
 import uuid
+import time
 from StringIO import StringIO
 from zipfile import ZipFile
 
@@ -16,6 +17,8 @@ from google.appengine.ext import ndb
 from Models import UploadedFile
 from google.appengine.ext import blobstore
 
+import cloudstorage as gcs
+
 ALLOWED_EXTENSIONS = set(['txt','csv','tsv'])
 
 class Uploader():
@@ -24,9 +27,15 @@ class Uploader():
     def __init__(self):
         """Initialize the class and create storage for errors and warnings."""
         self.dataset_uuid = session['file_uuid']
+        
         self.cartodb_api = 'https://mol.cartodb.com/api/v2/sql'
         self.namedmaps_api = 'https://mol.cartodb.com/api/v1/map/named'
+        
         self.template_id = 'mol@mol_pointupload'
+        
+        self.bucket_name = 'point_uploads'
+        self.bucket = '/' + self.bucket_name
+        
         self.any_error = False
         
         return
@@ -40,22 +49,67 @@ class Uploader():
         uploaded_file = UploadedFile(uuid=session['file_uuid'], name=name, content=str(content))
         file_key = uploaded_file.put().urlsafe()
         return file_key
-    
-    
+
+
     def delete_entity(self, key_name):
         """Delete a single entity from the NDB datastore."""
         ndb.Key(urlsafe = session[key_name]).delete()
         return
-    
-    
+
+
     def delete_ndb(self):
         """Delete all stored entities from NDB Datastore."""
         for key in ['raw_key', 'meta_key', 'eml_key', 'occurrence_key']:
             self.delete_entity(key)
         return
-        
+    
+    
+    # GCS object operations
+    
+    
+    def create_file(self, filename, content=""):
+        """Create a new file in the bucket with the given name and content."""
+        filepath = self.bucket + '/' + filename
+        gcs_file = gcs.open(filepath, 'w', content_type='text/plain'
+                            )
+        gcs_file.write(content)
+        gcs_file.close()
+        return
+    
+    
+    def open_file(self, filename):
+        """Returns an open file-like object with the content of the file to be read. DO NOT FORGET TO CLOSE!"""
+        filepath = self.bucket + '/' + filename
+        gcs_file = gcs.open(filepath)
+        return gcs_file
+    
+    
+    def delete_file(self, filename):
+        """Deletes the file from CloudStorage."""
+        filepath = self.bucket + '/' + filename
+        try:
+            gcs.delete(filepath)
+        except gcs.NotFoundError:
+            pass
+        return
+    
+    
+    def list_bucket(self):
+        """Returns a list of files currently available in the bucket."""
+        stats = gcs.listbucket(self.bucket)
+        files = [x.filename for x in stats]
+        return files
+    
+    
+    def empty_bucket(self):
+        """Delete all elements in bucket."""
+        for i in self.list_bucket():
+            gcs.delete(i)
+        return
+    
     
     # FILE PARSING AND UPLOADING
+    
     
     def parse_file(self, up_file):
         """Validate the uploaded file."""
@@ -88,14 +142,14 @@ class Uploader():
         
         # Read file content
         content = up_file.read().rstrip()
-
-#        # Remove trailing newline
-#        if content[-1] == "\n":
-#            content = content[:-1]
         
-        # Save the file to NDB
-        session['raw_key'] = str(self.upload_ndb(name='raw', content=content))
-        print 'raw_key = {0}'.format(session['raw_key'])
+        # Save the file to NDB -- PROBLEM: does not allow files >1Mb
+        #session['raw_key'] = str(self.upload_ndb(name='raw', content=content))
+        #print 'raw_key = {0}'.format(session['raw_key'])
+        
+        # Save the file to GCS
+        self.create_file(self.dataset_uuid, content=content)
+        print 'gcs_object = {0}/{1}'.format(self.bucket, self.dataset_uuid)
         
         return
     
@@ -116,8 +170,10 @@ class Uploader():
     
     def build_occurrence(self):
         """Iterate through all records to build occurrence.txt"""
-        blob = ndb.Key(urlsafe=session['raw_key']).get().content
-        csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
+        #blob = ndb.Key(urlsafe=session['raw_key']).get().content
+        #csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
+        f = self.open_file(session['file_uuid'])
+        csvreader = csv.reader(f, delimiter=str(session['field_separator']), quotechar='"')
         occurrence = ""
         for record in csvreader:
             row = self.line_dwca(record)
@@ -228,6 +284,7 @@ class Uploader():
         
         return True
     
+    
     def cartodb_points(self):
         """Iterate through all records to build the records to upoad to CartoDB"""
         
@@ -243,33 +300,53 @@ class Uploader():
             print query
             print r.json()
         
-        # Open raw data file
-        blob = ndb.Key(urlsafe=session['raw_key']).get().content
+#        blob = ndb.Key(urlsafe=session['raw_key']).get().content
+#        csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
         
-        # and for each record
-        csvreader = csv.reader(blob.split("\n"), delimiter=str(session['field_separator']), quotechar='"')
-
+        f = self.open_file(session['file_uuid'])
+        csvreader = csv.reader(f, delimiter=str(session['field_separator']), quotechar='"')
+        
         query_base = "insert into {0} (datasetId, scientificName, decimalLatitude, decimalLongitude, eventDate, recordedBy, geodeticDatum, coordinateuncertaintyinmeters, extraFields, the_geom, the_geom_webmercator) values ".format(table_name)
-        print query_base
         values = []
         for record in csvreader:
             value = self.add_record_to_query([unicode(x, 'utf-8', errors="ignore") for x in record])
             if value:
                 values.append(value)
-        print values[-1]
-        # All at once
-        query = query_base + ", ".join(values)
-        print "Inserting {0} records".format(len(values))
-        params = {'q': query, 'api_key': api_key}
-        r = requests.post(self.cartodb_api, data=params)
-        if r.status_code == 200:
+        
+        success = self.safe_cdb_upload(query_base, values)
+        if success is True:
             flash('File uploaded successfully!')
         else:
-            flash('ERROR: something went wrong with the upload.')
-            flash(r.text)
-            flash('Please, fix the issue and try uploading again.')
-        
+            flash('ERROR: something went wrong with the upload. Please try again or contact us.')
         return
+    
+    
+    def safe_cdb_upload(self, query_base, values):
+        """Make INSERT requests to CartoDB, and make sure they end up properly."""
+        # urlfetch has a hard limit of 1Mb in a request.
+
+        threshold = 5000
+        
+        parts = self.chunks(values, threshold)
+        for part in parts:
+            print "Attempting to insert {0} records...".format(len(part))
+            query = query_base + ", ".join(part)
+            params = {'q': query, 'api_key': api_key}
+            r = requests.post(self.cartodb_api, data=params)
+            if r.status_code == 200:
+                print "Success"
+            else:
+                print "Failure. Aborting."
+                print r.text
+                return False
+            time.sleep(3)
+        return True
+    
+    
+    def chunks(self, l, n):
+        """Yield successive n-sized chunks from l."""
+        for i in xrange(0, len(l), n):
+            yield l[i:i+n]
     
     
     def add_record_to_query(self, record):
