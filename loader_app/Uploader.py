@@ -5,6 +5,7 @@ import json
 import os
 import csv
 import uuid
+import time
 from StringIO import StringIO
 from zipfile import ZipFile
 
@@ -324,7 +325,7 @@ class Uploader():
         """Make INSERT requests to CartoDB, and make sure they end up properly."""
         # urlfetch has a hard limit of 1Mb in a request.
 
-        threshold = 10000
+        threshold = 5000
         
         parts = self.chunks(values, threshold)
         for part in parts:
@@ -338,6 +339,7 @@ class Uploader():
                 print "Failure. Aborting."
                 print r.text
                 return False
+            time.sleep(3)
         return True
     
     
