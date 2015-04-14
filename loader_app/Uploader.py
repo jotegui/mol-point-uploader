@@ -48,14 +48,14 @@ class Uploader():
         uploaded_file = UploadedFile(uuid=session['file_uuid'], name=name, content=str(content))
         file_key = uploaded_file.put().urlsafe()
         return file_key
-    
-    
+
+
     def delete_entity(self, key_name):
         """Delete a single entity from the NDB datastore."""
         ndb.Key(urlsafe = session[key_name]).delete()
         return
-    
-    
+
+
     def delete_ndb(self):
         """Delete all stored entities from NDB Datastore."""
         for key in ['raw_key', 'meta_key', 'eml_key', 'occurrence_key']:
@@ -311,19 +311,40 @@ class Uploader():
             value = self.add_record_to_query([unicode(x, 'utf-8', errors="ignore") for x in record])
             if value:
                 values.append(value)
-        # All at once
-        query = query_base + ", ".join(values)
-        print "Inserting {0} records".format(len(values))
-        params = {'q': query, 'api_key': api_key}
-        r = requests.post(self.cartodb_api, data=params)
-        if r.status_code == 200:
+        
+        success = self.safe_cdb_upload(query_base, values)
+        if success is True:
             flash('File uploaded successfully!')
         else:
-            flash('ERROR: something went wrong with the upload.')
-            flash(r.text)
-            flash('Please, fix the issue and try uploading again.')
-        
+            flash('ERROR: something went wrong with the upload. Please try again or contact us.')
         return
+    
+    
+    def safe_cdb_upload(self, query_base, values):
+        """Make INSERT requests to CartoDB, and make sure they end up properly."""
+        # urlfetch has a hard limit of 1Mb in a request.
+
+        threshold = 10000
+        
+        parts = self.chunks(values, threshold)
+        for part in parts:
+            print "Attempting to insert {0} records...".format(len(part))
+            query = query_base + ", ".join(part)
+            params = {'q': query, 'api_key': api_key}
+            r = requests.post(self.cartodb_api, data=params)
+            if r.status_code == 200:
+                print "Success"
+            else:
+                print "Failure. Aborting."
+                print r.text
+                return False
+        return True
+    
+    
+    def chunks(self, l, n):
+        """Yield successive n-sized chunks from l."""
+        for i in xrange(0, len(l), n):
+            yield l[i:i+n]
     
     
     def add_record_to_query(self, record):
