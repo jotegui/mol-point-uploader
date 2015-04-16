@@ -162,7 +162,7 @@ class Parser():
         # Non-alphanumeric characters in name
         if re.match('^[\w ]+$', sciname) is None:
             self.bad_record = True
-            self.errors.append("Non alphanumeric character in record #{0}".format(self.cont))
+            self.errors.append("Non alphanumeric character in scientific name in record #{0}".format(self.cont))
             return
         
         # More to be added
