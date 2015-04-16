@@ -339,7 +339,7 @@ class Uploader():
                 print "Failure. Aborting."
                 print r.text
                 return False
-            time.sleep(3)
+            time.sleep(5)
         return True
     
     
