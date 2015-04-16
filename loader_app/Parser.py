@@ -1,5 +1,6 @@
 __author__ = '@jotegui'
 
+import re
 import csv
 import datetime
 from dateutil import parser
@@ -152,10 +153,16 @@ class Parser():
 #            self.errors.append("Scientific Name missing in record #{0}".format(self.cont))
             return
         
-        # Quotes in scientificName
-        if "'" in sciname or '"' in sciname:
+#        # Quotes in scientificName
+#        if "'" in sciname or '"' in sciname:
+#            self.bad_record = True
+#            self.errors.append("Strange character (' or \") in record #{0}".format(self.cont))
+#            return
+        
+        # Non-alphanumeric characters in name
+        if re.match('^[\w ]+$', sciname) is None:
             self.bad_record = True
-            self.errors.append("Strange character (' or \") in record #{0}".format(self.cont))
+            self.errors.append("Non alphanumeric character in record #{0}".format(self.cont))
             return
         
         # More to be added
