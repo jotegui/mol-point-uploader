@@ -370,17 +370,17 @@ def upload_cartodb():
     return redirect(url_for('records', datasetid=session['file_uuid']))
 
 
-@app.route('/datasets')
+@app.route('/records/')
 @mol_user_auth('MOL_USER')
 def datasets():
     """Dashboard"""
-    
+
     current_user = g.get('user', None)
     if current_user:
         entries = f.get_datasets_data(current_user)
     else:
         entries = None
-    
+
     return render_template('user/datasets.html', entries=entries)
 
 
@@ -388,18 +388,22 @@ def datasets():
 @mol_user_auth('MOL_USER')
 def records(datasetid):
     """User submitted species observations via the point uploader, table view"""
-    
+
     current_user = g.get('user', None)
-    if current_user:
-        entries, title, centroid, species = f.get_points_data(current_user, datasetid)
-    else:
-        entries = None
-        title = None
-        centroid = None
-        species = None
 
-    return render_template('user/records.html', entries=entries, title=title, datasetid=datasetid, centroid=centroid, species=species)
+#    # Old, Flask-stye page render
+#    if current_user:
+#        entries, title, centroid, species = f.get_points_data(current_user, datasetid)
+#    else:
+#        entries = None
+#        title = None
+#        centroid = None
+#        species = None
 
+#    return render_template('user/records.html', entries=entries, title=title, datasetid=datasetid, centroid=centroid, species=species)
+
+    # New, Angular-stye page render
+    return render_template('user/records.html', datasetid=datasetid)
 
 @app.route('/delete/<datasetid>')
 @mol_user_auth('MOL_USER')

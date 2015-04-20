@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="container">
+<div class="container" ng-controller="RecordController as recordCtrl">
     
     <div class="row">
         <div class="col-xs-6">
-            <h2>{{ title }}</h2>
+            <h2>{[{ title }]}</h2>
         </div>
         
         {% if entries %}

@@ -50,7 +50,7 @@ def get_points_data(current_user, datasetid):
     else:
         centroid = None
 
-    # Get speces
+    # Get species
     q = "select distinct scientificname as species from point_uploads_master where datasetid='{0}' and scientificname is not null and scientificname !='' and decimalLatitude is not null and decimalLongitude is not null order by scientificname".format(datasetid)
     params = {'q': q, 'api_key': api_key}
     r = requests.get('http://mol.cartodb.com/api/v2/sql', params=params)

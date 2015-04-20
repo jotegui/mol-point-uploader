@@ -1,24 +1,16 @@
-(function() {
-  
-  // Main application
-  var app = angular.module('loaderApp', []);
-  
-  // To avoid confusion between Jinja2 templates and AngularJS expressions
-  // AngularJS expressions are now like {[{ expr }]}
-  app.config(function($interpolateProvider) {
-    $interpolateProvider.startSymbol('{[{');
-    $interpolateProvider.endSymbol('}]}');
-  });
-  
-  // Header form Controller (headers.html)
-  app.controller('HeaderController', function(){
-    
+'use strict';
+
+var loaderControllers = angular.module('loaderControllers', []);
+
+// Header form Controller (headers.html)
+loaderControllers.controller('HeaderController', function(){
+
     // Store values in object
     this.headers = {};
-    
+
     // Fields to check
     this.allheaders = ['scientificName', 'decimalLatitude', 'decimalLongitude', 'coordinateUncertaintyInMeters',/* 'geodeticDatum',*/ 'eventDate', 'recordedBy'];
-    
+
     // Execute when clicking 'submit' button
     this.checkFields = function() {
         this.warning = "";
@@ -85,10 +77,28 @@
             document.forms["headerForm"].submit();
         }
     }
-  });
-  
-  // Metadata form controller, required to make the mandatory fields be mandatory
-  app.controller('FormController', function() {});
-  
-}) ();
+});
 
+
+// Metadata form controller, required to make the mandatory fields be mandatory
+loaderControllers.controller('FormController', function() {});
+
+
+// Record view page controller (records.html)
+loaderControllers.controller('RecordController', ['$scope', '$location', 'CartoDB',
+    function RecordController($scope, $location, CartoDB) {
+        var path = $location.path();
+        console.log(path);
+        var api_key = '6132d3d852907530a3b047336430fc1999eb0f24';
+        var q = "select title from point_uploads_registry where datasetid='829c1828-e128-480d-a863-bf28fd3396a2'";
+        CartoDB.get({api_key: api_key, q: q},
+            function success(response) {
+                console.log("Success:"+JSON.stringify(response));
+                $scope.title = response.rows[0].title;
+            },
+            function error(errorResponse){
+                console.log("Error:"+JSON.stringify(errorResponse));
+            }
+        );
+    }
+]);
