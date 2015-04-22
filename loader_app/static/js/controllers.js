@@ -1,6 +1,6 @@
 'use strict';
 
-var loaderControllers = angular.module('loaderControllers', []);
+var loaderControllers = angular.module('loaderControllers', ['infinite-scroll']);
 
 // Header form Controller (headers.html)
 loaderControllers.controller('HeaderController', function(){
@@ -87,17 +87,83 @@ loaderControllers.controller('FormController', function() {});
 // Record view page controller (records.html)
 loaderControllers.controller('RecordController', ['$scope', '$location', 'CartoDB',
     function RecordController($scope, $location, CartoDB) {
-        var path = $location.path();
-        console.log(path);
-        var api_key = '6132d3d852907530a3b047336430fc1999eb0f24';
-        var q = "select title from point_uploads_registry where datasetid='829c1828-e128-480d-a863-bf28fd3396a2'";
-        CartoDB.get({api_key: api_key, q: q},
+        var path = $location.absUrl();
+        var dId = path.split("/")[path.split("/").length-1];
+        var q = "select title from point_uploads_registry where datasetid='"+dId+"'";
+        CartoDB.get({q: q},
             function success(response) {
-                console.log("Success:"+JSON.stringify(response));
+                console.log("Got title");
                 $scope.title = response.rows[0].title;
             },
             function error(errorResponse){
-                console.log("Error:"+JSON.stringify(errorResponse));
+                console.log("Error getting dataset title:"+JSON.stringify(errorResponse));
+            }
+        );
+
+        q = "select count(*)>0 as mapAvailable from point_uploads_master where datasetid='"+dId+"'";
+        CartoDB.get({q: q},
+            function success(response) {
+                var mapAvailable = response.rows[0].mapavailable;
+                $scope.mapAvailable = mapAvailable;
+                console.log("mapAvailable = "+mapAvailable);
+            },
+            function error(errorResponse){
+                console.log("Error checking if map should be rendered:"+JSON.stringify(errorResponse));
+            }
+        );
+        
+        q = "select distinct scientificname from point_uploads_master where datasetid='"+dId+"'";
+        CartoDB.get({q:q},
+            function success(response) {
+                console.log("Got species");
+                var allSpeciesJSON = response.rows;
+                $scope.allSpecies = [];
+                for (var i=0; i<allSpeciesJSON.length; i++) {
+                    $scope.allSpecies.push(allSpeciesJSON[i].scientificname);
+                }
+            },
+            function error(errorResponse) {
+                console.log("Error getting species:"+JSON.stringify(errorResponse));
+            }
+        );
+        
+        q = "select scientificname, decimallatitude, decimallongitude, eventdate, recordedby, coordinateuncertaintyinmeters, geodeticdatum from point_uploads_master where datasetid='"+dId+"'";
+        CartoDB.get({q:q},
+            function success(response) {
+                var allPoints = response.rows;
+                var offset = 0;
+                var limit = 10;
+                
+                console.log("Got "+allPoints.length+" records");
+                
+                
+                // Map stuff
+                
+                
+                
+                // Table stuff
+                
+                $scope.points = angular.copy(allPoints.slice(0, limit));
+                offset += limit;
+                
+                $scope.loadMore = function() {
+                    if (offset<allPoints.length) {
+                        if (offset+limit>allPoints.length) {
+                            var chunk = allPoints.slice(offset);
+                            console.log(chunk.length);
+                        } else {
+                            var chunk = allPoints.slice(offset, offset+limit);
+                            offset += limit;
+                        }
+                        
+                        for (var i = 0; i<chunk.length; i++) {
+                            $scope.points.push(chunk[i]);
+                        }
+                    }
+                };
+            },
+            function error(errorResponse) {
+                console.log("Error getting points:"+JSON.stringify(errorResponse));
             }
         );
     }

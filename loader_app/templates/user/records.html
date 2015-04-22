@@ -4,13 +4,13 @@
 <div class="container" ng-controller="RecordController as recordCtrl">
     
     <div class="row">
+
         <div class="col-xs-6">
             <h2>{[{ title }]}</h2>
         </div>
         
-        {% if entries %}
-        
-        <div class="col-xs-6">
+
+        <div class="col-xs-6" ng-show="mapAvailable">
             <div class="btn-toolbar pull-right" role="toolbar">
                 
                 <!-- all/species toggle -->
@@ -23,9 +23,7 @@
                         </button>
                         <ul class="dropdown-menu" role="menu">
                             <li><a id="allspecies">All species</a></li>
-                            {% for i in species %}
-                            <li><a id="{{i|replace(" ", "_")}}">{{ i }}</a></li>
-                            {% endfor %}
+                            <li ng-repeat="species in allSpecies"><a id="{[{ species }]}">{[{ species }]}</a></li>
                         </ul>
                     </div>
                 </div>
@@ -38,61 +36,55 @@
                 </div>
 
                 <!-- list/map switch -->
-                <div role="group" class="btn-group" data-toggle="buttons">
-                    <label class="btn btn-primary active" onclick="$('#mapPanel').show(); $('#listPanel').hide(); $('#speciesbuttons').show();">
+                <div role="group" class="btn-group" data-toggle="buttons" ng-init="tab = 'map'">
+                    <label class="btn btn-primary active" ng-click="tab = 'map'">
                         <input type="radio" name="view" id="mapView" autocomplete="off">Map
                     </label>
-                    <label class="btn btn-primary" onclick="$('#mapPanel').hide(); $('#listPanel').show(); $('#speciesbuttons').hide();">
+                    <label class="btn btn-primary" ng-click="tab = 'list'">
                         <input type="radio" name="view" id="listView" autocomplete="off" checked>List
                     </label>
                 </div>
 
             </div>
         </div>
-        {% endif %}
-        
-    </div>
 
-{% if entries %}
-        
-    <div id="listPanel" hidden>
-
-        <table class="table table-striped table-bordered table-hover" id="recordsTable" data-sort-name="scientificname">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th data-field="scientificname" data-sortable="true">Scientific Name</th>
-                    <th>Coordinates</th>
-                    <th>Datum</th>
-                    <th>Uncertainty</th>
-                    <th>Event Date</th>
-                    <th>Recorded By</th>
-                    {% for extra in entries[0]['extrafields'] %}
-                    <th>{{ extra }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for entry in entries %}
-                <tr>
-                    <td>{{ entry.cartodb_id }}</td>
-                    <td>{{ entry.scientificname }}</td>
-                    <td>{{ entry.decimallatitude }}, {{ entry.decimallongitude }}</td>
-                    <td>{{ entry.geodeticdatum }}</td>
-                    <td>{{ entry.coordinateuncertaintyinmeters }}</td>
-                    <td>{{ entry.eventdate }}</td>
-                    <td>{{ entry.recordedby }}</td>
-                    {% for extra in entry['extrafields'] %}
-                    <td>{{ entry.extrafields[extra] }}</td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
     </div>
     
-    <div id="mapPanel" class="active">
+    
+    <!--List panel-->
+    <div id="listPanel" class="active" ng-show="mapAvailable && tab === 'list'">
+
+        <div id="table-container">
+            <table class="table table-striped table-bordered tabe-hover" infinite-scroll="loadMore()" infinite-scroll-disabled="tab === 'map'">
+                <thead>
+                    <tr>
+                        <th>Scientific name</th>
+                        <th>Coordinates</th>
+                        <th>Event date</th>
+                        <th>Recorded by</th>
+                        <th>Uncertainty</th>
+                        <th>Geodetic Datum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="point in points">
+                        <td>{[{point.scientificname}]}</td>
+                        <td>{[{point.decimallatitude}]}, {[{point.decimallongitude}]}</td>
+                        <td>{[{point.eventdate}]}</td>
+                        <td>{[{point.recordedby}]}</td>
+                        <td>{[{point.coordinateuncertaintyinmeters}]}</td>
+                        <td>{[{point.geodeticdatum}]}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    
+    </div>
+    
+    
+    
+    <!--Map panel-->
+    <div id="mapPanel" class="active" ng-show="mapAvailable && tab === 'map'">
         <style>
             #map_canvas {height: 650px; }
             .legend {
@@ -303,14 +295,16 @@
 
     </div>
 
-{% else %}
 
-    <div>
+
+    <!--Show "No map available" text if no data has been retrieved-->
+    <div ng-hide="mapAvailable">
         <p>No map available</p>
     </div>
 
-{% endif %}
-<script>
+    
+    
+    <script>
 $(document).ready(function() {
     $('#recordsTable').dataTable();
 

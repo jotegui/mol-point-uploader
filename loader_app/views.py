@@ -391,19 +391,19 @@ def records(datasetid):
 
     current_user = g.get('user', None)
 
-#    # Old, Flask-stye page render
-#    if current_user:
-#        entries, title, centroid, species = f.get_points_data(current_user, datasetid)
-#    else:
-#        entries = None
-#        title = None
-#        centroid = None
-#        species = None
+    # Old, Flask-stye page render
+    if current_user:
+        entries, title, centroid, species = f.get_points_data(current_user, datasetid)
+    else:
+        entries = None
+        title = None
+        centroid = None
+        species = None
 
-#    return render_template('user/records.html', entries=entries, title=title, datasetid=datasetid, centroid=centroid, species=species)
+    return render_template('user/records.html', entries=entries, title=title, datasetid=datasetid, centroid=centroid, species=species)
 
     # New, Angular-stye page render
-    return render_template('user/records.html', datasetid=datasetid)
+#    return render_template('user/records.html', datasetid=datasetid)
 
 @app.route('/delete/<datasetid>')
 @mol_user_auth('MOL_USER')
