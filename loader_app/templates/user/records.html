@@ -3,7 +3,7 @@
 
 <div class="container" ng-controller="RecordController as recordCtrl">
     
-    <div class="row">
+    <div class="row" ng-hide="loading" ng-init="centroid={{centroid}}">
 
         <div class="col-xs-6">
             <h2>{[{ title }]}</h2>
@@ -15,28 +15,28 @@
                 
                 <!-- all/species toggle -->
                 <div id="speciesbuttons" class="btn-group" role="group">
-                    <input type="button" id="allspeciesfield" class="btn btn-primary" disabled value="All species">
+                    <input type="button" id="allspeciesfield" class="btn btn-primary" disabled value="{[{speciesBtn}]}">
 
                     <div class="btn-group" role="group">
                         <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" value="Single species">
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" role="menu">
-                            <li><a id="allspecies">All species</a></li>
-                            <li ng-repeat="species in allSpecies"><a id="{[{ species }]}">{[{ species }]}</a></li>
+                            <li ng-click="updateFilter('All species')"><a id="allspecies">All species</a></li>
+                            <li ng-click="updateFilter(species)" ng-repeat="species in allSpecies"><a id="{[{ species.replace(" ", "_") }]}">{[{ species }]}</a></li>
                         </ul>
                     </div>
                 </div>
 
                 <!-- annotate button -->
                 <div role="group" class="btn-group" data-toggle="buttons">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#annotateModal">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#annotateModal" ng-show="tab === 'map'">
                         Annotate
                     </button>
                 </div>
 
                 <!-- list/map switch -->
-                <div role="group" class="btn-group" data-toggle="buttons" ng-init="tab = 'map'">
+                <div role="group" class="btn-group" data-toggle="buttons">
                     <label class="btn btn-primary active" ng-click="tab = 'map'">
                         <input type="radio" name="view" id="mapView" autocomplete="off">Map
                     </label>
@@ -52,9 +52,9 @@
     
     
     <!--List panel-->
-    <div id="listPanel" class="active" ng-show="mapAvailable && tab === 'list'">
-
+    <div id="listPanel" class="active" ng-show="!loading && mapAvailable && tab === 'list'">
         <div id="table-container">
+            <div>{[{allPoints.length}]} records</div>
             <table class="table table-striped table-bordered tabe-hover" infinite-scroll="loadMore()" infinite-scroll-disabled="tab === 'map'">
                 <thead>
                     <tr>
@@ -67,9 +67,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="point in points">
+                    <tr>
+                        <td><input type="text" class="form-control" ng-model="search.scientificname"></td>
+                        <td><input type="text" class="form-control" ng-model="search.coordinates"></td>
+                        <td><input type="text" class="form-control" ng-model="search.eventdate"></td>
+                        <td><input type="text" class="form-control" ng-model="search.recordedby"></td>
+                        <td><input type="text" class="form-control" ng-model="search.coordinateuncertaintyinmeters"></td>
+                        <td><input type="text" class="form-control" ng-model="search.geodeticdatum"></td>
+                    </tr>
+                    <tr ng-repeat="point in pointsFiltered = (points | filter: search)">
                         <td>{[{point.scientificname}]}</td>
-                        <td>{[{point.decimallatitude}]}, {[{point.decimallongitude}]}</td>
+                        <td>{[{point.coordinates}]}</td>
                         <td>{[{point.eventdate}]}</td>
                         <td>{[{point.recordedby}]}</td>
                         <td>{[{point.coordinateuncertaintyinmeters}]}</td>
@@ -84,7 +92,7 @@
     
     
     <!--Map panel-->
-    <div id="mapPanel" class="active" ng-show="mapAvailable && tab === 'map'">
+    <div id="mapPanel" class="active" ng-show="!loading && mapAvailable && tab === 'map'">
         <style>
             #map_canvas {height: 650px; }
             .legend {
@@ -105,191 +113,7 @@
         
         <script>
 
-            var selectedSpecies = "";
-
-            var DEFAULT_CARTOCSS = "";
-            DEFAULT_CARTOCSS += "#layer {";
-            DEFAULT_CARTOCSS += "   marker-fill-opacity: 0.7;";
-            DEFAULT_CARTOCSS += "   marker-line-color: #333333;";
-            DEFAULT_CARTOCSS += "   marker-line-width: 1.5;";
-            DEFAULT_CARTOCSS += "   marker-line-opacity: 0.8;";
-            DEFAULT_CARTOCSS += "   marker-placement: point;";
-            DEFAULT_CARTOCSS += "   marker-type: ellipse;";
-            DEFAULT_CARTOCSS += "   marker-width: 10;";
-            DEFAULT_CARTOCSS += "   marker-allow-overlap: true;";
-            DEFAULT_CARTOCSS += "}";
-
-            var DEFAULT_UNCERT_CARTOCSS = "";
-            DEFAULT_UNCERT_CARTOCSS += "#layer {";
-            DEFAULT_UNCERT_CARTOCSS += "  polygon-fill: #F84F40;";
-            DEFAULT_UNCERT_CARTOCSS += "  polygon-opacity: 0.5;";
-            DEFAULT_UNCERT_CARTOCSS += "  polygon-comp-op: darken;";
-            DEFAULT_UNCERT_CARTOCSS += "  line-color: #FFF;";
-            DEFAULT_UNCERT_CARTOCSS += "  line-width: 2;";
-            DEFAULT_UNCERT_CARTOCSS += "  line-opacity: 0.8;";
-            DEFAULT_UNCERT_CARTOCSS += "}";
-
-            var stringToColour = function(str) {
-                // str to hash
-                for (var i = 0, hash = 0; i < str.length; hash = str.charCodeAt(i++) + ((hash << 5) - hash));
-                // int/hash to hex
-                for (var i = 0, colour = "#"; i < 3; colour += ("00" + ((hash >> i++ * 8) & 0xFF).toString(16)).slice(-2));
-                return colour;
-            }
             
-            var createMapConfig = function(species) {
-                var layers = [];
-                var species_layer_id = 0;
-                var species_layer_sql = "";
-                var species_uncert_layer_sql = "";
-                var colour_list = "";
-
-                if (species.length == 1) {
-                    selectedSpecies = species[0];
-                    species_layer_id = 1;
-                    species_layer_sql = "select * from point_uploads_master where datasetid='{{ datasetid }}' and scientificname='"+species[0]+"'";
-                    species_uncert_layer_sql = "SELECT cartodb_id, ST_Buffer(tt.the_geom_webmercator, tt.uncert) as the_geom_webmercator FROM ( SELECT COALESCE(coordinateuncertaintyinmeters, 5000) as uncert, * FROM point_uploads_master WHERE datasetid = '{{ datasetid }}' and scientificname='"+species[0]+"' ) tt";
-                    colour_list = "#layer{marker-fill: "+stringToColour(species[0])+";}";
-                    layers[0] = {
-                        "type": "cartodb",
-                        "options": {
-                          "cartocss_version": "2.1.1",
-                          "cartocss": "#layer{polygon-fill:#448833;polygon-opacity: 0.2;line-opacity:0.4;line-width:1;line-color: #448833;marker-fill-opacity: 0.2;marker-line-color: #448833;marker-line-width: 2;marker-line-opacity: 0.4;marker-placement: point;marker-type: ellipse;marker-width: 15;marker-fill: #448833;marker-allow-overlap: true;}",
-                          "sql": "SELECT * FROM get_species_tile('"+species[0]+"')"
-                        }
-                      }
-                } else {
-                    species_layer_sql = "select row_number() over() as id, ST_Union(the_geom_webmercator) as the_geom_webmercator FROM point_uploads_master WHERE datasetid = '{{ datasetid }}' GROUP BY  scientificname";
-                    species_uncert_layer_sql = "SELECT cartodb_id, ST_Buffer(tt.the_geom_webmercator, tt.uncert) as the_geom_webmercator FROM ( SELECT COALESCE(coordinateuncertaintyinmeters, 5000) as uncert, * FROM point_uploads_master WHERE datasetid = '{{ datasetid }}' ) tt";
-                    colour_list = "#layer[id=1] {marker-fill: "+stringToColour(species[0])+";}";
-                    for (var i=1; i<species.length; i++) {
-                        colour_list += "#layer[id="+(i+1)+"] {marker-fill: "+stringToColour(species[i])+";}";
-                    }
-                }
-
-                layers[species_layer_id] = {
-                    "type": "cartodb",
-                    "options": {
-                      "cartocss_version": "2.1.1",
-                      "cartocss": DEFAULT_UNCERT_CARTOCSS,
-                      "sql": species_uncert_layer_sql
-                    }
-                  }
-                layers[species_layer_id+1] = {
-                    "type": "cartodb",
-                    "options": {
-                      "cartocss_version": "2.1.1",
-                      "cartocss": DEFAULT_CARTOCSS + colour_list,
-                      "sql": species_layer_sql
-                    }
-                  }
-
-                var mapconfig = {
-                  "version": "1.0.1",
-                  "layers": layers
-                }
-                return mapconfig;
-            }
-            
-            function getColor(d) {
-                for (var i=0; i<species.length; i++) {
-                    if (d==species[i]) {
-                        var color = stringToColour(species[i])
-                    }
-                }
-                return color
-            }
-
-            
-            function createLegend(map, species) {
-                var legend = L.control({position: 'topright'});
-                
-                legend.onAdd = function (map) {
-
-                    var div = L.DomUtil.create('div', 'info legend'),
-                        grades = [],
-                        labels = species;
-
-                    // loop through our density intervals and generate a label with a colored square for each interval
-                    for (var i = 0; i < labels.length; i++) {
-                        div.innerHTML +=
-                            '<i style="background:' + getColor(labels[i]) + '"></i> ' + labels[i] + '&nbsp <br>';
-                    }
-
-                    return div;
-                };
-
-                legend.addTo(map);
-            }
-            
-            var createMap = function(species) {
-                
-                // create map
-                var map = new L.map('map_canvas').setView({{centroid}}, 3);
-                
-                // add base layer
-                // 'https://dnv9my2eseobd.cloudfront.net/v3/cartodb.map-4xtxp73f/{z}/{x}/{y}.png'
-                L.tileLayer('http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
-                    maxZoom: 18,
-                    attribution: '&copy; <a href="http://www.mol.org">Map of Life</a>, 2014'
-                }).addTo(map);
-                
-                // define mapconfig for ad-hoc anonymous map
-                var mapconfig = createMapConfig(species);
-                
-                // initialize and attach ad-hoc map
-                $.ajax({
-                  type: 'POST',
-                  dataType: 'json',
-                  contentType: 'application/json',
-                  url: 'https://mol.cartodb.com/api/v1/map',
-                  data: JSON.stringify(mapconfig),
-                  success: function(data) {
-                    var templateUrl = 'https://mol.cartodb.com/api/v1/map/' + data.layergroupid + '/{z}/{x}/{y}.png'
-                    L.tileLayer(templateUrl, {
-                        maxZoom: 18
-                    }).addTo(map)
-                  }
-                });
-
-                createLegend(map, species);
-                
-                return map;
-            }
-            
-            var resetMap = function(map, species) {
-                selectedSpecies = "";
-                map.remove();
-                var map = createMap(species);
-                return map;
-            }
-            
-            {% for i in species %}
-            $('#{{i|replace(" ", "_")}}').click(function() {
-                species = ['{{i}}'];
-                $("#allspeciesfield").val('{{i}}');
-                map = resetMap(map, species);
-                $('#allspecies').removeClass('active');
-                return map;
-            });
-            {% endfor %}
-            
-            $('#allspecies').click(function() {
-                species = [
-                    {% for i in species %}'{{ i }}',
-                    {% endfor %}
-                ];
-                $("#allspeciesfield").val('All species');
-                map = resetMap(map, species);
-            });
-            
-            
-            species = [
-                {% for i in species %}'{{ i }}',
-                {% endfor %}
-            ];
-            
-            var map = createMap(species);
 
         </script>
 
@@ -298,10 +122,13 @@
 
 
     <!--Show "No map available" text if no data has been retrieved-->
-    <div ng-hide="mapAvailable">
+    <div ng-hide="mapAvailable || loading">
         <p>No map available</p>
     </div>
 
+    <div ng-show="loading">
+        <p>Loading data</p>
+    </div>
     
     
     <script>

@@ -21,6 +21,24 @@ handlers:
   static_dir: uploads
   secure: always
 
+# APIs
+- url: /api/species.*
+  script: loader_app.services.loader.species
+  secure: always
+
+- url: /api/title.*
+  script: loader_app.services.loader.title
+  secure: always
+
+- url: /api/mapAvailable.*
+  script: loader_app.services.loader.mapAvailable
+  secure: always
+
+- url: /api/points.*
+  script: loader_app.services.loader.points
+  secure: always
+
+
 - url: .*
   script: loader_app.app
   secure: always

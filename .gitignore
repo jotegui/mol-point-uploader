@@ -20,3 +20,6 @@ deploy.sh
 
 # JSON files
 *.json
+
+# Sublime files
+*.sublime*

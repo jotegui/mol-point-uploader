@@ -10,3 +10,35 @@ loaderServices.factory('CartoDB', ['$resource',
         });
     }
 ]);
+
+loaderServices.factory('species', ['$resource',
+	function($resource) {
+		return $resource('/api/species/:q', {}, {
+			get:{method: 'GET', isArray:false}
+		})
+	}
+]);
+
+loaderServices.factory('title', ['$resource',
+	function($resource) {
+		return $resource('/api/title/:q', {}, {
+			get:{method: 'GET', isArray:false}
+		})
+	}
+]);
+
+loaderServices.factory('mapAvailable', ['$resource',
+	function($resource) {
+		return $resource('/api/mapAvailable/:q', {}, {
+			get:{method: 'GET', isArray:false}
+		})
+	}
+]);
+
+loaderServices.factory('points', ['$resource',
+	function($resource) {
+		return $resource('/api/points/:q/:q2', {}, {
+			get:{method: 'GET', isArray:false}
+		})
+	}
+]);
