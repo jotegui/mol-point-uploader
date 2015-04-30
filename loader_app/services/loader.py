@@ -4,7 +4,7 @@ from urllib import urlencode
 import json
 import logging
 
-path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cdbkey.txt')
+path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cdb.key')
 api_key = open(path, "r").read().rstrip()
 url = "https://mol.cartodb.com/api/v2/sql"
 
