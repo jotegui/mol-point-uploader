@@ -29,7 +29,7 @@
                 </div>
 
                 <!-- annotate button -->
-                <div role="group" class="btn-group" data-toggle="buttons">
+                <div role="group" class="btn-group" data-toggle="buttons" ng-hide="1">
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#annotateModal" ng-show="tab === 'map'">
                         Annotate
                     </button>
@@ -37,10 +37,10 @@
 
                 <!-- list/map switch -->
                 <div role="group" class="btn-group" data-toggle="buttons">
-                    <label class="btn btn-primary active" ng-click="tab = 'map'">
+                    <label class="btn btn-primary active" ng-click="switchToMap();">
                         <input type="radio" name="view" id="mapView" autocomplete="off">Map
                     </label>
-                    <label class="btn btn-primary" ng-click="tab = 'list'">
+                    <label class="btn btn-primary" ng-click="switchToTable();">
                         <input type="radio" name="view" id="listView" autocomplete="off" checked>List
                     </label>
                 </div>
@@ -127,7 +127,7 @@
     </div>
 
     <div ng-show="loading">
-        <p>Loading data</p>
+        <p>Loading data</p><i class="fa fa-spin fa-spinner fa-3x"></i>
     </div>
     
     

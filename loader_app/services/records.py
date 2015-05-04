@@ -31,7 +31,6 @@ def species(environ, start_response):
 	
     dId = environ['PATH_INFO'].split('/')[-1]
     q = "select distinct scientificname from point_uploads_master where datasetid='{0}'".format(dId)
-    logging.info(q)
     d = f(environ, start_response, q)
     return d
 
@@ -65,6 +64,5 @@ def points(environ, start_response):
     q = "select scientificname, decimallatitude, decimallongitude, decimallatitude || ', ' || decimallongitude as coordinates, eventdate, recordedby, coordinateuncertaintyinmeters, geodeticdatum from point_uploads_master where datasetid='{0}'".format(dId)
     if selected != '':
         q += " and scientificname='{0}'".format(selected)
-    logging.info(q)
     d = f(environ, start_response, q)
     return d

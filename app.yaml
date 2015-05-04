@@ -23,19 +23,19 @@ handlers:
 
 # APIs
 - url: /api/species.*
-  script: loader_app.services.loader.species
+  script: loader_app.services.records.species
   secure: always
 
 - url: /api/title.*
-  script: loader_app.services.loader.title
+  script: loader_app.services.records.title
   secure: always
 
 - url: /api/mapAvailable.*
-  script: loader_app.services.loader.mapAvailable
+  script: loader_app.services.records.mapAvailable
   secure: always
 
 - url: /api/points.*
-  script: loader_app.services.loader.points
+  script: loader_app.services.records.points
   secure: always
 
 

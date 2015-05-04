@@ -91,8 +91,8 @@ loaderControllers.controller('FormController', function() {});
 
 
 // Record view page controller (records.html)
-loaderControllers.controller('RecordController', ['$scope', '$location', '$filter', '$timeout', 'species', 'title', 'mapAvailable', 'points', 'ngTableParams',
-    function RecordController($scope, $location, $filter, $timeout, species, title, mapAvailable, points, ngTableParams) {
+loaderControllers.controller('RecordController', ['$scope', '$location', '$filter', '$timeout', '$q', 'species', 'title', 'mapAvailable', 'points', 'ngTableParams',
+    function RecordController($scope, $location, $filter, $timeout, $q, species, title, mapAvailable, points, ngTableParams) {
         
         // extract and initialize variables
         $scope.tab = 'map';
@@ -107,7 +107,6 @@ loaderControllers.controller('RecordController', ['$scope', '$location', '$filte
 
         // some functions
         $scope.updateFilter = function(value) {
-            console.log($scope.speciesBtn);
             $scope.speciesBtn = value;
             if (value == 'All species') {
                 value="";
@@ -115,12 +114,26 @@ loaderControllers.controller('RecordController', ['$scope', '$location', '$filte
             } else {
                 $scope.species = value;
             };
-            console.log($scope.species);
             $scope.search.scientificname = value;
             $scope.selectedSpecies = value;
-            $scope.getPoints();
-            $scope.map = $scope.resetMap($scope.map, value.replace(' ', '_'));            
+            $scope.getPoints().then(
+                function(v) {
+                    $scope.map = $scope.resetMap($scope.map, value.replace(' ', '_'));
+                    $scope.buildTable();
+                }
+            );
         };
+
+        $scope.switchToMap = function() {
+            $scope.tab = 'map';
+            $timeout(function() {
+                $scope.map.invalidateSize();
+            });
+        }
+
+        $scope.switchToTable = function() {
+            $scope.tab = 'list';
+        }
 
         // mapping functions
         var DEFAULT_CARTOCSS = "";
@@ -202,7 +215,6 @@ loaderControllers.controller('RecordController', ['$scope', '$location', '$filte
             }
 
 
-            console.log("mapConfig: "+species);
             if (species.length == 1) {
                 selectedSpecies = species[0];
                 species_layer_id = 1;
@@ -221,7 +233,9 @@ loaderControllers.controller('RecordController', ['$scope', '$location', '$filte
                 species_layer_sql = "select row_number() over() as id, ST_Union(the_geom_webmercator) as the_geom_webmercator FROM point_uploads_master WHERE datasetid = '"+$scope.dId+"' GROUP BY  scientificname";
                 species_uncert_layer_sql = "SELECT cartodb_id, ST_Buffer(tt.the_geom_webmercator, tt.uncert) as the_geom_webmercator FROM ( SELECT COALESCE(coordinateuncertaintyinmeters, 5000) as uncert, * FROM point_uploads_master WHERE datasetid = '"+$scope.dId+"' ) tt";
                 colour_list = "#layer[id=1] {marker-fill: "+stringToColour(species[0])+";}";
+                console.log(species[0]);
                 for (var i=1; i<species.length; i++) {
+                    console.log(species[i]);
                     colour_list += "#layer[id="+(i+1)+"] {marker-fill: "+stringToColour(species[i])+";}";
                 }
             }
@@ -252,6 +266,8 @@ loaderControllers.controller('RecordController', ['$scope', '$location', '$filte
 
         $scope.createMap = function() {
             
+            //var q = $q.defer();
+
             // create map
             var map = new L.map('map_canvas').setView($scope.centroid, 3);
             
@@ -282,7 +298,11 @@ loaderControllers.controller('RecordController', ['$scope', '$location', '$filte
 
             $scope.createLegend(map, $scope.species);
             
+            //return map;
             return map;
+            
+            //q.resolve(map);
+            //return q.promise
         }
 
         $scope.resetMap = function(map) {
@@ -297,54 +317,68 @@ loaderControllers.controller('RecordController', ['$scope', '$location', '$filte
 
         // get all scientific names
         $scope.getSpecies = function() {
+
+            var q = $q.defer();
+
             species.get({q:$scope.dId},
                 function success(response) {
-                    console.log("Got species");
-                    console.log(response.rows);
                     var allSpeciesJSON = response.rows;
                     $scope.allSpecies = [];
                     for (var i=0; i<allSpeciesJSON.length; i++) {
                         $scope.allSpecies.push(allSpeciesJSON[i].scientificname);
                     }
+                    q.resolve("Got "+response.rows.length+" species")
                 },
                 function error(errorResponse) {
-                    console.log("Error getting species:"+JSON.stringify(errorResponse));
+                    q.reject("Error getting species:"+JSON.stringify(errorResponse));
                 }
             );
+            return q.promise;
         }
-        $scope.getSpecies();
+
 
         // get dataset title
         $scope.getTitle = function() {
+
+            var q = $q.defer();
+
             title.get({q:$scope.dId},
                 function success(response) {
-                    console.log("Got title");
                     $scope.title = response.rows[0].title;
+                    q.resolve("Got title");
                 },
                 function error(errorResponse){
-                    console.log("Error getting dataset title:"+JSON.stringify(errorResponse));
+                    q.reject("Error getting dataset title:"+JSON.stringify(errorResponse));
                 }
             );
+            return q.promise
         }
-        $scope.getTitle();
+        
 
         // get pres/abs of points
         $scope.getMapAvailable = function() {
+
+            var q = $q.defer();
+
             mapAvailable.get({q:$scope.dId},
                 function success(response) {
                     var mapAvailable = response.rows[0].mapavailable;
                     $scope.mapAvailable = mapAvailable;
-                    console.log("mapAvailable = "+mapAvailable);
+                    q.resolve("mapAvailable = "+mapAvailable);
                 },
                 function error(errorResponse){
-                    console.log("Error checking if map should be rendered:"+JSON.stringify(errorResponse));
+                    q.reject("Error checking if map should be rendered:"+JSON.stringify(errorResponse));
                 }
             );
+            return q.promise
         }
-        $scope.getMapAvailable();
+        
         
         // get all points
         $scope.getPoints = function () {
+
+            var q = $q.defer();
+
             if ($scope.selectedSpecies != "") {
                 var q2 = $scope.selectedSpecies;
             } else {
@@ -354,25 +388,16 @@ loaderControllers.controller('RecordController', ['$scope', '$location', '$filte
                 function success(response) {
                     
                     $scope.allPoints = response.rows;
-                    console.log("Got "+$scope.allPoints.length+" records");
-                    
-                    // Map stuff
-                    $scope.buildTable();
 
-                    // Table stuff
-                    if ($scope.loading === true) {
-                        $scope.buildMap();
-                    }
-
-                    $scope.loading = false;
+                    q.resolve("Got "+$scope.allPoints.length+" records");
                 },
                 function error(errorResponse) {
-                    console.log("Error getting points:"+JSON.stringify(errorResponse));
+                    q.reject("Error getting points:"+JSON.stringify(errorResponse));
                 }
             );
+            return q.promise;
         }
-        $scope.getPoints();
-
+        
 
         $scope.buildTable = function() {
             // Infinite scroll (http://binarymuse.github.io/ngInfiniteScroll/)
@@ -409,5 +434,33 @@ loaderControllers.controller('RecordController', ['$scope', '$location', '$filte
                 $scope.map.invalidateSize();
             });
         }
+        
+        $scope.loadData = $scope.getSpecies()
+        
+        $scope.loadData
+        .then(
+            function(v) {console.log(v); return $scope.getTitle()}
+            
+        ).then(
+            function(v) {console.log(v); return $scope.getMapAvailable()}
+            
+        ).then(
+            function(v) {console.log(v); return $scope.getPoints()}
+            
+        ).then(
+            function(v) {
+
+                console.log(v);
+
+                $scope.buildTable();
+                if ($scope.loading === true) {
+                    $scope.buildMap();
+                }
+
+                $scope.loading = false;
+            },
+            function(err) {console.log(err)}
+        );
+        
     }
 ]);
